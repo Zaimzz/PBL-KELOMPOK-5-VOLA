@@ -2,72 +2,88 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Enums\UserRole;
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class PasswordResetTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_reset_password_link_screen_can_be_rendered(): void
+    public function test_forgot_password_screen_can_be_rendered(): void
     {
         $response = $this->get('/forgot-password');
 
         $response->assertStatus(200);
     }
 
-    public function test_reset_password_link_can_be_requested(): void
+    public function test_password_can_be_reset_directly(): void
     {
-        Notification::fake();
+        $user = User::factory()->create([
+            'role' => UserRole::Volunteer,
+        ]);
 
-        $user = User::factory()->create();
+        $response = $this->post('/forgot-password', [
+            'email' => $user->email,
+            'role' => 'volunteer',
+            'password' => 'newPassword123',
+            'password_confirmation' => 'newPassword123',
+        ]);
 
-        $this->post('/forgot-password', ['email' => $user->email]);
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('login'));
 
-        Notification::assertSentTo($user, ResetPassword::class);
+        $response->assertSessionHas('status', 'Kata sandi berhasil diubah, silakan masuk.');
+
+        $this->assertTrue(Hash::check('newPassword123', $user->fresh()->password));
     }
 
-    public function test_reset_password_screen_can_be_rendered(): void
+    public function test_password_reset_fails_if_role_mismatch(): void
     {
-        Notification::fake();
+        $user = User::factory()->create([
+            'role' => UserRole::Volunteer,
+        ]);
 
-        $user = User::factory()->create();
+        $response = $this->post('/forgot-password', [
+            'email' => $user->email,
+            'role' => 'eo',
+            'password' => 'newPassword123',
+            'password_confirmation' => 'newPassword123',
+        ]);
 
-        $this->post('/forgot-password', ['email' => $user->email]);
+        $response->assertSessionHasErrors(['email']);
 
-        Notification::assertSentTo($user, ResetPassword::class, function ($notification) {
-            $response = $this->get('/reset-password/'.$notification->token);
-
-            $response->assertStatus(200);
-
-            return true;
-        });
+        $this->assertFalse(Hash::check('newPassword123', $user->fresh()->password));
     }
 
-    public function test_password_can_be_reset_with_valid_token(): void
+    public function test_password_reset_fails_if_email_not_found(): void
     {
-        Notification::fake();
+        $response = $this->post('/forgot-password', [
+            'email' => 'notfound@example.com',
+            'role' => 'volunteer',
+            'password' => 'newPassword123',
+            'password_confirmation' => 'newPassword123',
+        ]);
 
-        $user = User::factory()->create();
+        $response->assertSessionHasErrors(['email']);
+    }
 
-        $this->post('/forgot-password', ['email' => $user->email]);
+    public function test_password_reset_fails_if_password_does_not_meet_requirements(): void
+    {
+        $user = User::factory()->create([
+            'role' => UserRole::Eo,
+        ]);
 
-        Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
-            $response = $this->post('/reset-password', [
-                'token' => $notification->token,
-                'email' => $user->email,
-                'password' => 'password',
-                'password_confirmation' => 'password',
-            ]);
+        $response = $this->post('/forgot-password', [
+            'email' => $user->email,
+            'role' => 'eo',
+            'password' => 'weak',
+            'password_confirmation' => 'weak',
+        ]);
 
-            $response
-                ->assertSessionHasNoErrors()
-                ->assertRedirect(route('login'));
-
-            return true;
-        });
+        $response->assertSessionHasErrors(['password']);
     }
 }
