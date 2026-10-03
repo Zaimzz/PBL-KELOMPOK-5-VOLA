@@ -4,7 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
-use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -28,11 +28,16 @@ Route::middleware('guest')->group(function () {
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
         ->name('password.email');
 
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
-        ->name('password.reset');
+    Route::get('auth/google/redirect', [GoogleAuthController::class, 'redirect'])
+        ->name('auth.google.redirect');
 
-    Route::post('reset-password', [NewPasswordController::class, 'store'])
-        ->name('password.store');
+    Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])
+        ->name('auth.google.callback');
+
+    Route::get('auth/google/choose-role', [GoogleAuthController::class, 'showChooseRole'])
+        ->name('auth.google.chooseRole');
+
+    Route::post('auth/google/choose-role', [GoogleAuthController::class, 'chooseRole']);
 });
 
 Route::middleware('auth')->group(function () {

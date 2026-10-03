@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html, body {
+    background-color: #FAF9FF;
+}
+
+/* Sembunyikan icon mata bawaan browser (seperti di MS Edge/Chromium) agar tidak double dengan custom icon */
+input::-ms-reveal,
+input::-ms-clear {
+    display: none !important;
+}
+
+input::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+    display: none !important;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+}
