@@ -49,7 +49,39 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('eo.dashboard', absolute: false));
     }
 
-    public function test_admin_can_authenticate_using_the_login_screen(): void
+    public function test_admin_can_authenticate_without_choosing_a_role(): void
+    {
+        $user = User::factory()->create([
+            'role' => UserRole::Admin,
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+            // admin login tanpa memilih role
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('admin.dashboard'));
+    }
+
+    public function test_admin_can_not_authenticate_when_choosing_a_role(): void
+    {
+        $user = User::factory()->create([
+            'role' => UserRole::Admin,
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+            'role' => 'eo',
+        ]);
+
+        $this->assertGuest();
+        $response->assertInvalid(['role']);
+    }
+
+    public function test_admin_role_can_not_be_sent_as_a_chosen_role(): void
     {
         $user = User::factory()->create([
             'role' => UserRole::Admin,
@@ -61,8 +93,23 @@ class AuthenticationTest extends TestCase
             'role' => 'admin',
         ]);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('admin.dashboard', absolute: false));
+        $this->assertGuest();
+        $response->assertInvalid(['role']);
+    }
+
+    public function test_crew_can_not_authenticate_without_choosing_a_role(): void
+    {
+        $user = User::factory()->create([
+            'role' => UserRole::Volunteer,
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertGuest();
+        $response->assertInvalid(['role']);
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
@@ -83,7 +130,7 @@ class AuthenticationTest extends TestCase
     public function test_users_can_not_authenticate_with_mismatched_role(): void
     {
         $user = User::factory()->create([
-            'role' => UserRole::Admin,
+            'role' => UserRole::Volunteer,
         ]);
 
         $response = $this->post('/login', [

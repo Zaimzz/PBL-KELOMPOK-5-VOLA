@@ -30,8 +30,12 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
+
+        if ($user->role === UserRole::Admin) {
+            return redirect()->route('admin.dashboard');
+        }
+
         $dashboardRoute = match ($user->role) {
-            UserRole::Admin => route('admin.dashboard', absolute: false),
             UserRole::Eo => route('eo.dashboard', absolute: false),
             default => route('dashboard', absolute: false),
         };
