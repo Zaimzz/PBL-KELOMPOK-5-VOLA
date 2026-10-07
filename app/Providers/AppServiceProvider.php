@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Event;
+use App\Policies\EventPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -25,5 +28,9 @@ class AppServiceProvider extends ServiceProvider
                 ->letters()
                 ->numbers();
         });
+
+        // Explicitly register EventPolicy (auto-discovery also works,
+        // but explicit registration is safer for testing environments)
+        Gate::policy(Event::class, EventPolicy::class);
     }
 }
