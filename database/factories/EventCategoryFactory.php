@@ -18,13 +18,21 @@ class EventCategoryFactory extends Factory
      */
     public function definition(): array
     {
-        $name = fake()->unique()->randomElement([
-            'Festival', 'Seminar', 'Sosial', 'Kampus', 'Olahraga', 'Musik', 'Komunitas',
-        ]);
+        static $usedNames = [];
+        $allNames = ['Festival', 'Seminar', 'Sosial', 'Kampus', 'Olahraga', 'Musik', 'Komunitas'];
+        $available = array_diff($allNames, $usedNames);
+
+        if (empty($available)) {
+            // All base names used, generate unique variant
+            $name = fake()->unique()->word().' Event';
+        } else {
+            $name = fake()->randomElement($available);
+            $usedNames[] = $name;
+        }
 
         return [
             'name' => $name,
-            'slug' => Str::slug($name),
+            'slug' => Str::slug($name).'-'.fake()->unique()->randomNumber(4),
         ];
     }
 }

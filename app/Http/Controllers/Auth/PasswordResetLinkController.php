@@ -47,7 +47,7 @@ class PasswordResetLinkController extends Controller
             return back()->withInput($request->only('email', 'role'))
                 ->withErrors(['email' => 'Email belum terdaftar.']);
         }
-        
+
         if ($user->role->value !== $request->role) {
             return back()->withInput($request->only('email', 'role'))
                 ->withErrors(['email' => 'Role tidak sesuai dengan akun ini.']);
