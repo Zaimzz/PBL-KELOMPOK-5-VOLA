@@ -3,6 +3,7 @@
 use App\Http\Controllers\Eo\EoDashboardController;
 use App\Http\Controllers\Eo\EventController;
 use App\Http\Controllers\Eo\EventPositionController;
+use App\Http\Controllers\Eo\OrganizerProfileController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,10 +28,11 @@ Route::middleware(['auth', 'verified', 'role:eo'])->prefix('eo')->name('eo.')->g
     // EO Dashboard
     Route::get('/dashboard', [EoDashboardController::class, 'index'])->name('dashboard');
 
-    // EO Organization profile (placeholder - Phase 1)
-    Route::get('/organization', function () {
-        return view('eo.organization.index');
-    })->name('organization');
+    // EO Organization Profile
+    Route::get('/organization', [OrganizerProfileController::class, 'show'])->name('organization');
+    Route::get('/organization/edit', [OrganizerProfileController::class, 'edit'])->name('organization.edit');
+    Route::put('/organization', [OrganizerProfileController::class, 'update'])->name('organization.update');
+    Route::post('/organization/verify', [OrganizerProfileController::class, 'submitVerification'])->name('organization.verify');
 
     // Event CRUD
     Route::get('/events', [EventController::class, 'index'])->name('events.index');
