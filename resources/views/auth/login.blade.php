@@ -1,10 +1,9 @@
 <x-guest-layout>
     <div class="w-full bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 sm:p-10 z-10 border border-gray-100">
-        
+
         <div class="flex justify-center items-center mb-6">
             <div class="flex items-center space-x-1.5">
                 <span class="text-xl font-black tracking-tight text-gray-900">VOLA<span class="text-indigo-600">.</span></span>
-                <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full uppercase tracking-wider">Explore</span>
             </div>
         </div>
 
@@ -15,8 +14,8 @@
 
         <x-auth-session-status class="mb-4" :status="session('status')" />
 
-        <form method="POST" action="{{ route('login') }}" class="space-y-5" x-data="{ 
-            role: '{{ old('role', 'volunteer') }}', 
+        <form method="POST" action="{{ route('login') }}" class="space-y-7" x-data="{
+            role: '{{ $errors->has('role') ? '' : old('role') }}',
             email: '{{ old('email') }}',
             password: '',
             showPassword: false,
@@ -28,9 +27,9 @@
             validate() {
                 this.errors.email = '';
                 this.errors.password = '';
-                
+
                 let isValid = true;
-                
+
                 if (!this.email) {
                     this.errors.email = 'Email wajib diisi.';
                     isValid = false;
@@ -38,12 +37,12 @@
                     this.errors.email = 'Format email tidak valid.';
                     isValid = false;
                 }
-                
+
                 if (!this.password) {
                     this.errors.password = 'Kata sandi wajib diisi.';
                     isValid = false;
                 }
-                
+
                 return isValid;
             }
         }" @submit="if(!validate()) $event.preventDefault()" novalidate>
@@ -70,12 +69,10 @@
                         </div>
                     </label>
                 </div>
-                <p x-show="errors.role" x-text="errors.role" class="mt-2 text-sm text-red-600 font-medium" x-cloak></p>
-            </div>
 
             <!-- Email Address -->
-            <div>
-                <label for="email" class="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
+            <div style="margin-top: 1rem;">
+                <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <svg class="h-5 w-5" :class="errors.email ? 'text-red-400' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
@@ -86,8 +83,8 @@
             </div>
 
             <!-- Password -->
-            <div>
-                <label for="password" class="block text-sm font-semibold text-gray-700 mb-1.5">Kata Sandi</label>
+            <div style="margin-top: 1rem;">
+                <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">Kata Sandi</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <svg class="h-5 w-5" :class="errors.password ? 'text-red-400' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
@@ -112,7 +109,7 @@
             </div>
 
             <!-- Remember Me & Forgot Password -->
-            <div class="flex items-center justify-between pt-1">
+            <div class="flex items-center justify-between pt-2">
                 <div class="flex items-center">
                     <input id="remember_me" name="remember" type="checkbox" class="h-4 w-4 text-[#4534E6] focus:ring-[#4534E6] border-gray-300 rounded cursor-pointer">
                     <label for="remember_me" class="ml-2 block text-sm font-medium text-gray-600 cursor-pointer">Ingat saya</label>
@@ -124,12 +121,12 @@
             </div>
 
             <div class="pt-2">
-                <button type="submit" class="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-[#4534E6] hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                    Masuk ke Beranda 
+                <button type="submit" class="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-[#4534E6] hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    Masuk ke Beranda
                     <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </div>
-            
+
             <div class="mt-6 relative">
                 <div class="absolute inset-0 flex items-center">
                     <div class="w-full border-t border-gray-200"></div>
@@ -150,7 +147,7 @@
                     Masuk dengan Akun Google
                 </a>
             </div>
-            
+
             <div class="text-center mt-6 text-sm text-gray-500 font-medium">
                 Belum punya akun? <a href="{{ route('register') }}" class="font-bold text-[#4534E6] hover:text-indigo-800 transition-colors">Daftar sekarang</a>
             </div>

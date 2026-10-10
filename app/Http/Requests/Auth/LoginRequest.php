@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Enums\UserRole;
 use App\Enums\UserStatus;
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,7 +25,7 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Role opsional karena admin login tanpa memilih role.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
@@ -42,7 +44,6 @@ class LoginRequest extends FormRequest
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
             'password.required' => 'Kata sandi wajib diisi.',
-            'role.required' => 'Role wajib dipilih.',
             'role.in' => 'Role tidak valid.',
         ];
     }
@@ -56,10 +57,11 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $user = \App\Models\User::where('email', $this->email)->first();
+        $user = User::where('email', $this->email)->first();
 
         if (! $user) {
             RateLimiter::hit($this->throttleKey());
+
             throw ValidationException::withMessages([
                 'email' => 'Email belum terdaftar.',
             ]);
@@ -75,17 +77,37 @@ class LoginRequest extends FormRequest
 
         $user = Auth::user();
 
-        if ($user->role->value !== $this->role) {
-            Auth::logout();
-            RateLimiter::hit($this->throttleKey());
-            throw ValidationException::withMessages([
-                'email' => 'Role yang dipilih tidak sesuai dengan akun.',
-            ]);
+        if ($user->role === UserRole::Admin) {
+            if (filled($this->role)) {
+                Auth::logout();
+
+                throw ValidationException::withMessages([
+                    'role' => 'Admin tidak perlu memilih role. Kosongkan pilihan role, lalu masuk lagi.',
+                ]);
+            }
+        } else {
+            if (blank($this->role)) {
+                Auth::logout();
+
+                throw ValidationException::withMessages([
+                    'role' => 'Pilih role terlebih dahulu (Crew atau Event Organizer).',
+                ]);
+            }
+
+            if ($user->role->value !== $this->role) {
+                Auth::logout();
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'email' => 'Role yang dipilih tidak sesuai dengan akun.',
+                ]);
+            }
         }
 
         if ($user->status === UserStatus::Suspended) {
             Auth::logout();
             RateLimiter::hit($this->throttleKey());
+
             throw ValidationException::withMessages([
                 'email' => 'Akun ini ditangguhkan.',
             ]);

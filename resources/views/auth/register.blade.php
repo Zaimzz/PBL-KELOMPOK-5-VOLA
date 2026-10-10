@@ -4,7 +4,7 @@
         <div class="flex justify-center items-center mb-6">
             <div class="flex items-center space-x-1.5">
                 <span class="text-xl font-black tracking-tight text-gray-900">VOLA<span class="text-indigo-600">.</span></span>
-                <span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full uppercase tracking-wider">Explore</span>
+                
             </div>
         </div>
 

@@ -28,7 +28,7 @@
         <header class="relative z-10 w-full px-8 py-6 flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <span class="text-2xl font-black tracking-tight text-gray-900">VOLA<span class="text-indigo-600">.</span></span>
-                <span class="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-full">Explore</span>
+                
             </div>
             <a href="/" class="flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

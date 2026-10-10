@@ -30,7 +30,7 @@ class GoogleAuthController extends Controller
 
             if (! $user->google_id) {
                 $user->update(['google_id' => $googleUser->getId(),
-                    'email_verified_at' => now()
+                    'email_verified_at' => now(),
                 ]);
             }
 
