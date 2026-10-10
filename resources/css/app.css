@@ -19,3 +19,1770 @@ input::-webkit-credentials-auto-fill-button {
     position: absolute;
     right: 0;
 }
+
+/* =========================================
+   VOLA LANDING PAGE: NAVBAR & HERO
+   ========================================= */
+
+.vola-landing {
+    --vola-purple: #5145ed;
+    --vola-purple-dark: #4035d4;
+    --vola-purple-light: #ecebff;
+    --vola-ink: #171d32;
+    --vola-muted: #686b80;
+    --vola-border: #e7e5ff;
+
+    margin: 0;
+    color: var(--vola-ink);
+    background: #faf8ff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.6;
+}
+
+.vola-landing *,
+.vola-landing *::before,
+.vola-landing *::after {
+    box-sizing: border-box;
+}
+
+.vola-landing a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.vola-landing button {
+    font: inherit;
+}
+
+.vola-container {
+    width: min(1320px, calc(100% - 64px));
+    margin-inline: auto;
+}
+
+/* NAVBAR */
+
+.vola-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(250, 248, 255, .96);
+    border-bottom: 1px solid var(--vola-border);
+    backdrop-filter: blur(14px);
+}
+
+.vola-nav-inner {
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.vola-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 34px;
+}
+
+.vola-nav-links a,
+.vola-login-link {
+    color: #626478;
+    font-size: 13px;
+    font-weight: 600;
+    transition: color .2s;
+}
+
+.vola-nav-links a:hover,
+.vola-nav-links a.is-active,
+.vola-login-link:hover {
+    color: var(--vola-purple);
+}
+
+.vola-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.vola-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 46px;
+    padding: 0 21px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .2s, background .2s;
+}
+
+.vola-btn:hover {
+    transform: translateY(-2px);
+}
+
+.vola-btn-primary {
+    color: white !important;
+    background: var(--vola-purple);
+    box-shadow: 0 5px 12px rgba(81, 69, 237, .14);
+}
+
+.vola-btn-primary:hover {
+    background: var(--vola-purple-dark);
+}
+
+.vola-btn-outline {
+    color: var(--vola-ink) !important;
+    background: white;
+    border-color: #e5e2f5;
+}
+
+.vola-btn-outline:hover {
+    color: var(--vola-purple) !important;
+    border-color: var(--vola-purple);
+}
+
+.vola-btn-small {
+    min-height: 40px;
+    padding-inline: 19px;
+}
+
+.vola-menu-toggle {
+    display: none;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--vola-border);
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+}
+
+/* HERO */
+
+.vola-hero {
+    padding: 76px 0 82px;
+    border-bottom: 1px solid var(--vola-border);
+}
+
+.vola-hero-grid {
+    display: grid;
+    grid-template-columns: 1.05fr .95fr;
+    align-items: center;
+    gap: 54px;
+}
+
+.vola-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 13px;
+    margin-bottom: 20px;
+    border: 1px solid #d9d6ff;
+    border-radius: 99px;
+    background: var(--vola-purple-light);
+    color: var(--vola-purple);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.vola-hero-content h1 {
+    max-width: 650px;
+    margin: 0;
+    font-size: clamp(38px, 4.2vw, 58px);
+    line-height: 1.12;
+    letter-spacing: -2.2px;
+    font-weight: 800;
+}
+
+.vola-hero-description {
+    max-width: 550px;
+    margin: 20px 0 0;
+    color: var(--vola-muted);
+    font-size: 14px;
+    line-height: 1.85;
+}
+
+.vola-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 27px;
+}
+
+.vola-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 530px;
+    margin-top: 30px;
+    padding: 15px 5px;
+    background: white;
+    border: 1px solid var(--vola-border);
+    border-radius: 16px;
+}
+
+.vola-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 0 7px;
+    text-align: center;
+}
+
+.vola-stat + .vola-stat {
+    border-left: 1px solid #efedff;
+}
+
+.vola-stat strong {
+    font-size: clamp(12px, 1.3vw, 17px);
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.vola-stat:nth-child(2) strong {
+    color: var(--vola-purple);
+}
+
+.vola-stat:nth-child(3) strong {
+    color: #07845c;
+}
+
+.vola-stat span {
+    color: var(--vola-muted);
+    font-size: 10px;
+}
+
+/* GAMBAR HERO */
+
+.vola-hero-visual {
+    position: relative;
+    padding: 8px;
+    border: 1px solid var(--vola-border);
+    border-radius: 23px;
+    background: white;
+    box-shadow: 0 16px 35px rgba(37, 31, 92, .12);
+}
+
+.vola-hero-visual > img {
+    display: block;
+    width: 100%;
+    height: 360px;
+    object-fit: cover;
+    border-radius: 16px;
+}
+
+.vola-photo-caption {
+    position: absolute;
+    right: 19px;
+    bottom: 19px;
+    left: 19px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 11px;
+    color: white;
+    background: rgba(21, 28, 47, .88);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.vola-status-dot {
+    margin-right: 5px;
+    color: #6ef0ba;
+}
+
+.vola-verified {
+    color: #d8d6ff;
+    white-space: nowrap;
+    font-size: 9px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+    .vola-container {
+        width: calc(100% - 40px);
+    }
+
+    .vola-hero {
+        padding: 55px 0 60px;
+    }
+
+    .vola-hero-grid {
+        grid-template-columns: 1fr;
+        gap: 35px;
+    }
+
+    .vola-hero-content h1 {
+        font-size: clamp(38px, 7vw, 52px);
+    }
+
+    .vola-hero-visual {
+        width: 100%;
+        max-width: 650px;
+    }
+
+    .vola-hero-visual > img {
+        height: 330px;
+    }
+}
+
+@media (max-width: 700px) {
+    .vola-nav-inner {
+        min-height: 64px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .vola-menu-toggle {
+        display: grid;
+        place-items: center;
+        order: 3;
+    }
+
+    .vola-nav-actions {
+        margin-left: auto;
+        gap: 12px;
+    }
+
+    .vola-login-link {
+        display: none;
+    }
+
+    .vola-nav-links {
+        display: none;
+        order: 4;
+        width: 100%;
+        padding: 8px 0 18px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .vola-nav-links.is-open {
+        display: flex;
+    }
+
+    .vola-hero-content h1 {
+        font-size: clamp(34px, 8vw, 45px);
+        letter-spacing: -1.5px;
+    }
+
+    .vola-hero-description {
+        font-size: 13px;
+    }
+
+    .vola-hero-actions {
+        flex-direction: column;
+    }
+
+    .vola-hero-actions .vola-btn {
+        width: 100%;
+    }
+
+    .vola-hero-visual > img {
+        height: 260px;
+    }
+
+    .vola-photo-caption {
+        right: 15px;
+        bottom: 16px;
+        left: 15px;
+        padding: 9px;
+        font-size: 9px;
+    }
+
+    .vola-stat {
+        padding-inline: 3px;
+    }
+
+    .vola-stat strong {
+        font-size: clamp(10px, 2.8vw, 14px);
+    }
+
+    .vola-stat span {
+        font-size: 9px;
+    }
+}
+
+/* =========================================
+   VOLA LANDING PAGE: HOW IT WORKS
+   ========================================= */
+
+.vola-how {
+    padding: 68px 0 72px;
+    background: #f4f3ff;
+    border-bottom: 1px solid var(--vola-border);
+}
+
+.vola-section-heading {
+    max-width: 650px;
+    margin: 0 auto 38px;
+    text-align: center;
+}
+
+.vola-section-label {
+    display: inline-block;
+    margin-bottom: 13px;
+    padding: 6px 12px;
+    border-radius: 99px;
+    background: #e7e6ff;
+    color: var(--vola-purple);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .4px;
+}
+
+.vola-section-heading h2 {
+    margin: 0;
+    font-size: clamp(26px, 3vw, 34px);
+    line-height: 1.3;
+    letter-spacing: -1px;
+    font-weight: 800;
+}
+
+.vola-section-heading p {
+    margin: 12px 0 0;
+    color: var(--vola-muted);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.vola-steps-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.vola-steps-card {
+    padding: 27px;
+    background: white;
+    border: 1px solid var(--vola-border);
+    border-radius: 22px;
+}
+
+.vola-steps-header {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eeecff;
+}
+
+.vola-role-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: #eeecff;
+    color: var(--vola-purple);
+    font-size: 23px;
+}
+
+.vola-role-icon.is-green {
+    background: #e5f4ef;
+    color: #07845c;
+}
+
+.vola-role-kicker {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--vola-purple);
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.vola-role-kicker.is-green {
+    color: #07845c;
+}
+
+.vola-steps-header h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.vola-role-badge {
+    margin-left: auto;
+    padding: 5px 9px;
+    border-radius: 99px;
+    background: #eeecff;
+    color: var(--vola-purple);
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.vola-role-badge.is-green {
+    background: #e2f3ed;
+    color: #07845c;
+}
+
+.vola-step-list {
+    display: grid;
+    gap: 23px;
+    padding: 23px 0;
+}
+
+.vola-step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+}
+
+.vola-step-number {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 29px;
+    height: 29px;
+    border-radius: 50%;
+    background: #eceaff;
+    color: var(--vola-purple);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.vola-steps-card:nth-child(2) .vola-step-number {
+    background: #e3f3ed;
+    color: #07845c;
+}
+
+.vola-step-item h4 {
+    margin: 0 0 5px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.vola-step-item p {
+    margin: 0;
+    color: var(--vola-muted);
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+.vola-steps-link {
+    display: block;
+    padding-top: 19px;
+    border-top: 1px solid #eeecff;
+    color: var(--vola-purple) !important;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.vola-steps-link.is-green {
+    color: #07845c !important;
+}
+
+.vola-steps-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 700px) {
+    .vola-how {
+        padding: 48px 0;
+    }
+
+    .vola-section-heading {
+        margin-bottom: 27px;
+    }
+
+    .vola-steps-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .vola-steps-card {
+        padding: 21px;
+        border-radius: 18px;
+    }
+
+    .vola-steps-header h3 {
+        font-size: 15px;
+    }
+
+    .vola-role-badge {
+        padding: 4px 7px;
+        font-size: 9px;
+    }
+}
+
+/* =========================================
+   VOLA LANDING PAGE: EVENTS, CTA, FOOTER
+   ========================================= */
+
+.vola-events {
+    padding: 70px 0 86px;
+    background: #faf8ff;
+}
+
+.vola-events-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.vola-events-heading .vola-section-label {
+    margin-bottom: 11px;
+}
+
+.vola-events-heading h2 {
+    margin: 0;
+    font-size: clamp(25px, 3vw, 32px);
+    line-height: 1.3;
+    letter-spacing: -1px;
+    font-weight: 800;
+}
+
+.vola-events-heading p {
+    margin: 9px 0 0;
+    color: var(--vola-muted);
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.vola-event-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.vola-event-card {
+    display: flex;
+    flex-direction: column;
+    padding: 21px;
+    background: white;
+    border: 1px solid var(--vola-border);
+    border-radius: 18px;
+    transition: transform .2s, box-shadow .2s;
+}
+
+.vola-event-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 26px rgba(46, 38, 122, .08);
+}
+
+.vola-event-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.vola-event-category,
+.vola-open-tag {
+    padding: 5px 8px;
+    border-radius: 99px;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.vola-event-category {
+    color: #5f6280;
+    background: #efefff;
+}
+
+.vola-open-tag {
+    color: #087a55;
+    background: #d9fbed;
+}
+
+.vola-event-card h3 {
+    margin: 0 0 9px;
+    font-size: 16px;
+    line-height: 1.55;
+    font-weight: 800;
+}
+
+.vola-event-organizer {
+    min-height: 36px;
+    margin: 0;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #efedff;
+    color: var(--vola-muted);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.vola-event-info {
+    display: grid;
+    gap: 9px;
+    padding: 16px 0;
+}
+
+.vola-event-info p {
+    margin: 0;
+    color: var(--vola-muted);
+    font-size: 10px;
+    line-height: 1.6;
+}
+
+.vola-event-benefit {
+    margin-bottom: 17px;
+    padding: 10px;
+    border-radius: 10px;
+    background: #f0f0ff;
+    color: #464a6c;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.vola-event-button {
+    width: 100%;
+    min-height: 41px;
+    margin-top: auto;
+    border-radius: 10px;
+    background: #ecebff;
+    color: var(--vola-purple) !important;
+    font-size: 11px;
+}
+
+.vola-event-button:hover {
+    background: var(--vola-purple);
+    color: white !important;
+}
+
+/* CTA */
+
+.vola-cta-section {
+    padding: 0 0 32px;
+    background: #faf8ff;
+}
+
+.vola-cta-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    padding: 42px;
+    border-radius: 23px;
+    background: linear-gradient(115deg, #5145ed, #6255ed);
+    box-shadow: 0 10px 24px rgba(67, 55, 205, .15);
+    color: white;
+}
+
+.vola-cta-content {
+    max-width: 720px;
+}
+
+.vola-cta-label {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 5px 10px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, .2);
+    color: white;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.vola-cta-content h2 {
+    margin: 0;
+    font-size: clamp(23px, 3vw, 31px);
+    line-height: 1.35;
+    letter-spacing: -.7px;
+    font-weight: 800;
+}
+
+.vola-cta-content p {
+    margin: 10px 0 0;
+    color: #e5e3ff;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.vola-cta-button {
+    flex-shrink: 0;
+    background: white;
+    color: var(--vola-purple) !important;
+}
+
+.vola-cta-button:hover {
+    background: #f2f0ff;
+}
+
+/* FOOTER */
+
+.vola-footer {
+    padding: 22px 16px;
+    border-top: 1px solid var(--vola-border);
+    background: white;
+    color: #9698ae;
+    text-align: center;
+    font-size: 10px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+    .vola-event-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .vola-cta-box {
+        padding: 30px;
+    }
+}
+
+@media (max-width: 700px) {
+    .vola-events {
+        padding: 48px 0 58px;
+    }
+
+    .vola-events-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .vola-event-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .vola-event-card {
+        padding: 20px;
+    }
+
+    .vola-cta-box {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 27px 22px;
+        border-radius: 19px;
+    }
+
+    .vola-cta-button {
+        width: 100%;
+    }
+}
+
+/* Jarak scroll untuk navigasi landing page */
+.vola-landing #beranda,
+.vola-landing #tentang,
+.vola-landing #event {
+    scroll-margin-top: 90px;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* Logo navbar VOLA */
+.vola-navbar .vola-nav-inner > a:first-child {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 27px;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    line-height: 1;
+    color: #171d32;
+}
+
+.vola-navbar .vola-nav-inner > a:first-child span {
+    font-weight: 900;
+}
+
+.vola-navbar .vola-nav-inner > a:first-child span span {
+    color: #5145ed;
+}
+
+/* Logo VOLA - tebal seperti logo autentikasi */
+.vola-navbar .vola-brand {
+    display: inline-block;
+    flex-shrink: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 27px;
+    font-weight: 900 !important;
+    letter-spacing: -1.5px;
+    line-height: 1;
+    color: #171d32;
+    -webkit-font-smoothing: auto;
+    text-rendering: geometricPrecision;
+}
+
+.vola-navbar .vola-brand span {
+    color: #5145ed;
+    font-weight: 900 !important;
+}
+
+
+/* =========================================
+   VOLA - PUBLIC EVENT DETAIL
+   ========================================= */
+
+.vola-detail-page {
+    margin: 0;
+    background: #f7f9fc;
+    color: #17213a;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.vola-detail-page * {
+    box-sizing: border-box;
+}
+
+.vola-detail-page a {
+    text-decoration: none;
+}
+
+.vd-app {
+    min-height: 100vh;
+}
+
+.vd-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 20;
+    width: 185px;
+    padding: 20px 18px;
+    background: #fff;
+    border-right: 1px solid #e6ebf3;
+}
+
+.vd-logo {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-bottom: 42px;
+    color: #111a30;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -1px;
+}
+
+.vd-logo > span {
+    color: #5145f5;
+}
+
+.vd-logo small {
+    margin-left: 7px;
+    padding: 4px 8px;
+    border-radius: 20px;
+    background: #eeedff;
+    color: #5145f5;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0;
+}
+
+.vd-menu-label {
+    margin: 0 0 12px;
+    color: #92a0b8;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.vd-navigation {
+    display: grid;
+    gap: 5px;
+    margin-bottom: 30px;
+}
+
+.vd-navigation a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 10px;
+    border-radius: 10px;
+    color: #50607d;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.vd-navigation a.active,
+.vd-navigation a:hover {
+    background: #eeedff;
+    color: #5145f5;
+}
+
+.vd-main {
+    min-width: 0;
+    margin-left: 185px;
+}
+
+.vd-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    min-height: 58px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 10px 26px;
+    background: rgba(255,255,255,.97);
+    border-bottom: 1px solid #e6ebf3;
+}
+
+.vd-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: min(360px, 45%);
+    padding: 9px 12px;
+    border: 1px solid #e0e7f1;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #8b9ab2;
+    font-size: 11px;
+}
+
+.vd-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.vd-status,
+.vd-online-badge {
+    padding: 7px 10px;
+    border: 1px solid #a7f3d0;
+    border-radius: 20px;
+    background: #ecfdf5;
+    color: #059669;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.vd-login-link {
+    color: #475569;
+    font-weight: 700;
+}
+
+.vd-register-link {
+    padding: 10px 16px;
+    border-radius: 9px;
+    background: #5145f5;
+    color: white;
+    font-weight: 700;
+}
+
+.vd-content {
+    width: 100%;
+    max-width: 1500px;
+    margin: auto;
+    padding: 24px 26px 40px;
+}
+
+.vd-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    color: #8190aa;
+    font-size: 10px;
+}
+
+.vd-breadcrumb a {
+    color: #5145f5;
+    font-weight: 700;
+}
+
+.vd-breadcrumb strong {
+    color: #28344c;
+}
+
+.vd-hero {
+    display: flex;
+    min-height: 170px;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 30px;
+    padding: 20px 24px;
+    border-radius: 14px;
+    background-color: #14203b;
+    background-image: linear-gradient(110deg, #182541, #253653);
+    background-position: center;
+    background-size: cover;
+    color: white;
+    box-shadow: 0 4px 12px rgba(15,23,42,.07);
+}
+
+.vd-hero-top,
+.vd-hero-bottom,
+.vd-hero-buttons,
+.vd-hero-category,
+.vd-section-heading,
+.vd-position-title,
+.vd-position-meta,
+.vd-card-heading {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.vd-hero-top,
+.vd-hero-bottom,
+.vd-section-heading,
+.vd-card-heading {
+    justify-content: space-between;
+}
+
+.vd-open-badge,
+.vd-deadline-badge {
+    padding: 6px 10px;
+    border-radius: 20px;
+    background: #059669;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.vd-deadline-badge {
+    background: #e64768;
+}
+
+.vd-hero-category {
+    margin: 0 0 7px;
+    color: #d0d8e8;
+    font-size: 10px;
+}
+
+.vd-hero h1 {
+    margin: 0;
+    color: white;
+    font-size: clamp(21px, 2.3vw, 29px);
+    font-weight: 850;
+    letter-spacing: -.7px;
+    line-height: 1.25;
+}
+
+.vd-hero-location {
+    margin: 8px 0 0;
+    color: #c2cce0;
+    font-size: 11px;
+}
+
+.vd-hero-buttons {
+    flex-shrink: 0;
+}
+
+.vd-button {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.vd-button-outline {
+    border-color: #64748b;
+    background: rgba(255,255,255,.12);
+    color: white;
+}
+
+.vd-button-primary {
+    background: #5145f5;
+    color: white;
+}
+
+.vd-info-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 18px;
+    padding: 14px 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 13px;
+    background: white;
+    box-shadow: 0 2px 4px rgba(15,23,42,.02);
+}
+
+.vd-info-item {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 7px 12px;
+    border-right: 1px solid #edf1f7;
+}
+
+.vd-info-item:last-child {
+    border-right: 0;
+}
+
+.vd-info-icon {
+    display: flex;
+    width: 29px;
+    height: 29px;
+    flex: 0 0 29px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #eeedff;
+    color: #5145f5;
+    font-size: 15px;
+}
+
+.vd-info-deadline .vd-info-icon {
+    background: #fff0f2;
+    color: #e64768;
+}
+
+.vd-info-item div {
+    min-width: 0;
+}
+
+.vd-info-item small {
+    display: block;
+    margin-bottom: 4px;
+    color: #8b9ab2;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .5px;
+}
+
+.vd-info-item strong {
+    display: block;
+    overflow-wrap: anywhere;
+    color: #243149;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.vd-info-item p {
+    margin: 4px 0 0;
+    color: #71819c;
+    font-size: 10px;
+}
+
+.vd-tabs {
+    display: flex;
+    overflow-x: auto;
+    gap: 24px;
+    margin: 22px 0 18px;
+    border-bottom: 1px solid #e1e8f2;
+}
+
+.vd-tabs a {
+    flex-shrink: 0;
+    padding: 12px 4px;
+    border-bottom: 2px solid transparent;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.vd-tabs a:first-child,
+.vd-tabs a:hover {
+    border-bottom-color: #5145f5;
+    color: #5145f5;
+}
+
+.vd-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.9fr) minmax(230px, .9fr);
+    align-items: start;
+    gap: 18px;
+}
+
+.vd-left-column,
+.vd-right-column {
+    display: grid;
+    min-width: 0;
+    gap: 16px;
+}
+
+.vd-section-heading {
+    align-items: flex-start;
+    margin-bottom: 14px;
+}
+
+.vd-section-heading h2,
+.vd-content-card h2,
+.vd-card-heading h2 {
+    margin: 0;
+    color: #17213a;
+    font-size: 14px;
+    font-weight: 850;
+}
+
+.vd-section-heading p {
+    margin: 6px 0 0;
+    color: #71819c;
+    font-size: 10px;
+    line-height: 1.6;
+}
+
+.vd-total-quota {
+    flex-shrink: 0;
+    padding: 6px 9px;
+    border: 1px solid #a7f3d0;
+    border-radius: 20px;
+    background: #f0fdf4;
+    color: #059669;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.vd-position-card,
+.vd-content-card,
+.vd-register-card {
+    min-width: 0;
+    padding: 17px;
+    border: 1px solid #e2e8f0;
+    border-radius: 13px;
+    background: white;
+    box-shadow: 0 2px 4px rgba(15,23,42,.025);
+}
+
+.vd-position-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.vd-position-card:first-of-type {
+    border-color: #8179ff;
+    box-shadow: 0 0 0 1px rgba(81,69,245,.12);
+}
+
+.vd-position-content {
+    min-width: 0;
+}
+
+.vd-position-title {
+    align-items: flex-start;
+}
+
+.vd-position-title h3 {
+    margin: 2px 0 0;
+    color: #17213a;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.5;
+}
+
+.vd-position-label {
+    padding: 5px 7px;
+    border-radius: 5px;
+    background: #eeedff;
+    color: #5145f5;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.vd-position-description,
+.vd-requirements {
+    margin: 11px 0;
+    color: #586985;
+    font-size: 11px;
+    line-height: 1.75;
+    overflow-wrap: anywhere;
+}
+
+.vd-position-meta {
+    gap: 8px 14px;
+    color: #71819c;
+    font-size: 10px;
+}
+
+.vd-requirements {
+    margin-bottom: 0;
+    color: #5145f5;
+    font-size: 10px;
+}
+
+.vd-select-position {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 11px;
+    border-radius: 8px;
+    background: #eeedff;
+    color: #5145f5;
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.vd-position-card:first-of-type .vd-select-position {
+    background: #5145f5;
+    color: white;
+}
+
+.vd-content-card h2 {
+    margin-bottom: 14px;
+}
+
+.vd-description,
+.vd-content-card > p {
+    color: #586985;
+    font-size: 11px;
+    line-height: 1.9;
+    overflow-wrap: anywhere;
+}
+
+.vd-check-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.vd-check-list li {
+    position: relative;
+    padding-left: 21px;
+    color: #586985;
+    font-size: 11px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.vd-check-list li::before {
+    position: absolute;
+    left: 0;
+    color: #10b981;
+    content: "✓";
+    font-weight: 800;
+}
+
+.vd-bullet-list li::before {
+    color: #5145f5;
+    content: "•";
+}
+
+.vd-card-heading {
+    gap: 8px;
+}
+
+.vd-card-heading h2 {
+    font-size: 12px;
+}
+
+.vd-online-badge {
+    padding: 5px 7px;
+    font-size: 9px;
+}
+
+.vd-selected-position {
+    display: grid;
+    gap: 8px;
+    margin: 17px 0;
+    padding: 13px;
+    border: 1px solid #e6ebf3;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.vd-selected-position small,
+.vd-selected-position p {
+    margin: 0;
+    color: #8b9ab2;
+    font-size: 10px;
+}
+
+.vd-selected-position strong {
+    color: #5145f5;
+    font-size: 12px;
+}
+
+.vd-selected-position p {
+    color: #64748b;
+}
+
+.vd-apply-button {
+    display: flex;
+    min-height: 39px;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 9px;
+    background: #5145f5;
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.vd-register-note {
+    margin: 12px 0 0;
+    color: #8b9ab2;
+    font-size: 10px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.vd-organizer-card h3 {
+    margin: 0 0 7px;
+    color: #243149;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.vd-organizer-card .vd-muted,
+.vd-muted {
+    color: #8b9ab2;
+    font-size: 10px;
+}
+
+.vd-organizer-city {
+    margin-top: 12px;
+    color: #5145f5 !important;
+}
+
+.vd-map-placeholder {
+    display: flex;
+    min-height: 105px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background:
+        linear-gradient(25deg, transparent 47%, #d4deec 48%, #d4deec 50%, transparent 51%),
+        linear-gradient(90deg, transparent 44%, #d4deec 45%, #d4deec 46%, transparent 47%),
+        #f1f5f9;
+    color: #5145f5;
+}
+
+.vd-map-placeholder span {
+    font-size: 24px;
+}
+
+.vd-map-placeholder strong {
+    padding: 5px 8px;
+    border-radius: 7px;
+    background: #5145f5;
+    color: white;
+    font-size: 10px;
+}
+
+.vd-location-card > p {
+    margin-bottom: 0;
+}
+
+.vd-empty-state {
+    padding: 22px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    color: #64748b;
+    text-align: center;
+}
+
+.vd-footer {
+    padding: 22px;
+    border-top: 1px solid #e2e8f0;
+    background: white;
+    color: #8b9ab2;
+    font-size: 10px;
+    text-align: center;
+}
+
+/* RESPONSIVE */
+@media (min-width: 1500px) {
+    .vd-content {
+        padding-right: 34px;
+        padding-left: 34px;
+    }
+}
+
+@media (max-width: 1000px) {
+    .vd-sidebar {
+        width: 155px;
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .vd-main {
+        margin-left: 155px;
+    }
+
+    .vd-content {
+        padding-right: 16px;
+        padding-left: 16px;
+    }
+
+    .vd-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .vd-right-column {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .vd-register-card {
+        grid-column: 1 / -1;
+    }
+
+    .vd-info-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .vd-info-item:nth-child(2) {
+        border-right: 0;
+    }
+
+    .vd-info-item:nth-child(-n+2) {
+        border-bottom: 1px solid #edf1f7;
+    }
+}
+
+@media (max-width: 640px) {
+    .vd-sidebar {
+        position: static;
+        width: 100%;
+        padding: 12px 16px;
+        border-right: 0;
+        border-bottom: 1px solid #e6ebf3;
+    }
+
+    .vd-logo {
+        margin-bottom: 10px;
+    }
+
+    .vd-menu-label,
+    .vd-sidebar > .vd-navigation:last-child {
+        display: none;
+    }
+
+    .vd-navigation {
+        display: flex;
+        overflow-x: auto;
+        gap: 5px;
+        margin: 0;
+    }
+
+    .vd-navigation a {
+        flex-shrink: 0;
+        padding: 9px;
+        font-size: 10px;
+    }
+
+    .vd-main {
+        margin-left: 0;
+    }
+
+    .vd-topbar {
+        position: static;
+        padding: 12px 16px;
+    }
+
+    .vd-search {
+        width: 100%;
+        font-size: 10px;
+    }
+
+    .vd-topbar-actions {
+        gap: 8px;
+    }
+
+    .vd-status,
+    .vd-login-link {
+        display: none;
+    }
+
+    .vd-content {
+        padding: 18px 13px 28px;
+    }
+
+    .vd-breadcrumb {
+        gap: 7px;
+        line-height: 1.7;
+    }
+
+    .vd-hero {
+        min-height: 210px;
+        padding: 15px;
+    }
+
+    .vd-hero-bottom {
+        align-items: flex-start;
+    }
+
+    .vd-hero-buttons {
+        width: 100%;
+    }
+
+    .vd-hero-buttons .vd-button {
+        flex: 1;
+    }
+
+    .vd-info-strip {
+        grid-template-columns: 1fr;
+    }
+
+    .vd-info-item,
+    .vd-info-item:nth-child(2) {
+        border-right: 0;
+        border-bottom: 1px solid #edf1f7;
+    }
+
+    .vd-info-item:last-child {
+        border-bottom: 0;
+    }
+
+    .vd-tabs {
+        gap: 18px;
+    }
+
+    .vd-section-heading {
+        flex-direction: column;
+    }
+
+    .vd-position-card {
+        flex-direction: column;
+    }
+
+    .vd-select-position {
+        width: 100%;
+    }
+
+    .vd-right-column {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .vd-register-card {
+        grid-column: auto;
+    }
+}
+.vd-position-card form {
+    flex-shrink: 0;
+}
+
+button.vd-select-position {
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+}
+.vd-alert {
+    margin-bottom: 16px;
+    padding: 13px 16px;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.vd-alert-success {
+    border: 1px solid #a7f3d0;
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.vd-alert-error {
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #b91c1c;
+}
