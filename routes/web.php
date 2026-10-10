@@ -64,6 +64,8 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
+    // Route volunteer lainnya diletakkan di sini.
+});
 /*
 |--------------------------------------------------------------------------
 | Event Organizer (EO) Routes

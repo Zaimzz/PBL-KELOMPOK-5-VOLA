@@ -224,13 +224,6 @@
                                     @endif
                                 </div>
                                 <form
-                                    action="{{ route('applications.store', [
-                                        'slug' => $event->slug,
-                                        'positionId' => $position->id,
-                                    ]) }}"
-                                    method="POST"
-                                >
-                                    @csrf
 
                                     <button type="submit" class="vd-select-position">
                                         Pilih Posisi →
