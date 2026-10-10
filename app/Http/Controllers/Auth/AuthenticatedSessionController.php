@@ -30,8 +30,15 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
+        
+        if ($user->role === UserRole::Admin) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('login')->withErrors(['email' => 'Admin tidak dapat masuk melalui halaman ini.']);
+        }
+
         $dashboardRoute = match ($user->role) {
-            UserRole::Admin => route('admin.dashboard', absolute: false),
             UserRole::Eo => route('eo.dashboard', absolute: false),
             default => route('dashboard', absolute: false),
         };

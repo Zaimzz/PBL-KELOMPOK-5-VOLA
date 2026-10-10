@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('volunteer_profile_id')->constrained()->cascadeOnDelete();
             $table->foreignId('position_id')->constrained('event_positions')->cascadeOnDelete();
-            $table->string('status')->default(ApplicationStatus::Pending->value)->index();
+            $table->enum('status', ['pending', 'accepted', 'rejected', 'withdrawn'])->default('pending')->index();
             $table->text('cover_letter')->nullable();
             $table->timestamp('applied_at')->nullable();
             $table->timestamp('decided_at')->nullable();

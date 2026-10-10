@@ -32,14 +32,11 @@ class PasswordResetLinkController extends Controller
         $request->validate([
             'email' => ['required', 'email'],
             'role' => ['required', 'string', Rule::in(['volunteer', 'eo'])],
-            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
         ], [
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
             'role.required' => 'Role wajib dipilih.',
             'role.in' => 'Role tidak valid.',
-            'password.required' => 'Kata sandi baru wajib diisi.',
-            'password.confirmed' => 'Konfirmasi kata sandi tidak sesuai.',
         ]);
 
         $user = User::where('email', $request->email)->first();
@@ -53,10 +50,10 @@ class PasswordResetLinkController extends Controller
                 ->withErrors(['email' => 'Role tidak sesuai dengan akun ini.']);
         }
 
-        $user->forceFill([
-            'password' => Hash::make($request->password),
-        ])->save();
+        $token = Password::broker()->createToken($user);
 
-        return redirect()->route('login')->with('status', 'Kata sandi berhasil diubah, silakan masuk.');
+        $user->notify(new \Illuminate\Auth\Notifications\ResetPassword($token));
+
+        return back()->with('status', __('passwords.sent'));
     }
 }
