@@ -32,7 +32,7 @@ return new class extends Migration
             $table->string('pic_name')->nullable();
             $table->string('pic_phone')->nullable();
             $table->json('benefits')->nullable();
-            $table->string('status')->default(EventStatus::Draft->value)->index();
+            $table->enum('status', ['draft', 'pending_review', 'awaiting_payment', 'rejected', 'active', 'closed', 'finished'])->default('draft')->index();
             $table->text('rejection_reason')->nullable();
             $table->foreignId('reviewed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('reviewed_at')->nullable();
