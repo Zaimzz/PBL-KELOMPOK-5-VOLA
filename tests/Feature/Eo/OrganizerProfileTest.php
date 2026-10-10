@@ -1,6 +1,9 @@
 <?php
 
+use App\Enums\EventStatus;
 use App\Enums\VerificationStatus;
+use App\Models\Event;
+use App\Models\EventPosition;
 use App\Models\OrganizerProfile;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -81,18 +84,18 @@ test('eo bisa menyimpan profil organisasi', function () {
         ->put(route('eo.organization.update'), [
             'organization_name' => 'Komunitas Kopi Malang',
             'organization_type' => 'Komunitas',
-            'description'       => 'Komunitas pecinta kopi di Malang Raya.',
-            'city'              => 'Malang',
-            'pic_name'          => 'Budi Santoso',
-            'pic_phone'         => '08123456789',
-            'social_link'       => 'https://instagram.com/kopimalang',
+            'description' => 'Komunitas pecinta kopi di Malang Raya.',
+            'city' => 'Malang',
+            'pic_name' => 'Budi Santoso',
+            'pic_phone' => '08123456789',
+            'social_link' => 'https://instagram.com/kopimalang',
         ])
         ->assertRedirect(route('eo.organization'));
 
     $this->assertDatabaseHas('organizer_profiles', [
-        'user_id'           => $eo->id,
+        'user_id' => $eo->id,
         'organization_name' => 'Komunitas Kopi Malang',
-        'city'              => 'Malang',
+        'city' => 'Malang',
     ]);
 });
 
@@ -103,17 +106,17 @@ test('eo bisa memperbarui profil yang sudah ada', function () {
         ->put(route('eo.organization.update'), [
             'organization_name' => 'Nama Baru Updated',
             'organization_type' => 'Perusahaan',
-            'description'       => 'Deskripsi baru.',
-            'city'              => 'Surabaya',
-            'pic_name'          => 'Siti Rahma',
-            'pic_phone'         => '08199999999',
+            'description' => 'Deskripsi baru.',
+            'city' => 'Surabaya',
+            'pic_name' => 'Siti Rahma',
+            'pic_phone' => '08199999999',
         ])
         ->assertRedirect(route('eo.organization'));
 
     $this->assertDatabaseHas('organizer_profiles', [
-        'user_id'           => $eo->id,
+        'user_id' => $eo->id,
         'organization_name' => 'Nama Baru Updated',
-        'city'              => 'Surabaya',
+        'city' => 'Surabaya',
     ]);
 });
 
@@ -124,10 +127,10 @@ test('gagal update profil tanpa nama organisasi', function () {
         ->put(route('eo.organization.update'), [
             'organization_name' => '',
             'organization_type' => 'Komunitas',
-            'description'       => 'Deskripsi.',
-            'city'              => 'Jakarta',
-            'pic_name'          => 'PIC Name',
-            'pic_phone'         => '08123456789',
+            'description' => 'Deskripsi.',
+            'city' => 'Jakarta',
+            'pic_name' => 'PIC Name',
+            'pic_phone' => '08123456789',
         ])
         ->assertSessionHasErrors('organization_name');
 });
@@ -145,11 +148,11 @@ test('eo bisa upload dokumen legal yang valid (PDF)', function () {
         ->put(route('eo.organization.update'), [
             'organization_name' => 'Test Org',
             'organization_type' => 'Komunitas',
-            'description'       => 'Deskripsi.',
-            'city'              => 'Bandung',
-            'pic_name'          => 'PIC',
-            'pic_phone'         => '08123456789',
-            'document'          => UploadedFile::fake()->create('dokumen.pdf', 200, 'application/pdf'),
+            'description' => 'Deskripsi.',
+            'city' => 'Bandung',
+            'pic_name' => 'PIC',
+            'pic_phone' => '08123456789',
+            'document' => UploadedFile::fake()->create('dokumen.pdf', 200, 'application/pdf'),
         ])
         ->assertRedirect(route('eo.organization'));
 
@@ -167,11 +170,11 @@ test('eo bisa upload dokumen legal yang valid (JPG)', function () {
         ->put(route('eo.organization.update'), [
             'organization_name' => 'Test Org',
             'organization_type' => 'Komunitas',
-            'description'       => 'Deskripsi.',
-            'city'              => 'Bandung',
-            'pic_name'          => 'PIC',
-            'pic_phone'         => '08123456789',
-            'document'          => UploadedFile::fake()->create('dokumen.jpg', 200, 'image/jpeg'),
+            'description' => 'Deskripsi.',
+            'city' => 'Bandung',
+            'pic_name' => 'PIC',
+            'pic_phone' => '08123456789',
+            'document' => UploadedFile::fake()->create('dokumen.jpg', 200, 'image/jpeg'),
         ])
         ->assertRedirect(route('eo.organization'));
 
@@ -188,11 +191,11 @@ test('file dokumen lebih dari 5MB ditolak', function () {
         ->put(route('eo.organization.update'), [
             'organization_name' => 'Test Org',
             'organization_type' => 'Komunitas',
-            'description'       => 'Deskripsi.',
-            'city'              => 'Bandung',
-            'pic_name'          => 'PIC',
-            'pic_phone'         => '08123456789',
-            'document'          => UploadedFile::fake()->create('besar.pdf', 5200, 'application/pdf'), // 5.2 MB
+            'description' => 'Deskripsi.',
+            'city' => 'Bandung',
+            'pic_name' => 'PIC',
+            'pic_phone' => '08123456789',
+            'document' => UploadedFile::fake()->create('besar.pdf', 5200, 'application/pdf'), // 5.2 MB
         ])
         ->assertSessionHasErrors('document');
 });
@@ -206,11 +209,11 @@ test('file dokumen dengan tipe tidak valid ditolak', function () {
         ->put(route('eo.organization.update'), [
             'organization_name' => 'Test Org',
             'organization_type' => 'Komunitas',
-            'description'       => 'Deskripsi.',
-            'city'              => 'Bandung',
-            'pic_name'          => 'PIC',
-            'pic_phone'         => '08123456789',
-            'document'          => UploadedFile::fake()->create('script.exe', 100, 'application/octet-stream'),
+            'description' => 'Deskripsi.',
+            'city' => 'Bandung',
+            'pic_name' => 'PIC',
+            'pic_phone' => '08123456789',
+            'document' => UploadedFile::fake()->create('script.exe', 100, 'application/octet-stream'),
         ])
         ->assertSessionHasErrors('document');
 });
@@ -224,19 +227,19 @@ test('eo tidak bisa mengubah verification_status sendiri via update profil', fun
 
     $this->actingAs($eo)
         ->put(route('eo.organization.update'), [
-            'organization_name'   => 'Org Name',
-            'organization_type'   => 'Komunitas',
-            'description'         => 'Desc.',
-            'city'                => 'Jakarta',
-            'pic_name'            => 'PIC',
-            'pic_phone'           => '08123456789',
+            'organization_name' => 'Org Name',
+            'organization_type' => 'Komunitas',
+            'description' => 'Desc.',
+            'city' => 'Jakarta',
+            'pic_name' => 'PIC',
+            'pic_phone' => '08123456789',
             'verification_status' => 'verified', // attempt to hack
         ])
         ->assertRedirect(route('eo.organization'));
 
     // Status harus tetap pending, tidak berubah jadi verified
     $this->assertDatabaseHas('organizer_profiles', [
-        'user_id'             => $eo->id,
+        'user_id' => $eo->id,
         'verification_status' => 'pending',
     ]);
 });
@@ -248,7 +251,7 @@ test('eo tidak bisa mengubah verification_status sendiri via update profil', fun
 test('eo bisa mengajukan verifikasi pertama kali', function () {
     $eo = makeEoWithProfile([
         'verification_status' => VerificationStatus::Pending,
-        'document_path'       => 'organizer-documents/doc.pdf',
+        'document_path' => 'organizer-documents/doc.pdf',
     ]);
 
     // Ubah status ke kondisi awal (null/baru) dengan cara buat profil tanpa status pending
@@ -261,7 +264,7 @@ test('eo bisa mengajukan verifikasi pertama kali', function () {
         ->assertRedirect(route('eo.organization'));
 
     $this->assertDatabaseHas('organizer_profiles', [
-        'user_id'             => $eo->id,
+        'user_id' => $eo->id,
         'verification_status' => 'pending',
     ]);
 });
@@ -269,8 +272,8 @@ test('eo bisa mengajukan verifikasi pertama kali', function () {
 test('setelah pengajuan verifikasi status menjadi pending', function () {
     $eo = makeEoWithProfile([
         'verification_status' => VerificationStatus::Rejected,
-        'document_path'       => 'organizer-documents/doc.pdf',
-        'rejection_reason'    => 'Dokumen tidak lengkap.',
+        'document_path' => 'organizer-documents/doc.pdf',
+        'rejection_reason' => 'Dokumen tidak lengkap.',
     ]);
 
     $this->actingAs($eo)
@@ -293,7 +296,7 @@ test('eo dengan status pending tidak bisa mengajukan verifikasi lagi', function 
 
     // Status tetap pending
     $this->assertDatabaseHas('organizer_profiles', [
-        'user_id'             => $eo->id,
+        'user_id' => $eo->id,
         'verification_status' => 'pending',
     ]);
 });
@@ -310,7 +313,7 @@ test('eo dengan status verified tidak bisa submit ulang', function () {
 test('eo rejected bisa melihat rejection reason di halaman profil', function () {
     $eo = makeEoWithProfile([
         'verification_status' => VerificationStatus::Rejected,
-        'rejection_reason'    => 'Dokumen tidak terbaca dengan jelas.',
+        'rejection_reason' => 'Dokumen tidak terbaca dengan jelas.',
     ]);
 
     $this->actingAs($eo)
@@ -322,28 +325,28 @@ test('eo rejected bisa melihat rejection reason di halaman profil', function () 
 test('eo rejected bisa memperbarui profil', function () {
     $eo = makeEoWithProfile([
         'verification_status' => VerificationStatus::Rejected,
-        'organization_name'   => 'Nama Lama',
+        'organization_name' => 'Nama Lama',
     ]);
 
     $this->actingAs($eo)
         ->put(route('eo.organization.update'), [
             'organization_name' => 'Nama Baru Setelah Rejected',
             'organization_type' => 'Perusahaan',
-            'description'       => 'Diperbaiki.',
-            'city'              => 'Surabaya',
-            'pic_name'          => 'PIC Baru',
-            'pic_phone'         => '08133333333',
+            'description' => 'Diperbaiki.',
+            'city' => 'Surabaya',
+            'pic_name' => 'PIC Baru',
+            'pic_phone' => '08133333333',
         ])
         ->assertRedirect(route('eo.organization'));
 
     $this->assertDatabaseHas('organizer_profiles', [
-        'user_id'           => $eo->id,
+        'user_id' => $eo->id,
         'organization_name' => 'Nama Baru Setelah Rejected',
     ]);
 
     // Status harus tetap rejected setelah update profil saja
     $this->assertDatabaseHas('organizer_profiles', [
-        'user_id'             => $eo->id,
+        'user_id' => $eo->id,
         'verification_status' => 'rejected',
     ]);
 });
@@ -351,8 +354,8 @@ test('eo rejected bisa memperbarui profil', function () {
 test('rejected ke pending setelah ajukan kembali', function () {
     $eo = makeEoWithProfile([
         'verification_status' => VerificationStatus::Rejected,
-        'rejection_reason'    => 'Dokumen tidak valid.',
-        'document_path'       => 'organizer-documents/doc.pdf',
+        'rejection_reason' => 'Dokumen tidak valid.',
+        'document_path' => 'organizer-documents/doc.pdf',
     ]);
 
     $this->actingAs($eo)
@@ -380,46 +383,46 @@ test('eo verified tetap bisa melihat profilnya', function () {
 test('eo dengan status pending tidak bisa submit event', function () {
     $eo = makeEoWithProfile(['verification_status' => VerificationStatus::Pending]);
 
-    $event = \App\Models\Event::factory()
+    $event = Event::factory()
         ->for($eo->organizerProfile, 'organizer')
-        ->create(['status' => \App\Enums\EventStatus::Draft]);
+        ->create(['status' => EventStatus::Draft]);
 
-    \App\Models\EventPosition::factory()->create(['event_id' => $event->id]);
+    EventPosition::factory()->create(['event_id' => $event->id]);
 
     $this->actingAs($eo)
         ->post(route('eo.events.submit', $event))
         ->assertRedirect(); // back() — controller belum verified check
 
     // Status harus tetap draft
-    expect($event->fresh()->status)->toBe(\App\Enums\EventStatus::Draft);
+    expect($event->fresh()->status)->toBe(EventStatus::Draft);
 });
 
 test('eo dengan status rejected tidak bisa submit event', function () {
     $eo = makeEoWithProfile(['verification_status' => VerificationStatus::Rejected]);
 
-    $event = \App\Models\Event::factory()
+    $event = Event::factory()
         ->for($eo->organizerProfile, 'organizer')
-        ->create(['status' => \App\Enums\EventStatus::Draft]);
+        ->create(['status' => EventStatus::Draft]);
 
-    \App\Models\EventPosition::factory()->create(['event_id' => $event->id]);
+    EventPosition::factory()->create(['event_id' => $event->id]);
 
     $this->actingAs($eo)
         ->post(route('eo.events.submit', $event))
         ->assertRedirect(); // back() — controller belum verified check
 
     // Status harus tetap draft
-    expect($event->fresh()->status)->toBe(\App\Enums\EventStatus::Draft);
+    expect($event->fresh()->status)->toBe(EventStatus::Draft);
 });
 
 test('eo tanpa profil sama sekali tidak bisa submit event', function () {
     $eo = User::factory()->eo()->create(); // tanpa profil
 
     // Buat event milik profil lain — EventPolicy akan return 403
-    $otherProfile = \App\Models\OrganizerProfile::factory()->create();
+    $otherProfile = OrganizerProfile::factory()->create();
 
-    $event = \App\Models\Event::factory()
+    $event = Event::factory()
         ->for($otherProfile, 'organizer')
-        ->create(['status' => \App\Enums\EventStatus::Draft]);
+        ->create(['status' => EventStatus::Draft]);
 
     // EO tanpa profil tidak punya relasi ke event ini → EventPolicy 403
     $this->actingAs($eo)

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\EoVerificationController;
 use App\Http\Controllers\Eo\EoDashboardController;
 use App\Http\Controllers\Eo\EventController;
 use App\Http\Controllers\Eo\EventPositionController;
@@ -56,9 +58,12 @@ Route::middleware(['auth', 'verified', 'role:eo'])->prefix('eo')->name('eo.')->g
 });
 
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard'); // Replace with specific admin dashboard later
-    })->name('dashboard');
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/eo-verifications', [EoVerificationController::class, 'index'])->name('eo-verifications');
+    Route::get('/eo-verifications/{organizer}/document', [EoVerificationController::class, 'document'])->name('eo-verifications.document');
+    Route::post('/eo-verifications/{organizer}/approve', [EoVerificationController::class, 'approve'])->name('eo-verifications.approve');
+    Route::post('/eo-verifications/{organizer}/reject', [EoVerificationController::class, 'reject'])->name('eo-verifications.reject');
 });
 
 require __DIR__.'/auth.php';
