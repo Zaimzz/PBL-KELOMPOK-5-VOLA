@@ -34,7 +34,7 @@ class LoginRequest extends FormRequest
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
-            'role' => ['nullable', 'string', Rule::in(['volunteer', 'eo'])],
+            'role' => ['required', 'string', Rule::in(['volunteer', 'eo'])],
         ];
     }
 

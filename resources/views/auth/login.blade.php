@@ -50,7 +50,7 @@
 
             <!-- Role Selector -->
             <div>
-                <label class="block text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-4">Masuk Sebagai</label>
+                <label class="block text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-3">Masuk Sebagai</label>
                 <div class="grid grid-cols-2 gap-3">
                     <!-- Crew -->
                     <label class="cursor-pointer">
@@ -149,7 +149,7 @@
             </div>
 
             <div class="text-center mt-6 text-sm text-gray-500 font-medium">
-                Belum punya akun volunteer? <a href="{{ route('register') }}" class="font-bold text-[#4534E6] hover:text-indigo-800 transition-colors">Daftar sekarang</a>
+                Belum punya akun? <a href="{{ route('register') }}" class="font-bold text-[#4534E6] hover:text-indigo-800 transition-colors">Daftar sekarang</a>
             </div>
 
             <div class="text-center mt-6 text-[11px] text-gray-400 leading-relaxed px-4">
