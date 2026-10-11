@@ -6,6 +6,8 @@ use App\Http\Controllers\Eo\EventPositionController;
 use App\Http\Controllers\Eo\OrganizerProfileController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Crew\CrewDashboardController;
+use App\Http\Controllers\Crew\SettingsController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -19,9 +21,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\Crew\CrewDashboardController::class, 'index'])->name('dashboard');
+    
+    // Route Profil
+    Route::get('/profile', [App\Http\Controllers\Crew\ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [App\Http\Controllers\Crew\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [App\Http\Controllers\Crew\ProfileController::class, 'update'])->name('profile.update');
+    
+    // Route Settings
+    Route::get('/settings', [App\Http\Controllers\Crew\SettingsController::class, 'index'])->name('settings.index');
+    Route::put('/settings/profile', [App\Http\Controllers\Crew\SettingsController::class, 'updateProfile'])->name('settings.update.profile');
+    Route::put('/settings/preferences', [App\Http\Controllers\Crew\SettingsController::class, 'updatePreferences'])->name('settings.update.preferences');
+
+    // Route Pencarian
+    Route::get('/search', [App\Http\Controllers\Crew\SearchController::class, 'index'])->name('search.index');
+    Route::get('/events/{event}', [App\Http\Controllers\Crew\EventDetailController::class, 'show'])->name('events.detail');
 });
 
 Route::middleware(['auth', 'verified', 'role:eo'])->prefix('eo')->name('eo.')->group(function () {
