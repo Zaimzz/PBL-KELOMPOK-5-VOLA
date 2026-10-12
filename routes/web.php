@@ -80,7 +80,6 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
 });
 
     // Route volunteer lainnya diletakkan di sini.
-});
 /*
 |--------------------------------------------------------------------------
 | Event Organizer (EO) Routes
