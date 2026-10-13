@@ -3,6 +3,7 @@
 use App\Enums\UserRole;
 use App\Http\Middleware\EnsureEoVerified;
 use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\EnsureValidSession;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,6 +16,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->encryptCookies(except: [
+            'vola_session_active',
+            'vola_remember',
+        ]);
+
+        $middleware->web(append: [
+            EnsureValidSession::class,
+        ]);
+
         $middleware->alias([
             'role' => EnsureRole::class,
             'eo.verified' => EnsureEoVerified::class,

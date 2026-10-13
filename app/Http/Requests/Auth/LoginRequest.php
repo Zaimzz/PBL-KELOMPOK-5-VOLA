@@ -25,7 +25,20 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Role opsional karena admin login tanpa memilih role.
+     * Prepare the data for validation.
+     * Default role to volunteer (Crew) if empty.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (blank($this->role)) {
+            $this->merge([
+                'role' => 'volunteer',
+            ]);
+        }
+    }
+
+    /**
+     * Role bernilai default Crew (volunteer) dan opsional.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
@@ -34,7 +47,7 @@ class LoginRequest extends FormRequest
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
-            'role' => ['required', 'string', Rule::in(['volunteer', 'eo'])],
+            'role' => ['nullable', 'string', Rule::in(['volunteer', 'eo'])],
         ];
     }
 
@@ -86,15 +99,9 @@ class LoginRequest extends FormRequest
                 ]);
             }
         } else {
-            if (blank($this->role)) {
-                Auth::logout();
+            $selectedRole = $this->role ?: 'volunteer';
 
-                throw ValidationException::withMessages([
-                    'role' => 'Pilih role terlebih dahulu (Crew atau Event Organizer).',
-                ]);
-            }
-
-            if ($user->role->value !== $this->role) {
+            if ($user->role->value !== $selectedRole) {
                 Auth::logout();
                 RateLimiter::hit($this->throttleKey());
 
