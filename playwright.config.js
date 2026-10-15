@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
 
 /**
  * Read environment variables from file.
@@ -12,6 +13,7 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
+dotenv.config({ path: '.env.playwright' });
 export default defineConfig({
   testDir: './e2e',
   /* Test dijalankan berurutan: semua test memakai database Supabase yang sama */
