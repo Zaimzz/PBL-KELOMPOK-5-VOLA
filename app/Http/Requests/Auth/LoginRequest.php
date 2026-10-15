@@ -95,7 +95,7 @@ class LoginRequest extends FormRequest
                 Auth::logout();
 
                 throw ValidationException::withMessages([
-                    'role' => 'Admin tidak perlu memilih role. Kosongkan pilihan role, lalu masuk lagi.',
+                    'email' => 'Email atau kata sandi tidak valid.',
                 ]);
             }
         } else {
