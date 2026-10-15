@@ -47,7 +47,17 @@
         <div class="space-y-6">
 
             {{-- Status Verifikasi Banner --}}
-            @php $vs = $profile->verification_status; @endphp
+            @php
+                $vs = $profile->verification_status;
+                // Cek kelengkapan data wajib untuk pengajuan verifikasi
+                $isProfileComplete = ! empty($profile->organization_name)
+                    && ! empty($profile->organization_type)
+                    && ! empty($profile->description)
+                    && ! empty($profile->city)
+                    && ! empty($profile->pic_name)
+                    && ! empty($profile->pic_phone)
+                    && ! empty($profile->document_path);
+            @endphp
 
             @if ($vs === \App\Enums\VerificationStatus::Pending)
                 <div class="flex items-start gap-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
@@ -93,9 +103,26 @@
                         @if ($profile->rejection_reason)
                             <p class="text-xs text-red-700 mt-1"><span class="font-medium">Alasan:</span> {{ $profile->rejection_reason }}</p>
                         @endif
-                        <p class="text-xs text-red-600 mt-2">Perbarui data & dokumen Anda, lalu ajukan kembali untuk proses verifikasi ulang.</p>
+                        <p class="text-xs text-red-600 mt-2">Perbarui data &amp; dokumen Anda, lalu ajukan kembali untuk proses verifikasi ulang.</p>
                     </div>
                     <span class="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">✕ Ditolak</span>
+                </div>
+
+            @else
+                {{-- Status null: akun baru, belum pernah mengajukan verifikasi --}}
+                <div class="flex items-start gap-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                    <div class="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold text-blue-800">Akun Belum Diajukan untuk Verifikasi</p>
+                        <p class="text-xs text-blue-700 mt-0.5">
+                            Lengkapi seluruh data profil organisasi (termasuk dokumen legal), lalu klik <strong>"Ajukan Verifikasi"</strong> agar Admin dapat meninjau akun Anda.
+                        </p>
+                    </div>
+                    <span class="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">○ Belum Diajukan</span>
                 </div>
             @endif
 
@@ -111,7 +138,11 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex flex-wrap items-center gap-2 mb-1">
                             <h2 class="text-lg font-bold text-gray-900">{{ $profile->organization_name }}</h2>
-                            <x-badge-status :status="$vs->value" />
+                            @if ($vs)
+                                <x-badge-status :status="$vs->value" />
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Belum Diajukan</span>
+                            @endif
                         </div>
                         <p class="text-sm text-gray-500">{{ $profile->organization_type }}</p>
                     </div>
@@ -237,17 +268,49 @@
                             <p class="text-xs text-gray-500 mt-0.5">
                                 @if ($vs === \App\Enums\VerificationStatus::Rejected)
                                     Setelah memperbarui profil dan dokumen, ajukan kembali untuk direview Admin.
+                                @elseif (! $isProfileComplete)
+                                    Lengkapi semua data profil dan unggah dokumen legal terlebih dahulu sebelum mengajukan.
                                 @else
-                                    Pastikan semua data dan dokumen legal sudah lengkap sebelum mengajukan.
+                                    Semua data sudah lengkap. Klik tombol untuk mengajukan verifikasi ke Admin.
                                 @endif
                             </p>
+
+                            {{-- Checklist data yang belum lengkap --}}
+                            @if (! $isProfileComplete && $vs !== \App\Enums\VerificationStatus::Rejected)
+                                <ul class="mt-2 space-y-1">
+                                    @foreach ([
+                                        'organization_type' => 'Jenis organisasi',
+                                        'description'       => 'Deskripsi organisasi',
+                                        'city'              => 'Kota/domisili',
+                                        'pic_name'          => 'Nama PIC',
+                                        'pic_phone'         => 'Nomor telepon PIC',
+                                    ] as $field => $label)
+                                        @if (empty($profile->$field))
+                                            <li class="flex items-center gap-1.5 text-xs text-red-600">
+                                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                                {{ $label }} belum diisi
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                    @if (! $profile->document_path)
+                                        <li class="flex items-center gap-1.5 text-xs text-red-600">
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                            Dokumen legal belum diunggah
+                                        </li>
+                                    @endif
+                                </ul>
+                            @endif
                         </div>
                         <form method="POST" action="{{ route('eo.organization.verify') }}" class="shrink-0">
                             @csrf
                             <button type="submit"
-                                    @if (! $profile->document_path) disabled title="Upload dokumen legal terlebih dahulu" @endif
+                                    @if (! $isProfileComplete) disabled title="Lengkapi semua data profil dan dokumen legal terlebih dahulu" @endif
                                     class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg transition-colors
-                                           {{ $profile->document_path ? 'bg-brand-600 text-white hover:bg-brand-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed' }}">
+                                           {{ $isProfileComplete ? 'bg-brand-600 text-white hover:bg-brand-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed' }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>

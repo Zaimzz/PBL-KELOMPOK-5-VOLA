@@ -12,7 +12,7 @@ class EoVerificationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = OrganizerProfile::query();
+        $query = OrganizerProfile::whereNotNull('verification_status');
 
         // Search
         if ($request->filled('search')) {

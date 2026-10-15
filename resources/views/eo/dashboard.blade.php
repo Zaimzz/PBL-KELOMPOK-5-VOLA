@@ -1,7 +1,7 @@
 <x-layouts.eo title="Beranda EO — Vola">
 
     {{-- Verification Status Warning --}}
-    @if ($organizerProfile && $organizerProfile->verification_status->value !== 'verified')
+    @if ($organizerProfile && $organizerProfile->verification_status !== null && $organizerProfile->verification_status->value !== 'verified')
         <div class="mb-6">
             @if ($organizerProfile->verification_status->value === 'pending')
                 <x-alert type="warning">
@@ -34,9 +34,10 @@
         </div>
     @endif
 
+
     {{-- Greeting --}}
     <div class="mb-8">
-        @if ($organizerProfile && $organizerProfile->verification_status->value === 'verified')
+        @if ($organizerProfile && $organizerProfile->verification_status !== null && $organizerProfile->verification_status->value === 'verified')
             <div class="flex items-center gap-2 mb-2">
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full border border-green-200">
                     <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>

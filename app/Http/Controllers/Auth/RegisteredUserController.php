@@ -58,6 +58,8 @@ class RegisteredUserController extends Controller
         if ($request->role === 'eo') {
             $user->organizerProfile()->create([
                 'organization_name' => $request->name,
+                // verification_status dibiarkan null; EO harus melengkapi data
+                // dan mengajukan verifikasi secara manual sebelum Admin memrosesnya
             ]);
         } else {
             $user->volunteerProfile()->create([]);
