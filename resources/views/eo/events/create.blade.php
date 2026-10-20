@@ -342,138 +342,137 @@
         </div>
     </form>
 
-</x-layouts.eo>
-
-@push('scripts')
-<script>
-function eventForm() {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-
-    return {
-        // --- Poster ---
-        posterPreview: null,
-        posterFileName: '',
-        posterFileSize: '',
-        posterError: '',
-        dragover: false,
-
-        // --- Dates ---
-        todayStr: `${yyyy}-${mm}-${dd}`,
-        startDateVal: '{{ old('start_date', '') }}',
-        endDateError: '',
-        deadlineError: '',
-
-        previewPoster(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            this._handleFile(file);
-        },
-
-        handleDrop(event) {
-            this.dragover = false;
-            const file = event.dataTransfer.files[0];
-            if (!file) return;
-            this.$refs.posterInput.files = event.dataTransfer.files;
-            this._handleFile(file);
-        },
-
-        _handleFile(file) {
-            this.posterError = '';
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-            const maxBytes = 2 * 1024 * 1024; // 2 MB
-
-            if (!allowedTypes.includes(file.type)) {
-                this.posterError = 'Format file tidak didukung. Gunakan JPG, PNG, atau WEBP.';
-                this.clearPoster();
-                return;
-            }
-
-            if (file.size > maxBytes) {
-                const sizeMB = (file.size / 1024 / 1024).toFixed(1);
-                this.posterError = `Ukuran file terlalu besar (${sizeMB} MB). Maksimum 2 MB.`;
-                this.clearPoster();
-                return;
-            }
-
-            this.posterFileName = file.name;
-            this.posterFileSize = `(${(file.size / 1024).toFixed(0)} KB)`;
-
-            const reader = new FileReader();
-            reader.onload = (e) => { this.posterPreview = e.target.result; };
-            reader.readAsDataURL(file);
-        },
-
-        clearPoster() {
-            this.posterPreview = null;
-            this.posterFileName = '';
-            this.posterFileSize = '';
-            this.$refs.posterInput.value = '';
-        },
-
-        // --- Date validations ---
-        onStartDateChange() {
-            // Re-validate end date and deadline when start date changes
-            this.validateEndDate();
-            this.validateDeadline();
-        },
-
-        validateEndDate() {
-            const endEl = document.getElementById('end_date');
-            if (!endEl || !endEl.value || !this.startDateVal) {
-                this.endDateError = '';
-                return;
-            }
-            if (endEl.value < this.startDateVal) {
-                this.endDateError = 'Tanggal selesai tidak boleh sebelum tanggal mulai.';
-            } else {
-                this.endDateError = '';
-            }
-        },
-
-        validateDeadline() {
-            const dlEl = document.getElementById('registration_deadline');
-            if (!dlEl || !dlEl.value) {
-                this.deadlineError = '';
-                return;
-            }
-            if (dlEl.value < this.todayStr) {
-                this.deadlineError = 'Batas pendaftaran tidak boleh tanggal yang sudah lewat.';
-            } else if (this.startDateVal && dlEl.value > this.startDateVal) {
-                this.deadlineError = 'Batas pendaftaran seharusnya sebelum atau sama dengan tanggal mulai acara.';
-            } else {
-                this.deadlineError = '';
-            }
-        },
-    };
-}
-
-function benefitsForm(initialSelected) {
-    return {
-        selected: Array.isArray(initialSelected) ? initialSelected : [],
-        customBenefit: '',
-        customBenefits: [],
-
-        addCustomBenefit() {
-            const val = this.customBenefit.trim();
-            if (!val) return;
-
-            // Prevent duplicate with preset or custom
-            const allBenefits = [...this.selected, ...this.customBenefits];
-            if (allBenefits.includes(val)) {
+    @push('scripts')
+    <script>
+    function eventForm() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+    
+        return {
+            // --- Poster ---
+            posterPreview: null,
+            posterFileName: '',
+            posterFileSize: '',
+            posterError: '',
+            dragover: false,
+    
+            // --- Dates ---
+            todayStr: `${yyyy}-${mm}-${dd}`,
+            startDateVal: '{{ old('start_date', '') }}',
+            endDateError: '',
+            deadlineError: '',
+    
+            previewPoster(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                this._handleFile(file);
+            },
+    
+            handleDrop(event) {
+                this.dragover = false;
+                const file = event.dataTransfer.files[0];
+                if (!file) return;
+                this.$refs.posterInput.files = event.dataTransfer.files;
+                this._handleFile(file);
+            },
+    
+            _handleFile(file) {
+                this.posterError = '';
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                const maxBytes = 2 * 1024 * 1024; // 2 MB
+    
+                if (!allowedTypes.includes(file.type)) {
+                    this.posterError = 'Format file tidak didukung. Gunakan JPG, PNG, atau WEBP.';
+                    this.clearPoster();
+                    return;
+                }
+    
+                if (file.size > maxBytes) {
+                    const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+                    this.posterError = `Ukuran file terlalu besar (${sizeMB} MB). Maksimum 2 MB.`;
+                    this.clearPoster();
+                    return;
+                }
+    
+                this.posterFileName = file.name;
+                this.posterFileSize = `(${(file.size / 1024).toFixed(0)} KB)`;
+    
+                const reader = new FileReader();
+                reader.onload = (e) => { this.posterPreview = e.target.result; };
+                reader.readAsDataURL(file);
+            },
+    
+            clearPoster() {
+                this.posterPreview = null;
+                this.posterFileName = '';
+                this.posterFileSize = '';
+                this.$refs.posterInput.value = '';
+            },
+    
+            // --- Date validations ---
+            onStartDateChange() {
+                // Re-validate end date and deadline when start date changes
+                this.validateEndDate();
+                this.validateDeadline();
+            },
+    
+            validateEndDate() {
+                const endEl = document.getElementById('end_date');
+                if (!endEl || !endEl.value || !this.startDateVal) {
+                    this.endDateError = '';
+                    return;
+                }
+                if (endEl.value < this.startDateVal) {
+                    this.endDateError = 'Tanggal selesai tidak boleh sebelum tanggal mulai.';
+                } else {
+                    this.endDateError = '';
+                }
+            },
+    
+            validateDeadline() {
+                const dlEl = document.getElementById('registration_deadline');
+                if (!dlEl || !dlEl.value) {
+                    this.deadlineError = '';
+                    return;
+                }
+                if (dlEl.value < this.todayStr) {
+                    this.deadlineError = 'Batas pendaftaran tidak boleh tanggal yang sudah lewat.';
+                } else if (this.startDateVal && dlEl.value > this.startDateVal) {
+                    this.deadlineError = 'Batas pendaftaran seharusnya sebelum atau sama dengan tanggal mulai acara.';
+                } else {
+                    this.deadlineError = '';
+                }
+            },
+        };
+    }
+    
+    function benefitsForm(initialSelected) {
+        return {
+            selected: Array.isArray(initialSelected) ? initialSelected : [],
+            customBenefit: '',
+            customBenefits: [],
+    
+            addCustomBenefit() {
+                const val = this.customBenefit.trim();
+                if (!val) return;
+    
+                // Prevent duplicate with preset or custom
+                const allBenefits = [...this.selected, ...this.customBenefits];
+                if (allBenefits.includes(val)) {
+                    this.customBenefit = '';
+                    return;
+                }
+                this.customBenefits.push(val);
                 this.customBenefit = '';
-                return;
+            },
+    
+            removeCustomBenefit(index) {
+                this.customBenefits.splice(index, 1);
             }
-            this.customBenefits.push(val);
-            this.customBenefit = '';
-        },
-
-        removeCustomBenefit(index) {
-            this.customBenefits.splice(index, 1);
-        }
-    };
-}
-</script>
-@endpush
+        };
+    }
+    </script>
+    @endpush
+</x-layouts.eo>
