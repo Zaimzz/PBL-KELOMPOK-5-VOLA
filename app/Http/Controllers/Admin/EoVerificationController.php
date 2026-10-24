@@ -58,11 +58,19 @@ class EoVerificationController extends Controller
 
     public function reject(Request $request, OrganizerProfile $organizer)
     {
-        $request->validate([
-            'rejection_reason' => ['required', 'string', 'max:500'],
-        ], [
-            'rejection_reason.required' => 'Alasan penolakan wajib diisi.',
-        ]);
+        if ($request->has('rejection_reason') && ! $request->has('alasan')) {
+            $request->validate([
+                'rejection_reason' => ['required', 'string', 'max:500'],
+            ], [
+                'rejection_reason.required' => 'Alasan penolakan wajib diisi.',
+            ]);
+            $reason = $request->rejection_reason;
+        } else {
+            $request->validate([
+                'alasan' => 'required|string',
+            ]);
+            $reason = $request->alasan;
+        }
 
         if ($organizer->verification_status !== VerificationStatus::Pending) {
             return back()->with('error', 'Status EO tidak valid untuk ditolak.');
@@ -70,7 +78,7 @@ class EoVerificationController extends Controller
 
         $organizer->update([
             'verification_status' => VerificationStatus::Rejected,
-            'rejection_reason' => $request->rejection_reason,
+            'rejection_reason' => $reason,
             'verified_by' => null,
             'verified_at' => null,
         ]);

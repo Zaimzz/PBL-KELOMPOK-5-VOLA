@@ -166,7 +166,9 @@
                                     
                                     <!-- Reject Modal -->
                                     <x-modal name="reject-modal-{{ $organizer->id }}" :show="false" maxWidth="md">
-                                        <form method="POST" action="{{ route('admin.eo-verifications.reject', $organizer) }}" class="p-6">
+                                        <form method="POST" action="{{ route('admin.eo-verifications.reject', $organizer) }}" class="p-6"
+                                              x-data="{ reason: '', hasError: false }"
+                                              @submit.prevent="reason.trim() === '' ? hasError = true : $el.submit()">
                                             @csrf
                                             
                                             <h2 class="text-lg font-medium text-gray-900">
@@ -178,14 +180,18 @@
                                             </p>
                                             
                                             <div class="mt-4">
-                                                <x-input-label for="rejection_reason_{{ $organizer->id }}" value="Alasan Penolakan" />
+                                                <x-input-label for="alasan_{{ $organizer->id }}" value="Alasan Penolakan" />
                                                 <textarea 
-                                                    id="rejection_reason_{{ $organizer->id }}" 
-                                                    name="rejection_reason" 
+                                                    id="alasan_{{ $organizer->id }}" 
+                                                    name="alasan" 
+                                                    x-model="reason"
+                                                    @input="if (reason.trim() !== '') hasError = false"
                                                     rows="3" 
                                                     class="mt-1 block w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-md shadow-sm"
-                                                    required
-                                                >{{ old('rejection_reason') }}</textarea>
+                                                    x-bind:class="hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''"
+                                                >{{ old('alasan') }}</textarea>
+                                                <p x-show="hasError" class="text-red-500 text-sm mt-1" x-cloak>Alasan penolakan wajib diisi!</p>
+                                                <x-input-error :messages="$errors->get('alasan')" class="mt-2" />
                                                 <x-input-error :messages="$errors->get('rejection_reason')" class="mt-2" />
                                             </div>
                                             
