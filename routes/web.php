@@ -1,7 +1,13 @@
 <?php
 
+use App\Enums\EventStatus;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\EoVerificationController;
+use App\Http\Controllers\Admin\ReviewEventController;
+use App\Http\Controllers\Crew\CrewDashboardController;
+use App\Http\Controllers\Crew\EventDetailController;
+use App\Http\Controllers\Crew\SearchController;
+use App\Http\Controllers\Crew\SettingsController;
 use App\Http\Controllers\Eo\EoDashboardController;
 use App\Http\Controllers\Eo\EventController;
 use App\Http\Controllers\Eo\EventPositionController;
@@ -10,8 +16,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicEventController;
 use App\Models\Event;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Crew\CrewDashboardController;
-use App\Http\Controllers\Crew\SettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,7 +27,7 @@ use App\Http\Controllers\Crew\SettingsController;
 Route::get('/', function () {
     $events = Event::query()
         ->with(['category', 'organizer'])
-        ->where('status', \App\Enums\EventStatus::Active)
+        ->where('status', EventStatus::Active)
         ->whereNotNull('published_at')
         ->whereDate('registration_deadline', '>=', now()->toDateString())
         ->latest('published_at')
@@ -62,24 +66,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 */
 
 Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
-    Route::get('/dashboard', [App\Http\Controllers\Crew\CrewDashboardController::class, 'index'])->name('dashboard');
-    
+    Route::get('/dashboard', [CrewDashboardController::class, 'index'])->name('dashboard');
+
     // Route Profil
     Route::get('/profile', [App\Http\Controllers\Crew\ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [App\Http\Controllers\Crew\ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [App\Http\Controllers\Crew\ProfileController::class, 'update'])->name('profile.update');
-    
+
     // Route Settings
-    Route::get('/settings', [App\Http\Controllers\Crew\SettingsController::class, 'index'])->name('settings.index');
-    Route::put('/settings/profile', [App\Http\Controllers\Crew\SettingsController::class, 'updateProfile'])->name('settings.update.profile');
-    Route::put('/settings/preferences', [App\Http\Controllers\Crew\SettingsController::class, 'updatePreferences'])->name('settings.update.preferences');
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.update.profile');
+    Route::put('/settings/preferences', [SettingsController::class, 'updatePreferences'])->name('settings.update.preferences');
 
     // Route Pencarian
-    Route::get('/search', [App\Http\Controllers\Crew\SearchController::class, 'index'])->name('search.index');
-    Route::get('/events/{event}', [App\Http\Controllers\Crew\EventDetailController::class, 'show'])->name('events.detail');
+    Route::get('/search', [SearchController::class, 'index'])->name('search.index');
+    Route::get('/events/{event}', [EventDetailController::class, 'show'])->name('events.detail');
 });
 
-    // Route volunteer lainnya diletakkan di sini.
+// Route volunteer lainnya diletakkan di sini.
 /*
 |--------------------------------------------------------------------------
 | Event Organizer (EO) Routes
@@ -167,6 +171,22 @@ Route::middleware(['auth', 'verified', 'role:admin'])
 
         Route::post('/eo-verifications/{organizer}/reject', [EoVerificationController::class, 'reject'])
             ->name('eo-verifications.reject');
+
+        // Review Events
+        Route::get('/review-events', [ReviewEventController::class, 'index'])
+            ->name('review-events.index');
+        Route::get('/review-events/{event}', [ReviewEventController::class, 'show'])
+            ->name('review-events.show');
+        Route::post('/review-events/{event}/approve', [ReviewEventController::class, 'approve'])
+            ->name('review-events.approve');
+        Route::post('/review-events/{event}/reject', [ReviewEventController::class, 'reject'])
+            ->name('review-events.reject');
+
+        // Aliases for review event route naming
+        Route::get('/review-event', [ReviewEventController::class, 'index'])
+            ->name('review-event.index');
+        Route::get('/review-events-list', [ReviewEventController::class, 'index'])
+            ->name('review-events');
     });
 
 require __DIR__.'/auth.php';

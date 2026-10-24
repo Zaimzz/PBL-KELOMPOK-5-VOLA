@@ -78,7 +78,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertGuest();
-        $response->assertSessionHasErrors(['role']);
+        $response->assertSessionHasErrors(['email']);
     }
 
     public function test_admin_role_can_not_be_sent_as_a_chosen_role(): void

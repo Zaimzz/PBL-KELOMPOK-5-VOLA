@@ -60,15 +60,21 @@
                         @endif
                     </a>
 
-                    <!-- Placeholders for features not yet implemented -->
-                    <span class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed select-none mt-1">
+                    <a href="{{ route('admin.review-events.index') }}"
+                       class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('admin.review-event*') || request()->routeIs('admin.review-events*') ? 'bg-brand-50 text-brand-700 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
                         <div class="flex items-center gap-3">
                             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                             </svg>
                             Review Event
                         </div>
-                    </span>
+                        @php
+                            $pendingReviewCount = \App\Models\Event::where('status', \App\Enums\EventStatus::PendingReview)->count();
+                        @endphp
+                        @if($pendingReviewCount > 0)
+                            <span class="bg-red-100 text-red-700 text-xs font-semibold px-2 py-0.5 rounded-full">{{ $pendingReviewCount }}</span>
+                        @endif
+                    </a>
 
                     <span class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed select-none mt-1">
                         <div class="flex items-center gap-3">

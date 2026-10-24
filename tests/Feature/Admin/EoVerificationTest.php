@@ -91,6 +91,21 @@ class EoVerificationTest extends TestCase
         $this->assertNull($this->profile->verified_by);
     }
 
+    public function test_admin_can_reject_eo_with_alasan()
+    {
+        $response = $this->actingAs($this->admin)->post(route('admin.eo-verifications.reject', $this->profile), [
+            'alasan' => 'Dokumen tidak lengkap dan NIB kedaluwarsa',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+
+        $this->profile->refresh();
+        $this->assertEquals(VerificationStatus::Rejected, $this->profile->verification_status);
+        $this->assertEquals('Dokumen tidak lengkap dan NIB kedaluwarsa', $this->profile->rejection_reason);
+        $this->assertNull($this->profile->verified_by);
+    }
+
     public function test_admin_cannot_reject_eo_without_reason()
     {
         $response = $this->actingAs($this->admin)->post(route('admin.eo-verifications.reject', $this->profile), [
@@ -98,6 +113,18 @@ class EoVerificationTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors('rejection_reason');
+
+        $this->profile->refresh();
+        $this->assertEquals(VerificationStatus::Pending, $this->profile->verification_status);
+    }
+
+    public function test_admin_cannot_reject_eo_without_alasan()
+    {
+        $response = $this->actingAs($this->admin)->post(route('admin.eo-verifications.reject', $this->profile), [
+            'alasan' => '',
+        ]);
+
+        $response->assertSessionHasErrors('alasan');
 
         $this->profile->refresh();
         $this->assertEquals(VerificationStatus::Pending, $this->profile->verification_status);

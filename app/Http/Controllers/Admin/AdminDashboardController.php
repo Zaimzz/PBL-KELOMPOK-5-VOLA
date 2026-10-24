@@ -34,7 +34,7 @@ class AdminDashboardController extends Controller
                 'subtitle' => 'Penyelenggara: '.($event->organizer->organization_name ?? '-'),
                 'time' => $event->updated_at->diffForHumans(),
                 'action_text' => 'Review Event',
-                'action_link' => '#',
+                'action_link' => route('admin.review-events.index'),
                 'icon_color' => 'bg-indigo-100 text-indigo-600',
             ]);
         }
