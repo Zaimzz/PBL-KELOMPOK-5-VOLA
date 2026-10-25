@@ -25,10 +25,10 @@ class ReviewEventController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $operator = $q->getConnection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
-                $q->where('title', $operator, '%' . $search . '%')
+                $q->where('title', $operator, '%'.$search.'%')
                     ->orWhereHas('organizer', function ($oq) use ($search, $operator) {
-                        $oq->where('organization_name', $operator, '%' . $search . '%')
-                            ->orWhere('pic_name', $operator, '%' . $search . '%');
+                        $oq->where('organization_name', $operator, '%'.$search.'%')
+                            ->orWhere('pic_name', $operator, '%'.$search.'%');
                     });
             });
         }
@@ -131,7 +131,7 @@ class ReviewEventController extends Controller
         }
 
         return redirect()->route('admin.review-events.index')
-            ->with('success', 'Event "' . $event->title . '" berhasil disetujui dan kini siap tayang secara publik.');
+            ->with('success', 'Event "'.$event->title.'" berhasil disetujui dan kini siap tayang secara publik.');
     }
 
     /**
@@ -176,7 +176,7 @@ class ReviewEventController extends Controller
         }
 
         return redirect()->route('admin.review-events.index')
-            ->with('success', 'Pengajuan event "' . $event->title . '" berhasil ditolak.');
+            ->with('success', 'Pengajuan event "'.$event->title.'" berhasil ditolak.');
     }
 
     /**
@@ -224,7 +224,7 @@ class ReviewEventController extends Controller
             'date_formatted' => $this->formatDateRange($event),
             'location' => $event->location ?? '-',
             'city' => $event->city ?? '',
-            'full_location' => trim(($event->location ?? '') . ($event->city ? ', ' . $event->city : ''), ', '),
+            'full_location' => trim(($event->location ?? '').($event->city ? ', '.$event->city : ''), ', '),
             'description' => $event->description ?: 'Tidak ada deskripsi singkat untuk pengajuan event ini.',
             'benefits' => $benefitsArray,
             'benefits_text' => ! empty($benefitsArray) ? implode(', ', $benefitsArray) : 'Tidak ada benefit tercantum.',
@@ -237,7 +237,7 @@ class ReviewEventController extends Controller
             })->values()->all(),
             'total_quota' => $totalQuota,
             'poster_url' => $event->poster_path ? Storage::url($event->poster_path) : null,
-            'submitted_date_formatted' => 'Diajukan ' . ($event->created_at ? $event->created_at->translatedFormat('d M Y') : '-'),
+            'submitted_date_formatted' => 'Diajukan '.($event->created_at ? $event->created_at->translatedFormat('d M Y') : '-'),
             'rejection_reason' => $event->rejection_reason,
             'approve_url' => route('admin.review-events.approve', $event),
             'reject_url' => route('admin.review-events.reject', $event),
@@ -264,9 +264,9 @@ class ReviewEventController extends Controller
         $durationText = " ({$days} Hari Penuh)";
 
         if ($start->format('Y-m') === $end->format('Y-m')) {
-            return $start->format('d') . ' – ' . $end->translatedFormat('d F Y') . $durationText;
+            return $start->format('d').' – '.$end->translatedFormat('d F Y').$durationText;
         }
 
-        return $start->translatedFormat('d M') . ' – ' . $end->translatedFormat('d M Y') . $durationText;
+        return $start->translatedFormat('d M').' – '.$end->translatedFormat('d M Y').$durationText;
     }
 }

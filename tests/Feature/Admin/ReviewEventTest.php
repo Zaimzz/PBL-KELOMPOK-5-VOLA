@@ -238,7 +238,7 @@ class ReviewEventTest extends TestCase
         // 2. Uji akses dengan filter "Semua Status" (status=all)
         $responseAll = $this->actingAs($this->admin)->get(route('admin.review-events.index', ['status' => 'all']));
         $responseAll->assertStatus(200);
-        $responseAll->assertSee('Indonesia Comic & Pop Culture Con 2025'); 
+        $responseAll->assertSee('Indonesia Comic & Pop Culture Con 2025');
         $responseAll->assertDontSee('Event Draft Rahasia');
         $responseAll->assertDontSee('Event Sudah Selesai');
     }

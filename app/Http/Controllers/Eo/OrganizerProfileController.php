@@ -125,11 +125,11 @@ class OrganizerProfileController extends Controller
         // Validasi kelengkapan data sebelum diajukan ke Admin
         $requiredFields = [
             'organization_name' => 'nama organisasi',
-            'organization_type'  => 'jenis organisasi',
-            'description'        => 'deskripsi organisasi',
-            'city'               => 'kota/domisili',
-            'pic_name'           => 'nama PIC',
-            'pic_phone'          => 'nomor telepon PIC',
+            'organization_type' => 'jenis organisasi',
+            'description' => 'deskripsi organisasi',
+            'city' => 'kota/domisili',
+            'pic_name' => 'nama PIC',
+            'pic_phone' => 'nomor telepon PIC',
         ];
 
         $missingFields = [];
@@ -146,7 +146,7 @@ class OrganizerProfileController extends Controller
         if (! empty($missingFields)) {
             return redirect()
                 ->route('eo.organization')
-                ->with('error', 'Data berikut harus dilengkapi sebelum mengajukan verifikasi: ' . implode(', ', $missingFields) . '.');
+                ->with('error', 'Data berikut harus dilengkapi sebelum mengajukan verifikasi: '.implode(', ', $missingFields).'.');
         }
 
         // Status rejected atau null → set ke pending, hapus rejection_reason

@@ -1,9 +1,11 @@
 <?php
 
 use App\Enums\EventStatus;
+use App\Http\Controllers\Admin\ActiveEventController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\EoVerificationController;
 use App\Http\Controllers\Admin\ReviewEventController;
+use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Crew\CrewDashboardController;
 use App\Http\Controllers\Crew\EventDetailController;
 use App\Http\Controllers\Crew\SearchController;
@@ -187,6 +189,33 @@ Route::middleware(['auth', 'verified', 'role:admin'])
             ->name('review-event.index');
         Route::get('/review-events-list', [ReviewEventController::class, 'index'])
             ->name('review-events');
+
+        // Active Events
+        Route::get('/active-events', [ActiveEventController::class, 'index'])
+            ->name('active-events.index');
+        Route::get('/active-events/{event}', [ActiveEventController::class, 'show'])
+            ->name('active-events.show');
+        Route::get('/active-events-list', [ActiveEventController::class, 'index'])
+            ->name('active-events');
+
+        // Transactions
+        Route::get('/transactions', [TransactionController::class, 'index'])
+            ->name('transactions.index');
+            
+        Route::get('/transactions/download-report', [TransactionController::class, 'downloadReport'])
+            ->name('transactions.download-report');
+            
+        Route::get('/transactions/report/csv', [TransactionController::class, 'downloadCsv'])
+            ->name('transactions.download-csv');
+            
+        Route::get('/transactions/{payment}', [TransactionController::class, 'show'])
+            ->name('transactions.show');
+            
+        Route::get('/transactions/{payment}/download', [TransactionController::class, 'downloadInvoice'])
+            ->name('transactions.download-invoice');
+            
+        Route::get('/transactions-list', [TransactionController::class, 'index'])
+            ->name('transactions');
     });
 
 require __DIR__.'/auth.php';
