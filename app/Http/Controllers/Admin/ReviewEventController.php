@@ -76,8 +76,22 @@ class ReviewEventController extends Controller
             return $this->transformEvent($event);
         })->values();
 
-        // Initially selected event (first item in the list if available)
-        $selectedEvent = $eventsPayload->first() ?? null;
+        // Initially selected event (specific selected item or first item in list)
+        $selectedEvent = null;
+        if ($request->filled('selected')) {
+            $selectedEvent = $eventsPayload->firstWhere('id', (int) $request->selected);
+            if (! $selectedEvent) {
+                $targetEvent = Event::with(['organizer.user', 'category', 'positions'])->find($request->selected);
+                if ($targetEvent) {
+                    $selectedEvent = $this->transformEvent($targetEvent);
+                    $eventsPayload->prepend($selectedEvent);
+                }
+            }
+        }
+
+        if (! $selectedEvent) {
+            $selectedEvent = $eventsPayload->first() ?? null;
+        }
 
         return view('admin.review-event.index', compact('events', 'stats', 'eventsPayload', 'selectedEvent'));
     }

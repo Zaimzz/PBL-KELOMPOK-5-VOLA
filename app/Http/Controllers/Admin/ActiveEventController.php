@@ -107,7 +107,7 @@ class ActiveEventController extends Controller
             'positions.applications' => function ($q) {
                 $q->where('status', ApplicationStatus::Accepted);
             },
-        ])->latest('published_at')->latest('id')->paginate(10)->withQueryString();
+        ])->latest('published_at')->latest('id')->paginate(5)->withQueryString();
 
         $categories = EventCategory::orderBy('name')->get();
 

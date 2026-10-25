@@ -36,7 +36,7 @@
                     x-transition:leave="transition ease-in duration-75" 
                     x-transition:leave-start="transform opacity-100 scale-100" 
                     x-transition:leave-end="transform opacity-0 scale-95" 
-                    class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden" 
+                    class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden" 
                     style="display: none;">
                     <div class="py-1">
                         <a href="{{ route('admin.transactions.download-report', ['month' => request('month')]) }}" target="_blank" 
@@ -44,14 +44,21 @@
                             <svg class="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                             </svg>
-                            Format Dokumen (PDF)
+                            Cetak PDF
+                        </a>
+                        <a href="{{ route('admin.transactions.download-excel', ['month' => request('month')]) }}" 
+                        class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition-colors border-t border-gray-50">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Ekspor Excel (.xlsx)
                         </a>
                         <a href="{{ route('admin.transactions.download-csv', ['month' => request('month')]) }}" 
                         class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition-colors border-t border-gray-50">
-                            <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="w-4 h-4 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
                             </svg>
-                            Data Mentah (CSV)
+                            Ekspor CSV
                         </a>
                     </div>
                 </div>
@@ -142,25 +149,25 @@
                            class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
                 </div>
 
-                <!-- Status Filter PILL BUTTONS (Warna Aktif: Biru) -->
-                <div class="flex items-center gap-1.5 p-1 bg-gray-100 rounded-xl w-full sm:w-auto shrink-0 overflow-x-auto">
+                <!-- Status Filter PILL BUTTONS (Warna Aktif: Biru, Terpisah) -->
+                <div class="flex items-center gap-2 w-full sm:w-auto shrink-0 overflow-x-auto pb-1 sm:pb-0">
                     <input type="hidden" name="status" id="txStatusInput" value="{{ request('status', 'all') }}">
 
                     <button type="button"
                             onclick="setTxStatus('all')"
-                            class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all {{ request('status', 'all') === 'all' ? 'bg-brand-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
+                            class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all whitespace-nowrap {{ request('status', 'all') === 'all' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
                         Semua Status
                     </button>
 
                     <button type="button"
                             onclick="setTxStatus('lunas')"
-                            class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all {{ request('status') === 'lunas' || request('status') === 'paid' ? 'bg-brand-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
+                            class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all whitespace-nowrap {{ request('status') === 'lunas' || request('status') === 'paid' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
                         Lunas
                     </button>
 
                     <button type="button"
                             onclick="setTxStatus('menunggu')"
-                            class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all {{ request('status') === 'menunggu' || request('status') === 'pending' ? 'bg-brand-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
+                            class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all whitespace-nowrap {{ request('status') === 'menunggu' || request('status') === 'pending' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
                         Menunggu Pembayaran
                     </button>
                 </div>
@@ -328,13 +335,8 @@
             </div>
 
             <!-- Pagination Bar -->
-            <div class="py-4 px-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div class="text-xs text-gray-500">
-                    Menampilkan <span class="font-semibold">{{ $transactions->firstItem() ?? 0 }}</span> - <span class="font-semibold">{{ $transactions->lastItem() ?? 0 }}</span> dari <span class="font-semibold">{{ $transactions->total() }}</span> invoice transaksi
-                </div>
-                <div>
-                    {{ $transactions->links() }}
-                </div>
+            <div class="px-6 py-4 border-t border-gray-200">
+                {{ $transactions->links() }}
             </div>
         </div>
 

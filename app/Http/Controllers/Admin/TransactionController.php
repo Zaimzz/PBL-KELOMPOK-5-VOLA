@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\PaymentStatus;
+use App\Exports\TransactionReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TransactionController extends Controller
 {
@@ -289,5 +291,16 @@ class TransactionController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Download monthly transaction report as Excel (.xlsx).
+     */
+    public function downloadExcel(Request $request)
+    {
+        $month = $request->input('month', now()->format('Y-m'));
+        $filename = "Laporan-Transaksi-{$month}.xlsx";
+
+        return Excel::download(new TransactionReportExport($month), $filename);
     }
 }
