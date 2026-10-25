@@ -15,27 +15,31 @@
                 <p class="text-gray-500 text-sm mt-1">Kurasi dan tinjau kelayakan pengajuan event baru sebelum dipublikasikan ke feed pencarian relawan.</p>
             </div>
 
-            <!-- Header Metrics -->
-            <div class="flex items-center gap-3">
+            <!-- Header Metrics: Luxury Cards -->
+            <div class="flex flex-wrap items-center gap-3">
                 <!-- Pengajuan Menunggu -->
-                <div class="bg-white border border-gray-100 rounded-2xl px-4 py-2.5 shadow-sm flex items-center gap-3">
-                    <span class="w-3 h-3 rounded-full bg-amber-500 shrink-0"></span>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-xl font-bold text-gray-900">{{ $stats['pending'] }}</span>
-                        <span class="text-xs text-gray-500 leading-tight">Pengajuan<br class="hidden sm:inline"> Menunggu</span>
+                <div class="bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-lg font-extrabold text-gray-900">{{ number_format($stats['pending'], 0, ',', '.') }}</div>
+                        <div class="text-[11px] text-gray-500 font-medium">Pengajuan Menunggu</div>
                     </div>
                 </div>
 
                 <!-- Disetujui Bulan Ini -->
-                <div class="bg-white border border-gray-100 rounded-2xl px-4 py-2.5 shadow-sm flex items-center gap-3">
-                    <div class="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                         </svg>
                     </div>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-xl font-bold text-gray-900">{{ $stats['approved_this_month'] }}</span>
-                        <span class="text-xs text-gray-500 leading-tight">Disetujui<br class="hidden sm:inline"> Bulan Ini</span>
+                    <div>
+                        <div class="text-lg font-extrabold text-gray-900">{{ number_format($stats['approved_this_month'], 0, ',', '.') }}</div>
+                        <div class="text-[11px] text-gray-500 font-medium">Disetujui Bulan Ini</div>
                     </div>
                 </div>
             </div>
@@ -515,8 +519,16 @@
                 loading: false,
 
                 init() {
-                    if (this.selectedId && this.events.length > 0) {
-                        this.selectedEvent = this.events.find(e => e.id === this.selectedId) || this.events[0];
+                    if (this.selectedId) {
+                        const found = this.events.find(e => e.id === this.selectedId);
+                        if (found) {
+                            this.selectedEvent = found;
+                        } else {
+                            this.selectEvent(this.selectedId);
+                        }
+                    } else if (this.events.length > 0) {
+                        this.selectedEvent = this.events[0];
+                        this.selectedId = this.events[0].id;
                     }
                 },
 

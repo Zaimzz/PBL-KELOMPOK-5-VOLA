@@ -201,4 +201,37 @@ class TransactionTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('REKAPITULASI TRANSAKSI');
     }
+
+    public function test_download_csv_returns_streamed_response(): void
+    {
+        Payment::factory()->create([
+            'event_id' => $this->event->id,
+            'invoice_number' => 'INV-2025-084',
+            'amount' => 450000,
+            'status' => PaymentStatus::Paid,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.transactions.download-csv', [
+            'month' => now()->format('Y-m'),
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
+    }
+
+    public function test_download_excel_returns_valid_response(): void
+    {
+        Payment::factory()->create([
+            'event_id' => $this->event->id,
+            'invoice_number' => 'INV-2025-084',
+            'amount' => 450000,
+            'status' => PaymentStatus::Paid,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.transactions.download-excel', [
+            'month' => now()->format('Y-m'),
+        ]));
+
+        $response->assertStatus(200);
+    }
 }

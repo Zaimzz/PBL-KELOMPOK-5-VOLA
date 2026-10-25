@@ -267,13 +267,8 @@
             </div>
 
             <!-- Pagination Bar -->
-            <div class="py-4 px-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div class="text-xs text-gray-500">
-                    Menampilkan <span class="font-semibold">{{ $events->firstItem() ?? 0 }}</span> - <span class="font-semibold">{{ $events->lastItem() ?? 0 }}</span> dari <span class="font-semibold">{{ $events->total() }}</span> event aktif
-                </div>
-                <div>
-                    {{ $events->links() }}
-                </div>
+            <div class="px-6 py-4 border-t border-gray-200">
+                {{ $events->links() }}
             </div>
         </div>
 

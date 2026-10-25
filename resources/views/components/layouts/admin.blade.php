@@ -108,8 +108,8 @@
                     </a>
 
                     <!-- Pengguna -->
-                    <span
-                        class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed select-none">
+                    <a href="{{ route('admin.users.index') }}"
+                        class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('admin.users*') ? 'bg-brand-50 text-brand-700 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
                         <div class="flex items-center gap-3">
                             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -117,11 +117,11 @@
                             </svg>
                             Pengguna
                         </div>
-                    </span>
+                    </a>
 
                     <!-- Laporan -->
-                    <span
-                        class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed select-none">
+                    <a href="{{ route('admin.reports.index') }}"
+                        class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('admin.reports*') ? 'bg-brand-50 text-brand-700 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
                         <div class="flex items-center gap-3">
                             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -129,9 +129,17 @@
                             </svg>
                             Laporan
                         </div>
-                        <span
-                            class="bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-0.5 rounded-full">2</span>
-                    </span>
+                        @php
+                            $pendingReportsCount = \App\Models\Report::whereIn('status', [
+                                \App\Enums\ReportStatus::Pending,
+                                \App\Enums\ReportStatus::InReview,
+                            ])->count();
+                        @endphp
+                        @if ($pendingReportsCount > 0)
+                            <span
+                                class="bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-0.5 rounded-full">{{ $pendingReportsCount }}</span>
+                        @endif
+                    </a>
 
                     <!-- Transaksi -->
                     <a href="{{ route('admin.transactions.index') }}"
@@ -146,20 +154,6 @@
                     </a>
                 </div>
             </nav>
-
-            <!-- User info at bottom -->
-            <div class="border-t border-gray-100 p-4 shrink-0">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center shrink-0 text-white text-sm font-semibold">
-                        {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 2)) }}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-900 truncate">{{ auth()->user()->name ?? '' }}</p>
-                        <p class="text-xs text-gray-500 truncate">Administrator</p>
-                    </div>
-                </div>
-            </div>
         </aside>
 
         <!-- Overlay mobile -->

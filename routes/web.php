@@ -4,8 +4,10 @@ use App\Enums\EventStatus;
 use App\Http\Controllers\Admin\ActiveEventController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\EoVerificationController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ReviewEventController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Crew\CrewDashboardController;
 use App\Http\Controllers\Crew\EventDetailController;
 use App\Http\Controllers\Crew\SearchController;
@@ -198,22 +200,47 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('/active-events-list', [ActiveEventController::class, 'index'])
             ->name('active-events');
 
+        // User Management
+        Route::get('/users', [UserController::class, 'index'])
+            ->name('users.index');
+        Route::get('/users/{user}', [UserController::class, 'show'])
+            ->name('users.show');
+        Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])
+            ->name('users.toggle-status');
+        Route::get('/users-list', [UserController::class, 'index'])
+            ->name('users');
+
+        // Reports Moderation
+        Route::get('/reports', [ReportController::class, 'index'])
+            ->name('reports.index');
+        Route::get('/reports/{report}', [ReportController::class, 'show'])
+            ->name('reports.show');
+        Route::post('/reports/{report}/action', [ReportController::class, 'handleAction'])
+            ->name('reports.action');
+        Route::get('/reports/{report}/evidence', [ReportController::class, 'downloadEvidence'])
+            ->name('reports.evidence');
+        Route::get('/reports-list', [ReportController::class, 'index'])
+            ->name('reports');
+
         // Transactions
         Route::get('/transactions', [TransactionController::class, 'index'])
             ->name('transactions.index');
-            
+
         Route::get('/transactions/download-report', [TransactionController::class, 'downloadReport'])
             ->name('transactions.download-report');
-            
+
         Route::get('/transactions/report/csv', [TransactionController::class, 'downloadCsv'])
             ->name('transactions.download-csv');
-            
+
+        Route::get('/transactions/report/excel', [TransactionController::class, 'downloadExcel'])
+            ->name('transactions.download-excel');
+
         Route::get('/transactions/{payment}', [TransactionController::class, 'show'])
             ->name('transactions.show');
-            
+
         Route::get('/transactions/{payment}/download', [TransactionController::class, 'downloadInvoice'])
             ->name('transactions.download-invoice');
-            
+
         Route::get('/transactions-list', [TransactionController::class, 'index'])
             ->name('transactions');
     });
