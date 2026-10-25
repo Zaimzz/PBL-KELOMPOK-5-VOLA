@@ -16,7 +16,7 @@ class ProfileController extends Controller
 
         // Data dummy untuk skills (nanti bisa diambil dari database)
         $skills = $profile?->skills ?? [];
-        
+
         // Data dummy untuk event history (nanti diambil dari relasi applications)
         $recentEvents = [
             [

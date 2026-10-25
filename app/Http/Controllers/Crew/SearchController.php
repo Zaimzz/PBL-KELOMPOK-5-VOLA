@@ -11,7 +11,7 @@ class SearchController extends Controller
     public function index(Request $request): View
     {
         $query = $request->input('q', '');
-        
+
         // Data dummy event (nanti bisa diganti dengan query database)
         $allEvents = [
             [
@@ -91,9 +91,9 @@ class SearchController extends Controller
             if (empty($query)) {
                 return true; // Tampilkan semua jika tidak ada query
             }
-            
+
             $searchable = strtolower($query);
-            
+
             return str_contains(strtolower($event['title']), $searchable)
                 || str_contains(strtolower($event['category']), $searchable)
                 || str_contains(strtolower($event['organizer']), $searchable)
