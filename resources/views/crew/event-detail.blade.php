@@ -1,41 +1,75 @@
 <x-layouts.crew title="{{ $eventData['title'] }} - VOLA">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
+        <!-- Breadcrumb -->
         <div class="mb-4">
             <nav class="flex items-center text-sm text-gray-500 flex-wrap gap-1">
-                <a href="{{ route('dashboard') }}" class="hover:text-[#4F46E5] flex items-center gap-1">
+                <a href="{{ route('search.index') }}" class="hover:text-[#4F46E5] flex items-center gap-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
                     Kembali ke Cari Event
                 </a>
                 <span class="mx-1">/</span>
-                <a href="#" class="hover:text-[#4F46E5]">Cari Event</a>
+                <span class="text-gray-700 font-medium">{{ $eventData['category'] }}</span>
                 <span class="mx-1">/</span>
-                <a href="#" class="hover:text-[#4F46E5]">Festival & Pop Culture</a>
-                <span class="mx-1">/</span>
-                <span class="text-gray-900 font-medium">{{ $eventData['title'] }}</span>
+                <span class="text-gray-900 font-bold">{{ $eventData['title'] }}</span>
             </nav>
         </div>
 
-        <div class="relative rounded-2xl overflow-hidden mb-6 h-64 bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-800">
-          
-            <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"></div>
-          
+        <!-- Hero Banner dengan Gambar Background -->
+        <div class="relative rounded-2xl overflow-hidden mb-6 h-72">
+            <!-- Gambar Background -->
+            <img src="{{ $eventData['image'] }}" 
+                 alt="{{ $eventData['title'] }}" 
+                 class="absolute inset-0 w-full h-full object-cover">
+            
+            <!-- Overlay Gradient Gelap -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30"></div>
+            
+            <!-- Overlay Pattern Dots -->
+            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 20px 20px;"></div>
+            
+            <!-- Top Badges -->
             <div class="absolute top-4 left-4 right-4 flex items-start justify-between">
-                <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">
-                    <span class="w-2 h-2 bg-white rounded-full"></span>
-                    {{ $eventData['status'] }}
-                </span>
-                <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white text-xs font-bold rounded-full shadow-lg">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    Sisa {{ $eventData['days_left'] }} Hari Lagi!
-                </span>
+                <!-- Badge KIRI: Status Pendaftaran -->
+                @if(!empty($eventData['status_badge']))
+                    @if($eventData['status_badge_type'] === 'warning')
+                        <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-400 text-gray-900 text-xs font-bold rounded-full shadow-lg">
+                            <span class="w-2 h-2 bg-gray-900 rounded-full"></span>
+                            {{ $eventData['status_badge'] }}
+                        </span>
+                    @elseif($eventData['status_badge_type'] === 'danger')
+                        <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white text-xs font-bold rounded-full shadow-lg">
+                            <span class="w-2 h-2 bg-white rounded-full"></span>
+                            {{ $eventData['status_badge'] }}
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">
+                            <span class="w-2 h-2 bg-white rounded-full"></span>
+                            {{ $eventData['status_badge'] }}
+                        </span>
+                    @endif
+                @else
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">
+                        <span class="w-2 h-2 bg-white rounded-full"></span>
+                        {{ $eventData['status'] }}
+                    </span>
+                @endif
+
+                <!-- Badge KANAN: Countdown Hari (HANYA jika status success dan days_left <= 10) -->
+                @if($eventData['status_badge_type'] === 'success' && !empty($eventData['days_left']) && $eventData['days_left'] <= 10)
+                    <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white text-xs font-bold rounded-full shadow-lg">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Sisa {{ $eventData['days_left'] }} Hari Lagi!
+                    </span>
+                @endif
             </div>
 
-            <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+            <!-- Content Bawah (Judul & Tombol) - MASIH DI DALAM HERO BANNER -->
+            <div class="absolute bottom-0 left-0 right-0 p-6">
                 <p class="text-xs text-indigo-200 font-medium mb-2">
                     {{ $eventData['category'] }} • Penyelenggara: {{ $eventData['organizer'] }}
                     @if(!empty($eventData['organizer_verified']))
@@ -46,7 +80,6 @@
                 </p>
 
                 <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-                 
                     <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight max-w-3xl">
                         {{ $eventData['title'] }}
                     </h1>
@@ -68,7 +101,9 @@
                 </div>
             </div>
         </div>
+        <!-- ✅ AKHIR HERO BANNER (SETELAH CONTENT) -->
 
+        <!-- Info Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
                 <div class="flex items-center gap-2 mb-2">
@@ -124,6 +159,7 @@
             </div>
         </div>
 
+        <!-- Tab Navigation -->
         <div class="border-b border-gray-200 mb-6" x-data="{ activeTab: 'positions' }">
             <nav class="flex gap-6 overflow-x-auto">
                 <button @click="activeTab = 'positions'" 
@@ -152,8 +188,10 @@
             </nav>
         </div>
 
+        <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
+            
+            <!-- Left Column -->
             <div class="lg:col-span-2">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold text-gray-900">Posisi Volunteer yang Dibuka</h2>
@@ -215,6 +253,7 @@
                     @endforeach
                 </div>
 
+                <!-- Alur Rekrutmen -->
                 <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm mt-6">
                     <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">Alur Rekrutmen Volunteer</h3>
                     <div class="grid grid-cols-5 gap-2">
@@ -230,8 +269,8 @@
                     </div>
                 </div>
 
+                <!-- Benefit & Syarat -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    <!-- Benefit -->
                     <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
                         <h3 class="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
                             <svg class="w-4 h-4 text-[#4F46E5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,8 +309,8 @@
                 </div>
             </div>
 
+            <!-- Right Column: Sidebar -->
             <div class="space-y-4">
-               
                 <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-base font-bold text-gray-900">Pendaftaran Relawan</h3>
@@ -312,7 +351,7 @@
                     <div class="border-t border-gray-100 pt-4 mt-4">
                         <div class="flex items-center gap-3 mb-3">
                             <div class="w-10 h-10 rounded-full bg-[#4F46E5] text-white flex items-center justify-center font-bold text-sm">
-                                PMN
+                                {{ strtoupper(substr($eventData['organizer'], 0, 3)) }}
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-bold text-gray-900 flex items-center gap-1">
@@ -329,12 +368,13 @@
                         <p class="text-xs text-gray-600">Penyelenggara pameran pop culture, festival komik, dan konvensi kreatif berskala nasional di Indonesia.</p>
                     </div>
 
+                    <!-- Lokasi -->
                     <div class="border-t border-gray-100 pt-4 mt-4">
                         <div class="flex items-center justify-between mb-2">
                             <h4 class="text-sm font-bold text-gray-900">Lokasi Event & Titik Kumpul</h4>
-                            <span class="text-[10px] font-bold text-[#4F46E5]">JCC Senayan</span>
+                            <span class="text-[10px] font-bold text-[#4F46E5]">{{ $eventData['location_city'] }}</span>
                         </div>
-                       
+                        
                         <div class="relative h-32 bg-gray-100 rounded-xl overflow-hidden mb-3">
                             <div class="absolute inset-0" style="background: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%);">
                                 <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -344,7 +384,7 @@
                                 <div class="absolute top-2/3 right-1/4 w-20 h-0.5 bg-gray-300 -rotate-6"></div>
                             </div>
                             <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-8 bg-[#4F46E5] text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg whitespace-nowrap">
-                                 Hall A & B Entrance
+                                Hall A & B Entrance
                             </div>
                         </div>
 

@@ -15,10 +15,6 @@
     $displayCity = $authUser->city ?? 'Indonesia';
     $unreadNotifs = $authUser?->unreadNotifications?->count() ?? 0;
 
-    // TAMBAHKAN 2 BARIS INI untuk badge sidebar
-    $activeApplicationsCount = 3;  // Lamaran Aktif (sesuai dashboard)
-    $acceptedCount = 1;            // Diterima / Event Saya (sesuai dashboard)
-
     // Avatar Logic
     $displayAvatar = null;
     if ($authUser?->avatar_path) {
@@ -48,7 +44,8 @@
                 Beranda
             </a>
             
-            <a href="{{ route('search.index') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl {{ request()->routeIs('search.*') ? 'bg-indigo-50 text-[#4F46E5]' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition">
+            <!-- PERBAIKAN: Menu ini akan aktif juga saat di halaman detail event -->
+            <a href="{{ route('search.index') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl {{ request()->routeIs('search.*') || request()->routeIs('events.detail') ? 'bg-indigo-50 text-[#4F46E5]' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 Cari Event
             </a>
@@ -112,7 +109,7 @@
                     <span class="text-xs font-bold text-emerald-700">Status: Siap Bertugas</span>
                 </div>
 
-                <!-- PERBAIKAN: Notification Dropdown Sesuai Desain Baru -->
+                <!-- Notification Dropdown (Versi Hardcode yang Stabil) -->
                 <div x-data="{ 
                         open: false, 
                         activeTab: 'all',
@@ -124,8 +121,7 @@
                                 message: 'Selamat, kamu diterima sebagai <strong>Liaison Officer</strong> untuk event <strong>Indonesia Comic & Pop Culture Con 2025</strong>.',
                                 time: '15 mnt lalu',
                                 read: false,
-                                hasLink: true,
-                                linkText: 'Lihat Detail Penugasan'
+                                link: '#'
                             },
                             {
                                 id: 2,
@@ -134,27 +130,45 @@
                                 message: 'Briefing teknis via Zoom akan diselenggarakan besok pukul 19.30 WIB. Tautan ruang pertemuan telah tersedia.',
                                 time: '2 jam lalu',
                                 read: false,
-                                hasLink: false
+                                link: '#'
                             },
                             {
                                 id: 3,
                                 type: 'review',
                                 title: 'Berkas Sedang Ditinjau',
-                                message: 'Berkas lamaranmu untuk Bandung Creative Tech Summit 2025 sedang dalam proses kurasi panitia.',
+                                message: 'Berkas lamaranmu untuk <strong>Bandung Creative Tech Summit 2025</strong> sedang dalam proses kurasi panitia.',
                                 time: 'Kemarin, 14:15',
                                 read: true,
-                                hasLink: false
+                                link: '#'
                             },
                             {
                                 id: 4,
-                                type: 'update',
-                                title: 'Pembaruan Rundown Kegiatan',
-                                message: 'Koordinator divisi telah mengunggah pembaruan rundown untuk event yang kamu ikuti.',
+                                type: 'reminder',
+                                title: 'Pengingat Profil',
+                                message: 'Lengkapi profil dan unggah CV kamu untuk meningkatkan peluang diterima di event favoritmu.',
                                 time: '2 hari lalu',
                                 read: true,
-                                hasLink: false
+                                link: '#'
                             }
-                        ]
+                        ],
+                        get unreadCount() {
+                            return this.notifications.filter(n => !n.read).length;
+                        },
+                        get hasVisibleNotifications() {
+                            if (this.activeTab === 'all') return this.notifications.length > 0;
+                            return this.notifications.some(n => !n.read);
+                        },
+                        get filteredNotifications() {
+                            if (this.activeTab === 'all') return this.notifications;
+                            return this.notifications.filter(n => !n.read);
+                        },
+                        markAsRead(id) {
+                            const notif = this.notifications.find(n => n.id === id);
+                            if (notif) notif.read = true;
+                        },
+                        markAllAsRead() {
+                            this.notifications.forEach(n => n.read = true);
+                        }
                      }" 
                      class="relative" @click.outside="open = false">
                     
@@ -163,7 +177,9 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                         </svg>
-                        <span class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">2</span>
+                        <span x-show="unreadCount > 0" 
+                              class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white" 
+                              x-text="unreadCount"></span>
                     </button>
 
                     <!-- Dropdown Panel -->
@@ -171,9 +187,6 @@
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0 scale-95 translate-y-2"
                          x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-150"
-                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                         x-transition:leave-end="opacity-0 scale-95 translate-y-2"
                          class="absolute right-0 mt-2 w-[420px] bg-white rounded-2xl shadow-xl ring-1 ring-gray-200 overflow-hidden origin-top-right z-50">
                         
                         <!-- Header -->
@@ -181,9 +194,9 @@
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center gap-2">
                                     <h3 class="font-bold text-gray-900 text-base">Notifikasi</h3>
-                                    <span class="px-2 py-0.5 bg-indigo-50 text-[#4F46E5] text-xs font-bold rounded-full">2 Baru</span>
+                                    <span x-show="unreadCount > 0" class="px-2 py-0.5 bg-indigo-50 text-[#4F46E5] text-xs font-bold rounded-full" x-text="unreadCount + ' Baru'"></span>
                                 </div>
-                                <button class="text-xs font-bold text-[#4F46E5] hover:text-indigo-800 transition">Tandai semua dibaca</button>
+                                <button @click="markAllAsRead()" class="text-xs font-bold text-[#4F46E5] hover:text-indigo-800 transition">Tandai semua dibaca</button>
                             </div>
                             
                             <!-- Tab Filter -->
@@ -191,21 +204,21 @@
                                 <button @click="activeTab = 'all'" 
                                         :class="activeTab === 'all' ? 'text-[#4F46E5] border-b-2 border-[#4F46E5] font-bold' : 'text-gray-500 hover:text-gray-700'"
                                         class="pb-2.5 transition">
-                                    Semua (4)
+                                    Semua (<span x-text="notifications.length"></span>)
                                 </button>
                                 <button @click="activeTab = 'unread'" 
                                         :class="activeTab === 'unread' ? 'text-[#4F46E5] border-b-2 border-[#4F46E5] font-bold' : 'text-gray-500 hover:text-gray-700'"
                                         class="pb-2.5 transition">
-                                    Belum Dibaca (2)
+                                    Belum Dibaca (<span x-text="unreadCount"></span>)
                                 </button>
                             </div>
                         </div>
                         
                         <!-- List Notifikasi -->
                         <div class="max-h-[420px] overflow-y-auto">
-                            <template x-for="notif in notifications" :key="notif.id">
-                                <div x-show="activeTab === 'all' || (activeTab === 'unread' && !notif.read)"
-                                     class="px-5 py-4 hover:bg-gray-50 transition border-b border-gray-50 last:border-b-0"
+                            <template x-for="notif in filteredNotifications" :key="notif.id">
+                                <div @click="markAsRead(notif.id)"
+                                     class="px-5 py-4 hover:bg-gray-50 transition border-b border-gray-50 last:border-b-0 cursor-pointer"
                                      :class="!notif.read ? 'bg-white' : 'bg-gray-50/50'">
                                     <div class="flex gap-3">
                                         <!-- Icon Bulat -->
@@ -214,7 +227,7 @@
                                                 'bg-emerald-100 text-emerald-600': notif.type === 'accepted',
                                                 'bg-indigo-100 text-indigo-600': notif.type === 'briefing',
                                                 'bg-blue-100 text-blue-600': notif.type === 'review',
-                                                'bg-amber-100 text-amber-600': notif.type === 'update'
+                                                'bg-amber-100 text-amber-600': notif.type === 'reminder'
                                              }">
                                             <template x-if="notif.type === 'accepted'">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
@@ -225,7 +238,7 @@
                                             <template x-if="notif.type === 'review'">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                             </template>
-                                            <template x-if="notif.type === 'update'">
+                                            <template x-if="notif.type === 'reminder'">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                             </template>
                                         </div>
@@ -235,17 +248,16 @@
                                             <div class="flex items-start justify-between gap-2 mb-1">
                                                 <div class="flex items-center gap-1.5">
                                                     <p class="text-sm font-bold text-gray-900" x-html="notif.title"></p>
-                                                    <!-- Dot Biru untuk Belum Dibaca -->
                                                     <span x-show="!notif.read" class="w-1.5 h-1.5 rounded-full bg-[#4F46E5]"></span>
                                                 </div>
                                                 <span class="text-[11px] text-gray-400 whitespace-nowrap shrink-0" x-text="notif.time"></span>
                                             </div>
                                             <p class="text-xs text-gray-600 leading-relaxed mb-1.5" x-html="notif.message"></p>
                                             
-                                            <!-- Link Detail (Hanya untuk notifikasi tertentu) -->
-                                            <template x-if="notif.hasLink">
-                                                <a href="#" class="inline-flex items-center gap-1 text-xs font-bold text-[#4F46E5] hover:text-indigo-800 transition mt-1">
-                                                    <span x-text="notif.linkText"></span>
+                                            <!-- Link Detail -->
+                                            <template x-if="notif.link && notif.link !== '#'">
+                                                <a :href="notif.link" @click.stop class="inline-flex items-center gap-1 text-xs font-bold text-[#4F46E5] hover:text-indigo-800 transition mt-1">
+                                                    Lihat Detail Penugasan
                                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
                                                 </a>
                                             </template>
@@ -255,22 +267,20 @@
                             </template>
                             
                             <!-- Empty State -->
-                            <div x-show="activeTab === 'unread' && notifications.filter(n => !n.read).length === 0" 
-                                 class="px-5 py-12 text-center">
+                            <div x-show="!hasVisibleNotifications" class="px-5 py-12 text-center">
                                 <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
                                     <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                 </div>
-                                <p class="text-sm font-medium text-gray-500">Semua notifikasi sudah dibaca</p>
+                                <p class="text-sm font-medium text-gray-500" x-text="activeTab === 'unread' ? 'Semua notifikasi sudah dibaca' : 'Belum ada notifikasi'"></p>
                             </div>
                         </div>
                         
                         <!-- Footer -->
                         <div class="px-5 py-3 bg-gray-50 border-t border-gray-100 text-center">
-                            <button class="text-xs font-bold text-[#4F46E5] hover:text-indigo-800 transition">Semua Notifikasi Terbaca</button>
+                            <button @click="markAllAsRead()" class="text-xs font-bold text-[#4F46E5] hover:text-indigo-800 transition">Tandai Semua Notifikasi Terbaca</button>
                         </div>
                     </div>
                 </div>
-                <!-- Akhir Notification Dropdown -->
 
                 <!-- User Profile Dropdown -->
                 <div x-data="{ open: false }" class="relative" @click.outside="open = false">

@@ -17,19 +17,17 @@ class CrewDashboardController extends Controller
         $userName = $user?->name ?? 'Crew';
         $firstName = explode(' ', trim($userName))[0];
 
-        // Data dummy metrik untuk badge sidebar
         $activeApplicationsCount = 3;
         $pendingReviewCount = 2;
         $acceptedCount = 1;
 
         $categories = ['Semua', 'Festival', 'Seminar', 'Sosial', 'Kampus', 'Komunitas', 'Olahraga'];
 
-        // 4 Event untuk Beranda dengan gambar lokal
         $recommendedEvents = [
             [
                 'id' => 1,
                 'title' => 'Bandung Creative Tech Summit 2025',
-                'category' => 'Seminar & Tech',
+                'category' => 'Seminar', 
                 'filter_category' => 'Seminar',
                 'organizer' => 'Bandung Digital Hub',
                 'is_verified' => true,
@@ -39,11 +37,13 @@ class CrewDashboardController extends Controller
                 'location' => 'Sabuga ITB, Bandung',
                 'positions' => 'Registrasi, Usher, Media',
                 'image' => asset('images/dashboard-crew/tech-summit.jpg'),
+                'is_active' => true,
+                'deadline' => '2025-06-10',
             ],
             [
                 'id' => 2,
                 'title' => 'Jakarta International Java Jazz Festival 2025',
-                'category' => 'Festival Musik',
+                'category' => 'Festival', 
                 'filter_category' => 'Festival',
                 'organizer' => 'PT Java Festival Production',
                 'is_verified' => true,
@@ -53,11 +53,13 @@ class CrewDashboardController extends Controller
                 'location' => 'JIExpo Kemayoran, Jakarta',
                 'positions' => 'Liaison Officer (LO), Stage Crew, Ticketing',
                 'image' => asset('images/dashboard-crew/java-jazz.jpg'),
+                'is_active' => true,
+                'deadline' => '2025-05-20',
             ],
             [
                 'id' => 3,
                 'title' => 'Run For Earth Green Marathon 2025',
-                'category' => 'Olahraga & Sosial',
+                'category' => 'Olahraga', 
                 'filter_category' => 'Olahraga',
                 'organizer' => 'Yayasan Bumi Lestari',
                 'is_verified' => true,
@@ -67,11 +69,13 @@ class CrewDashboardController extends Controller
                 'location' => 'GBK Senayan, Jakarta',
                 'positions' => 'Water Marshal, Medis, Rute',
                 'image' => asset('images/dashboard-crew/green-marathon.jpg'),
+                'is_active' => true,
+                'deadline' => '2025-06-23',
             ],
             [
                 'id' => 4,
                 'title' => 'Nusantara Coffee & Food Expo 2025',
-                'category' => 'Pameran & Kuliner',
+                'category' => 'Kampus', 
                 'filter_category' => 'Kampus',
                 'organizer' => 'Kopi Kita Media Event',
                 'is_verified' => true,
@@ -81,8 +85,14 @@ class CrewDashboardController extends Controller
                 'location' => 'Jogja Expo Center, Yogyakarta',
                 'positions' => 'Exhibition Crew & Guest Relation',
                 'image' => asset('images/dashboard-crew/coffee-expo.jpg'),
+                'is_active' => true,
+                'deadline' => '2025-07-01',
             ],
         ];
+
+        $recommendedEvents = array_values(array_filter($recommendedEvents, function ($event) {
+            return $event['is_active'] === true;
+        }));
 
         return view('crew.dashboard', compact(
             'user',
