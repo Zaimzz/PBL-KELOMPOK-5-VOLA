@@ -7,6 +7,7 @@ use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -47,5 +48,15 @@ class User extends Authenticatable
     public function organizerProfile(): HasOne
     {
         return $this->hasOne(OrganizerProfile::class);
+    }
+
+    public function reportsFiled(): HasMany
+    {
+        return $this->hasMany(Report::class, 'reporter_id');
+    }
+
+    public function reportsAgainst(): HasMany
+    {
+        return $this->hasMany(Report::class, 'reported_id');
     }
 }

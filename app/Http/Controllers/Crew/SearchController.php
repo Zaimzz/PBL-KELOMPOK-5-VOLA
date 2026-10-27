@@ -16,9 +16,10 @@ class SearchController extends Controller
         $position = $request->input('position', []);
         $time = $request->input('time', '');
         $status = $request->input('status', []);
-        $page = $request->input('page', 1);
+        $page = (int) $request->input('page', 1);
         $perPage = 6;
 
+        // Data dummy event (nanti bisa diganti dengan query database)
         $allEvents = [
             [
                 'id' => 1,
@@ -295,7 +296,7 @@ class SearchController extends Controller
             [
                 'id' => 18,
                 'title' => 'Pentas Seni Budaya Nusantara 2025',
-                'category' => 'SENI & BUDAYA',
+                'category' => 'FILM & SENI',
                 'filter_category' => 'Komunitas',
                 'organizer' => 'Sanggar Budaya',
                 'is_verified' => true,
@@ -310,14 +311,24 @@ class SearchController extends Controller
             ],
         ];
 
-        $filteredEvents = collect($allEvents)->filter(function ($event) use ($query, $category, $location, $position, $time, $status) {
-           
+        $filteredEvents = collect($allEvents)->filter(function ($event) use (
+            $query,
+            $category,
+            $location,
+            $position,
+            $time,
+            $status
+        ) {
             if (!empty($query)) {
                 $searchable = strtolower($query);
-                if (!str_contains(strtolower($event['title']), $searchable)
+
+                if (
+                    !str_contains(strtolower($event['title']), $searchable)
                     && !str_contains(strtolower($event['category']), $searchable)
                     && !str_contains(strtolower($event['organizer']), $searchable)
-                    && !str_contains(strtolower($event['location']), $searchable)) {
+                    && !str_contains(strtolower($event['location']), $searchable)
+                    && !str_contains(strtolower($event['positions']), $searchable)
+                ) {
                     return false;
                 }
             }
@@ -326,42 +337,83 @@ class SearchController extends Controller
                 return false;
             }
 
-            if (!empty($location) && !str_contains(strtolower($event['location']), strtolower($location))) {
+            if (
+                !empty($location)
+                && !str_contains(
+                    strtolower($event['location']),
+                    strtolower($location)
+                )
+            ) {
                 return false;
             }
 
             if (!empty($position)) {
                 $hasPosition = false;
+
                 foreach ($position as $pos) {
-                    if (str_contains(strtolower($event['positions']), strtolower($pos))) {
+                    if (str_contains(
+                        strtolower($event['positions']),
+                        strtolower($pos)
+                    )) {
                         $hasPosition = true;
                         break;
                     }
                 }
-                if (!$hasPosition) return false;
+
+                if (!$hasPosition) {
+                    return false;
+                }
             }
 
             if (!empty($status)) {
                 $hasStatus = false;
+
                 foreach ($status as $stat) {
-                    if (str_contains(strtolower($event['status_badge']), strtolower($stat))) {
+                    if (str_contains(
+                        strtolower($event['status_badge']),
+                        strtolower($stat)
+                    )) {
                         $hasStatus = true;
                         break;
                     }
                 }
-                if (!$hasStatus) return false;
+
+                if (!$hasStatus) {
+                    return false;
+                }
             }
 
             return true;
         })->values();
 
         $totalEvents = $filteredEvents->count();
-        $totalPages = ceil($totalEvents / $perPage);
+        $totalPages = (int) ceil($totalEvents / $perPage);
+        $page = max(1, min($page, max(1, $totalPages)));
         $offset = ($page - 1) * $perPage;
-        $paginatedEvents = $filteredEvents->slice($offset, $perPage)->values();
 
-        $categories = ['Semua', 'Festival', 'Seminar', 'Sosial', 'Kampus', 'Komunitas', 'Olahraga', 'Musik'];
-        $locations = ['Semua Lokasi', 'Jakarta', 'Bandung', 'Yogyakarta', 'Surabaya', 'Bali'];
+        $paginatedEvents = $filteredEvents
+            ->slice($offset, $perPage)
+            ->values();
+
+        $categories = [
+            'Semua',
+            'Festival',
+            'Seminar',
+            'Sosial',
+            'Kampus',
+            'Komunitas',
+            'Olahraga',
+            'Musik',
+        ];
+
+        $locations = [
+            'Semua Lokasi',
+            'Jakarta',
+            'Bandung',
+            'Yogyakarta',
+            'Surabaya',
+            'Bali',
+        ];
 
         return view('crew.search', compact(
             'paginatedEvents',

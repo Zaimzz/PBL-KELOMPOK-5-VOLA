@@ -33,13 +33,13 @@ class SettingsController extends Controller
         } else {
             $selectedSkills = [];
         }
-        
+
         $preferredCity = $profile?->city ?? '';
 
         return view('crew.settings', compact(
-            'user', 
-            'availableCategories', 
-            'selectedSkills', 
+            'user',
+            'availableCategories',
+            'selectedSkills',
             'preferredCity'
         ));
     }
@@ -47,7 +47,7 @@ class SettingsController extends Controller
     public function updateProfile(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|unique:users,email,' . Auth::id(),
+            'email' => 'required|email|unique:users,email,'.Auth::id(),
             'phone' => 'nullable|string|max:20',
         ]);
 
@@ -70,7 +70,7 @@ class SettingsController extends Controller
         $cityData = $request->input('city');
 
         $profile = $user->volunteerProfile;
-        
+
         if ($profile) {
             $profile->update([
                 'skills' => $skillsData,

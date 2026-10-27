@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -54,7 +54,7 @@ class PasswordResetLinkController extends Controller
         $token = Password::broker()->createToken($user);
         
 
-        $user->notify(new \Illuminate\Auth\Notifications\ResetPassword($token));
+        $user->notify(new ResetPassword($token));
 
         return back()->with('status', __('passwords.sent'));
     }

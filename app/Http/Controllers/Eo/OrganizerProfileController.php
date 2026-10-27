@@ -86,9 +86,7 @@ class OrganizerProfileController extends Controller
                 $validated['rejection_reason'],
             );
 
-            $user->organizerProfile()->create(array_merge($validated, [
-                'verification_status' => VerificationStatus::Pending,
-            ]));
+            $user->organizerProfile()->create($validated);
         }
 
         return redirect()
@@ -122,6 +120,33 @@ class OrganizerProfileController extends Controller
             return redirect()
                 ->route('eo.organization')
                 ->with('warning', 'Akun Anda sudah terverifikasi.');
+        }
+
+        // Validasi kelengkapan data sebelum diajukan ke Admin
+        $requiredFields = [
+            'organization_name' => 'nama organisasi',
+            'organization_type' => 'jenis organisasi',
+            'description' => 'deskripsi organisasi',
+            'city' => 'kota/domisili',
+            'pic_name' => 'nama PIC',
+            'pic_phone' => 'nomor telepon PIC',
+        ];
+
+        $missingFields = [];
+        foreach ($requiredFields as $field => $label) {
+            if (empty($profile->$field)) {
+                $missingFields[] = $label;
+            }
+        }
+
+        if (! $profile->document_path) {
+            $missingFields[] = 'dokumen legal';
+        }
+
+        if (! empty($missingFields)) {
+            return redirect()
+                ->route('eo.organization')
+                ->with('error', 'Data berikut harus dilengkapi sebelum mengajukan verifikasi: '.implode(', ', $missingFields).'.');
         }
 
         // Status rejected atau null → set ke pending, hapus rejection_reason

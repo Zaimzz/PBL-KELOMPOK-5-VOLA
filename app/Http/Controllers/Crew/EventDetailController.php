@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Crew;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class EventDetailController extends Controller

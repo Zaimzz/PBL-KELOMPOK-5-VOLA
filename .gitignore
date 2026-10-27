@@ -25,5 +25,15 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+PRD.md
 .claude/
-PRD (1).md
+.agents/
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+.env.playwright
