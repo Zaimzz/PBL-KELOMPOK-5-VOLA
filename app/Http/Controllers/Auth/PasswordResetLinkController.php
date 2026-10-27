@@ -12,6 +12,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+
 class PasswordResetLinkController extends Controller
 {
     /**
@@ -51,6 +52,7 @@ class PasswordResetLinkController extends Controller
         }
 
         $token = Password::broker()->createToken($user);
+        
 
         $user->notify(new ResetPassword($token));
 

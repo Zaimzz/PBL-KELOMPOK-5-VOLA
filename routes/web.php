@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Crew\CrewDashboardController;
 use App\Http\Controllers\Crew\EventDetailController;
+use App\Http\Controllers\Crew\NotificationController;
+use App\Http\Controllers\Crew\ProfileController as CrewProfileController;
 use App\Http\Controllers\Crew\SearchController;
 use App\Http\Controllers\Crew\SettingsController;
 use App\Http\Controllers\Eo\EoDashboardController;
@@ -21,13 +23,6 @@ use App\Http\Controllers\PublicEventController;
 use App\Models\Event;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Public Routes
-|--------------------------------------------------------------------------
-*/
-
-// Landing page
 Route::get('/', function () {
     $events = Event::query()
         ->with(['category', 'organizer'])
@@ -41,17 +36,9 @@ Route::get('/', function () {
     return view('welcome', compact('events'));
 })->name('home');
 
-// Public event detail
 Route::get('/events/{slug}', [PublicEventController::class, 'show'])
     ->name('events.show');
 
-/*
-|--------------------------------------------------------------------------
-| Authenticated Routes
-|--------------------------------------------------------------------------
-*/
-
-// Routes accessible to all authenticated, verified users
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
@@ -63,46 +50,51 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('profile.destroy');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Volunteer Routes
-|--------------------------------------------------------------------------
-*/
-
 Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
-    Route::get('/dashboard', [CrewDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [CrewDashboardController::class, 'index'])
+        ->name('dashboard');
 
-    // Route Profil
-    Route::get('/profile', [App\Http\Controllers\Crew\ProfileController::class, 'show'])->name('profile.show');
-    Route::get('/profile/edit', [App\Http\Controllers\Crew\ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile', [App\Http\Controllers\Crew\ProfileController::class, 'update'])->name('profile.update');
+    // Route Profil Volunteer
+    Route::get('/profile', [CrewProfileController::class, 'show'])
+        ->name('profile.show');
+
+    Route::get('/profile/edit', [CrewProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::put('/profile', [CrewProfileController::class, 'update'])
+        ->name('profile.update');
 
     // Route Settings
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-    Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.update.profile');
-    Route::put('/settings/preferences', [SettingsController::class, 'updatePreferences'])->name('settings.update.preferences');
+    Route::get('/settings', [SettingsController::class, 'index'])
+        ->name('settings.index');
 
-    // Route Pencarian
-    Route::get('/search', [SearchController::class, 'index'])->name('search.index');
-    Route::get('/events/{event}', [EventDetailController::class, 'show'])->name('events.detail');
+    Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])
+        ->name('settings.update.profile');
+
+    Route::put('/settings/preferences', [SettingsController::class, 'updatePreferences'])
+        ->name('settings.update.preferences');
+
+    // Route Pencarian dan Detail Event
+    Route::get('/search', [SearchController::class, 'index'])
+        ->name('search.index');
+
+    Route::get('/events/{event}', [EventDetailController::class, 'show'])
+        ->name('events.detail');
+
+    // Route Notifikasi Volunteer
+    Route::get('/api/notifications', [NotificationController::class, 'index']);
+    Route::post('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 });
 
-// Route volunteer lainnya diletakkan di sini.
-/*
-|--------------------------------------------------------------------------
-| Event Organizer (EO) Routes
-|--------------------------------------------------------------------------
-*/
-
+// Route Event Organizer (EO)
 Route::middleware(['auth', 'verified', 'role:eo'])
     ->prefix('eo')
     ->name('eo.')
     ->group(function () {
-        // EO Dashboard
         Route::get('/dashboard', [EoDashboardController::class, 'index'])
             ->name('dashboard');
 
-        // Organization Profile
         Route::get('/organization', [OrganizerProfileController::class, 'show'])
             ->name('organization');
 
@@ -115,7 +107,6 @@ Route::middleware(['auth', 'verified', 'role:eo'])
         Route::post('/organization/verify', [OrganizerProfileController::class, 'submitVerification'])
             ->name('organization.verify');
 
-        // Event CRUD
         Route::get('/events', [EventController::class, 'index'])
             ->name('events.index');
 
@@ -134,11 +125,9 @@ Route::middleware(['auth', 'verified', 'role:eo'])
         Route::delete('/events/{event}', [EventController::class, 'destroy'])
             ->name('events.destroy');
 
-        // Submit event for review
         Route::post('/events/{event}/submit', [EventController::class, 'submit'])
             ->name('events.submit');
 
-        // Event Position Management
         Route::post('/events/{event}/positions', [EventPositionController::class, 'store'])
             ->name('events.positions.store');
 
@@ -149,21 +138,15 @@ Route::middleware(['auth', 'verified', 'role:eo'])
             ->name('events.positions.destroy');
     });
 
-/*
-|--------------------------------------------------------------------------
-| Admin Routes
-|--------------------------------------------------------------------------
-*/
-
+// Route Admin
 Route::middleware(['auth', 'verified', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-        // Admin Dashboard
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
             ->name('dashboard');
 
-        // EO Verification
+        // Verifikasi EO
         Route::get('/eo-verifications', [EoVerificationController::class, 'index'])
             ->name('eo-verifications');
 
@@ -179,46 +162,59 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         // Review Events
         Route::get('/review-events', [ReviewEventController::class, 'index'])
             ->name('review-events.index');
+
         Route::get('/review-events/{event}', [ReviewEventController::class, 'show'])
             ->name('review-events.show');
+
         Route::post('/review-events/{event}/approve', [ReviewEventController::class, 'approve'])
             ->name('review-events.approve');
+
         Route::post('/review-events/{event}/reject', [ReviewEventController::class, 'reject'])
             ->name('review-events.reject');
 
-        // Aliases for review event route naming
+        // Alias route Review Events
         Route::get('/review-event', [ReviewEventController::class, 'index'])
             ->name('review-event.index');
+
         Route::get('/review-events-list', [ReviewEventController::class, 'index'])
             ->name('review-events');
 
         // Active Events
         Route::get('/active-events', [ActiveEventController::class, 'index'])
             ->name('active-events.index');
+
         Route::get('/active-events/{event}', [ActiveEventController::class, 'show'])
             ->name('active-events.show');
+
         Route::get('/active-events-list', [ActiveEventController::class, 'index'])
             ->name('active-events');
 
         // User Management
         Route::get('/users', [UserController::class, 'index'])
             ->name('users.index');
+
         Route::get('/users/{user}', [UserController::class, 'show'])
             ->name('users.show');
+
         Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])
             ->name('users.toggle-status');
+
         Route::get('/users-list', [UserController::class, 'index'])
             ->name('users');
 
         // Reports Moderation
         Route::get('/reports', [ReportController::class, 'index'])
             ->name('reports.index');
+
         Route::get('/reports/{report}', [ReportController::class, 'show'])
             ->name('reports.show');
+
         Route::post('/reports/{report}/action', [ReportController::class, 'handleAction'])
             ->name('reports.action');
+
         Route::get('/reports/{report}/evidence', [ReportController::class, 'downloadEvidence'])
             ->name('reports.evidence');
+
         Route::get('/reports-list', [ReportController::class, 'index'])
             ->name('reports');
 
