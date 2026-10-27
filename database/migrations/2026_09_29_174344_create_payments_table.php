@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('transaction_id')->nullable();
             $table->string('payment_type')->nullable();
             $table->unsignedInteger('amount');
-            $table->string('status')->default(PaymentStatus::Pending->value)->index();
+            $table->enum('status', ['pending', 'paid', 'failed', 'expired', 'cancelled'])->default('pending')->index();
             $table->timestamp('paid_at')->nullable();
             $table->timestamp('expired_at')->nullable();
             $table->json('payload')->nullable();

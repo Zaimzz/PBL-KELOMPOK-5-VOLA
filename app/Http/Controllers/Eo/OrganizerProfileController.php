@@ -127,9 +127,9 @@ class OrganizerProfileController extends Controller
         // Status rejected atau null → set ke pending, hapus rejection_reason
         $profile->update([
             'verification_status' => VerificationStatus::Pending,
-            'rejection_reason'    => null,
-            'verified_by'         => null,
-            'verified_at'         => null,
+            'rejection_reason' => null,
+            'verified_by' => null,
+            'verified_at' => null,
         ]);
 
         return redirect()

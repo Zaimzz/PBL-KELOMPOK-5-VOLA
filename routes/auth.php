@@ -28,6 +28,17 @@ Route::middleware('guest')->group(function () {
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
         ->name('password.email');
 
+    Route::get('reset-password/{token}', [App\Http\Controllers\Auth\NewPasswordController::class, 'create'])
+        ->name('password.reset');
+
+    Route::post('reset-password', [App\Http\Controllers\Auth\NewPasswordController::class, 'store'])
+        ->name('password.store');
+
+    Route::get('admin/login', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'create'])
+        ->name('admin.login');
+
+    Route::post('admin/login', [App\Http\Controllers\Auth\AdminAuthenticatedSessionController::class, 'store']);
+
     Route::get('auth/google/redirect', [GoogleAuthController::class, 'redirect'])
         ->name('auth.google.redirect');
 

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('pic_phone')->nullable();
             $table->string('social_link')->nullable();
             $table->string('document_path')->nullable();
-            $table->string('verification_status')->default(VerificationStatus::Pending->value)->index();
+            $table->enum('verification_status', ['pending', 'verified', 'rejected'])->default('pending')->index();
             $table->foreignId('verified_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('verified_at')->nullable();
             $table->text('rejection_reason')->nullable();

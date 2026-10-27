@@ -24,17 +24,19 @@ class GoogleAuthController extends Controller
         $user = User::where('email', $googleUser->getEmail())->first();
 
         if ($user) {
+            if ($user->role === UserRole::Admin) {
+                return redirect()->route('login')->withErrors(['email' => 'Admin tidak dapat masuk melalui akun Google. Silakan gunakan portal Administrator.']);
+            }
+
             if (! $user->google_id) {
                 $user->update(['google_id' => $googleUser->getId(),
                     'email_verified_at' => now(),
                 ]);
-
             }
 
             Auth::login($user);
 
             $dashboardRoute = match ($user->role) {
-                UserRole::Admin => route('admin.dashboard', absolute: false),
                 UserRole::Eo => route('eo.dashboard', absolute: false),
                 default => route('dashboard', absolute: false),
             };
@@ -97,7 +99,6 @@ class GoogleAuthController extends Controller
         Auth::login($user);
 
         $dashboardRoute = match ($user->role) {
-            UserRole::Admin => route('admin.dashboard', absolute: false),
             UserRole::Eo => route('eo.dashboard', absolute: false),
             default => route('dashboard', absolute: false),
         };
