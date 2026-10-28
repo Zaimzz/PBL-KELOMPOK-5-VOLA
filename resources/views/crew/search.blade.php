@@ -1,4 +1,4 @@
-<x-layouts.crew title="Cari Event - VOLA">
+﻿<x-layouts.crew title="Cari Event - VOLA">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
         <div class="mb-6">
@@ -103,7 +103,7 @@
                                         {{ $time === '1-3-bulan' ? 'checked' : '' }}
                                         onchange="this.form.submit()"
                                         class="w-4 h-4 text-[#4F46E5] border-gray-300 focus:ring-[#4F46E5]">
-                                    <span class="text-sm text-gray-700">1–3 Bulan Ke Depan</span>
+                                    <span class="text-sm text-gray-700">1â€“3 Bulan Ke Depan</span>
                                 </label>
                             </div>
                         </div>
@@ -244,7 +244,7 @@
                     @if($totalPages > 1)
                         <div class="mt-6 flex items-center justify-between">
                             <p class="text-sm text-gray-500">
-                                Menampilkan {{ (($page - 1) * $perPage) + 1 }}–{{ min($page * $perPage, $totalEvents) }} dari {{ $totalEvents }} event
+                                Menampilkan {{ (($page - 1) * $perPage) + 1 }}â€“{{ min($page * $perPage, $totalEvents) }} dari {{ $totalEvents }} event
                             </p>
                             <div class="flex items-center gap-1">
                                 @if($page > 1)
