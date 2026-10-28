@@ -78,7 +78,7 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     Route::get('/search', [SearchController::class, 'index'])
         ->name('search.index');
 
-    Route::get('/events/{event}', [EventDetailController::class, 'show'])
+    Route::get('/crew/events/{event}', [EventDetailController::class, 'show'])
         ->name('events.detail');
 
     // Route Notifikasi Volunteer
