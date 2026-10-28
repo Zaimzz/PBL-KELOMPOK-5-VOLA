@@ -1,4 +1,4 @@
-﻿<x-layouts.crew title="Cari Event - VOLA">
+<x-layouts.crew title="Cari Event - VOLA">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
         <div class="mb-6">
@@ -20,6 +20,24 @@
                         class="w-full pl-12 pr-4 py-3 rounded-xl border-0 focus:ring-0 outline-none text-sm"
                     >
                 </div>
+                @if($category && $category !== 'Semua')
+                    <input type="hidden" name="category" value="{{ $category }}">
+                @endif
+                @if($location)
+                    <input type="hidden" name="location" value="{{ $location }}">
+                @endif
+                @foreach((array)$position as $pos)
+                    <input type="hidden" name="position[]" value="{{ $pos }}">
+                @endforeach
+                @if($time)
+                    <input type="hidden" name="time" value="{{ $time }}">
+                @endif
+                @foreach((array)$status as $st)
+                    <input type="hidden" name="status[]" value="{{ $st }}">
+                @endforeach
+                @if(!empty($sort) && $sort !== 'terdekat')
+                    <input type="hidden" name="sort" value="{{ $sort }}">
+                @endif
                 <button type="submit" class="px-6 py-3 bg-[#4F46E5] text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition flex items-center gap-2">
                     Cari
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,16 +61,22 @@
                         <a href="{{ route('search.index') }}" class="text-xs text-[#4F46E5] hover:underline">Reset Filter</a>
                     </div>
 
-                    <form action="{{ route('search.index') }}" method="GET">
+                    <form action="{{ route('search.index') }}" method="GET" x-data="{ selectedCategory: '{{ $category }}', selectedTime: '{{ $time }}' }">
                         <input type="hidden" name="q" value="{{ $query }}">
+                        <input type="hidden" name="category" :value="selectedCategory">
+                        @if(!empty($sort) && $sort !== 'terdekat')
+                            <input type="hidden" name="sort" value="{{ $sort }}">
+                        @endif
 
                         <div class="mb-5">
                             <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Kategori</p>
                             <div class="flex flex-wrap gap-1.5">
                                 @foreach($categories as $cat)
-                                    <button type="submit" name="category" value="{{ $cat }}"
-                                        class="px-3 py-1 rounded-full text-xs font-medium transition
-                                        {{ $category === $cat ? 'bg-[#4F46E5] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                                    <button 
+                                        type="button"
+                                        @click="selectedCategory = '{{ $cat }}'"
+                                        :class="selectedCategory === '{{ $cat }}' ? 'bg-[#4F46E5] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                                        class="px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer">
                                         {{ $cat }}
                                     </button>
                                 @endforeach
@@ -61,7 +85,7 @@
 
                         <div class="mb-5">
                             <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Lokasi</p>
-                            <select name="location" onchange="this.form.submit()" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent outline-none">
+                            <select name="location" class="w-full pl-3 pr-10 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent outline-none cursor-pointer">
                                 @foreach($locations as $loc)
                                     <option value="{{ $loc === 'Semua Lokasi' ? '' : $loc }}" {{ $location === ($loc === 'Semua Lokasi' ? '' : $loc) ? 'selected' : '' }}>
                                         {{ $loc }}
@@ -80,7 +104,6 @@
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="position[]" value="{{ $pos }}" 
                                             {{ in_array($pos, (array)$position) ? 'checked' : '' }}
-                                            onchange="this.form.submit()"
                                             class="w-4 h-4 text-[#4F46E5] border-gray-300 rounded focus:ring-[#4F46E5]">
                                         <span class="text-sm text-gray-700">{{ $pos }}</span>
                                     </label>
@@ -93,17 +116,19 @@
                             <div class="space-y-2">
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="radio" name="time" value="bulan-ini" 
+                                        x-model="selectedTime"
+                                        @click="if (selectedTime === 'bulan-ini') { $nextTick(() => { selectedTime = ''; }); }"
                                         {{ $time === 'bulan-ini' ? 'checked' : '' }}
-                                        onchange="this.form.submit()"
                                         class="w-4 h-4 text-[#4F46E5] border-gray-300 focus:ring-[#4F46E5]">
                                     <span class="text-sm text-gray-700">Bulan Ini</span>
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="radio" name="time" value="1-3-bulan" 
+                                        x-model="selectedTime"
+                                        @click="if (selectedTime === '1-3-bulan') { $nextTick(() => { selectedTime = ''; }); }"
                                         {{ $time === '1-3-bulan' ? 'checked' : '' }}
-                                        onchange="this.form.submit()"
                                         class="w-4 h-4 text-[#4F46E5] border-gray-300 focus:ring-[#4F46E5]">
-                                    <span class="text-sm text-gray-700">1â€“3 Bulan Ke Depan</span>
+                                    <span class="text-sm text-gray-700">1–3 Bulan Ke Depan</span>
                                 </label>
                             </div>
                         </div>
@@ -114,14 +139,12 @@
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" name="status[]" value="Open Volunteer" 
                                         {{ in_array('Open Volunteer', (array)$status) ? 'checked' : '' }}
-                                        onchange="this.form.submit()"
                                         class="w-4 h-4 text-[#4F46E5] border-gray-300 rounded focus:ring-[#4F46E5]">
                                     <span class="text-sm text-gray-700">Open Volunteer</span>
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" name="status[]" value="Event Informasi Saja" 
                                         {{ in_array('Event Informasi Saja', (array)$status) ? 'checked' : '' }}
-                                        onchange="this.form.submit()"
                                         class="w-4 h-4 text-[#4F46E5] border-gray-300 rounded focus:ring-[#4F46E5]">
                                     <span class="text-sm text-gray-700">Event Informasi Saja</span>
                                 </label>
@@ -142,14 +165,33 @@
                         <h2 class="text-lg font-bold text-gray-900">{{ $totalEvents }} Event Ditemukan</h2>
                         <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">Aktif</span>
                     </div>
-                    <div class="flex items-center gap-2 text-sm">
+                    <form action="{{ route('search.index') }}" method="GET" class="flex items-center gap-2 text-sm">
+                        @if(!empty($query))
+                            <input type="hidden" name="q" value="{{ $query }}">
+                        @endif
+                        @if(!empty($category) && $category !== 'Semua')
+                            <input type="hidden" name="category" value="{{ $category }}">
+                        @endif
+                        @if(!empty($location))
+                            <input type="hidden" name="location" value="{{ $location }}">
+                        @endif
+                        @foreach((array)$position as $pos)
+                            <input type="hidden" name="position[]" value="{{ $pos }}">
+                        @endforeach
+                        @if(!empty($time))
+                            <input type="hidden" name="time" value="{{ $time }}">
+                        @endif
+                        @foreach((array)$status as $st)
+                            <input type="hidden" name="status[]" value="{{ $st }}">
+                        @endforeach
+
                         <span class="text-gray-500">Urutkan:</span>
-                        <select class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-[#4F46E5] outline-none">
-                            <option>Batas Waktu Terdekat</option>
-                            <option>Terbaru</option>
-                            <option>Terpopuler</option>
+                        <select name="sort" onchange="this.form.submit()" class="border border-gray-200 rounded-lg pl-3 pr-10 py-1.5 text-sm bg-white focus:ring-2 focus:ring-[#4F46E5] outline-none cursor-pointer">
+                            <option value="terdekat" {{ $sort === 'terdekat' ? 'selected' : '' }}>Batas Waktu Terdekat</option>
+                            <option value="terbaru" {{ $sort === 'terbaru' ? 'selected' : '' }}>Terbaru</option>
+                            <option value="terpopuler" {{ $sort === 'terpopuler' ? 'selected' : '' }}>Terpopuler</option>
                         </select>
-                    </div>
+                    </form>
                 </div>
 
                 @if($paginatedEvents->count() > 0)
@@ -244,7 +286,7 @@
                     @if($totalPages > 1)
                         <div class="mt-6 flex items-center justify-between">
                             <p class="text-sm text-gray-500">
-                                Menampilkan {{ (($page - 1) * $perPage) + 1 }}â€“{{ min($page * $perPage, $totalEvents) }} dari {{ $totalEvents }} event
+                                Menampilkan {{ (($page - 1) * $perPage) + 1 }}–{{ min($page * $perPage, $totalEvents) }} dari {{ $totalEvents }} event
                             </p>
                             <div class="flex items-center gap-1">
                                 @if($page > 1)

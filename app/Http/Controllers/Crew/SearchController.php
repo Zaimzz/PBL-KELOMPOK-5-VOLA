@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Http\Controllers\Crew;
 
@@ -13,13 +13,13 @@ class SearchController extends Controller
         $query = $request->input('q', '');
         $category = $request->input('category', 'Semua');
         $location = $request->input('location', '');
-        $position = $request->input('position', []);
+        $position = (array) $request->input('position', []);
         $time = $request->input('time', '');
-        $status = $request->input('status', []);
+        $status = (array) $request->input('status', []);
+        $sort = strtolower((string) $request->input('sort', 'terdekat'));
         $page = (int) $request->input('page', 1);
         $perPage = 6;
 
-        // Data dummy event (nanti bisa diganti dengan query database)
         $allEvents = [
             [
                 'id' => 1,
@@ -31,7 +31,7 @@ class SearchController extends Controller
                 'status_badge' => 'Open Volunteer',
                 'status_badge_type' => 'success',
                 'days_left' => 5,
-                'date' => '14 â€“ 16 Juni 2025',
+                'date' => '14 – 16 Juni 2025',
                 'location' => 'JCC Senayan, Jakarta',
                 'positions' => 'LO, Usher, Stage Crew, Media, Registrasi',
                 'position_count' => 5,
@@ -47,7 +47,7 @@ class SearchController extends Controller
                 'status_badge' => 'Open Volunteer',
                 'status_badge_type' => 'success',
                 'days_left' => 12,
-                'date' => '2 â€“ 3 Mei 2025',
+                'date' => '2 – 3 Mei 2025',
                 'location' => 'Malioboro, Yogyakarta',
                 'positions' => 'Crowd Control, Info Booth, Media',
                 'position_count' => 12,
@@ -79,7 +79,7 @@ class SearchController extends Controller
                 'status_badge' => 'Open Volunteer',
                 'status_badge_type' => 'success',
                 'days_left' => 30,
-                'date' => '1 â€“ 5 Juli 2025',
+                'date' => '1 – 5 Juli 2025',
                 'location' => 'TIM, Jakarta Pusat',
                 'positions' => 'Ticketing, Screening, Usher, Dokumentasi',
                 'position_count' => 5,
@@ -95,7 +95,7 @@ class SearchController extends Controller
                 'status_badge' => 'Event Informasi Saja',
                 'status_badge_type' => 'warning',
                 'days_left' => 15,
-                'date' => '12 â€“ 14 Juni 2025',
+                'date' => '12 – 14 Juni 2025',
                 'location' => 'Menara Multimedia, Jakarta',
                 'positions' => 'Khusus Peserta / Undangan',
                 'position_count' => 0,
@@ -111,7 +111,7 @@ class SearchController extends Controller
                 'status_badge' => 'Open Volunteer',
                 'status_badge_type' => 'success',
                 'days_left' => 25,
-                'date' => '28 â€“ 29 Mei 2025',
+                'date' => '28 – 29 Mei 2025',
                 'location' => 'Gasibu, Bandung',
                 'positions' => 'Booth Coord, Logistik, MC, Security',
                 'position_count' => 25,
@@ -127,7 +127,7 @@ class SearchController extends Controller
                 'status_badge' => 'Open Volunteer',
                 'status_badge_type' => 'success',
                 'days_left' => 15,
-                'date' => '12 â€“ 13 Juni 2025',
+                'date' => '12 – 13 Juni 2025',
                 'location' => 'Sabuga ITB, Bandung',
                 'positions' => 'Registrasi, Usher, Media',
                 'position_count' => 3,
@@ -143,7 +143,7 @@ class SearchController extends Controller
                 'status_badge' => 'Open Volunteer',
                 'status_badge_type' => 'success',
                 'days_left' => 10,
-                'date' => '23 â€“ 25 Mei 2025',
+                'date' => '23 – 25 Mei 2025',
                 'location' => 'JIExpo Kemayoran, Jakarta',
                 'positions' => 'Liaison Officer (LO), Stage Crew, Ticketing',
                 'position_count' => 3,
@@ -175,7 +175,7 @@ class SearchController extends Controller
                 'status_badge' => 'Open Volunteer',
                 'status_badge_type' => 'success',
                 'days_left' => 20,
-                'date' => '4 â€“ 6 Juli 2025',
+                'date' => '4 – 6 Juli 2025',
                 'location' => 'Jogja Expo Center, Yogyakarta',
                 'positions' => 'Exhibition Crew & Guest Relation',
                 'position_count' => 2,
@@ -191,7 +191,7 @@ class SearchController extends Controller
                 'status_badge' => 'Open Volunteer',
                 'status_badge_type' => 'success',
                 'days_left' => 40,
-                'date' => '10 â€“ 20 Juli 2025',
+                'date' => '10 – 20 Juli 2025',
                 'location' => 'Taman Budaya, Denpasar',
                 'positions' => 'Usher, Stage Crew, Media',
                 'position_count' => 15,
@@ -223,7 +223,7 @@ class SearchController extends Controller
                 'status_badge' => 'Open Volunteer',
                 'status_badge_type' => 'success',
                 'days_left' => 22,
-                'date' => '5 â€“ 6 Juni 2025',
+                'date' => '5 – 6 Juni 2025',
                 'location' => 'ICE BSD, Tangerang',
                 'positions' => 'Booth Assistant, Registrasi, MC',
                 'position_count' => 20,
@@ -255,7 +255,7 @@ class SearchController extends Controller
                 'status_badge' => 'Open Volunteer',
                 'status_badge_type' => 'success',
                 'days_left' => 28,
-                'date' => '10 â€“ 12 Juli 2025',
+                'date' => '10 – 12 Juli 2025',
                 'location' => 'Universitas Indonesia, Depok',
                 'positions' => 'Panitia Acara, Dokumentasi',
                 'position_count' => 40,
@@ -303,7 +303,7 @@ class SearchController extends Controller
                 'status_badge' => 'Open Volunteer',
                 'status_badge_type' => 'success',
                 'days_left' => 45,
-                'date' => '1 â€“ 2 Agustus 2025',
+                'date' => '1 – 2 Agustus 2025',
                 'location' => 'Taman Ismail Marzuki, Jakarta',
                 'positions' => 'Stage Crew, Usher, Dokumentasi',
                 'position_count' => 15,
@@ -383,8 +383,28 @@ class SearchController extends Controller
                 }
             }
 
+            if (!empty($time)) {
+                if ($time === 'bulan-ini' && $event['days_left'] > 30) {
+                    return false;
+                }
+                if ($time === '1-3-bulan' && ($event['days_left'] <= 30 || $event['days_left'] > 90)) {
+                    return false;
+                }
+            }
+
             return true;
         })->values();
+
+        if (str_contains($sort, 'baru')) {
+            $sort = 'terbaru';
+            $filteredEvents = $filteredEvents->sortByDesc('id')->values();
+        } elseif (str_contains($sort, 'populer')) {
+            $sort = 'terpopuler';
+            $filteredEvents = $filteredEvents->sortByDesc('position_count')->values();
+        } else {
+            $sort = 'terdekat';
+            $filteredEvents = $filteredEvents->sortBy('days_left')->values();
+        }
 
         $totalEvents = $filteredEvents->count();
         $totalPages = (int) ceil($totalEvents / $perPage);
@@ -427,6 +447,7 @@ class SearchController extends Controller
             'position',
             'time',
             'status',
+            'sort',
             'categories',
             'locations'
         ));

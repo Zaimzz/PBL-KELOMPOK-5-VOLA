@@ -36,9 +36,6 @@ Route::get('/', function () {
     return view('welcome', compact('events'));
 })->name('home');
 
-Route::get('/events/{slug}', [PublicEventController::class, 'show'])
-    ->name('events.show');
-
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
@@ -79,6 +76,7 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
         ->name('search.index');
 
     Route::get('/events/{event}', [EventDetailController::class, 'show'])
+        ->whereNumber('event')
         ->name('events.detail');
 
     // Route Notifikasi Volunteer
@@ -86,6 +84,9 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     Route::post('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 });
+
+Route::get('/events/{slug}', [PublicEventController::class, 'show'])
+    ->name('events.show');
 
 // Route Event Organizer (EO)
 Route::middleware(['auth', 'verified', 'role:eo'])

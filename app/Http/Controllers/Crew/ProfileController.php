@@ -14,10 +14,8 @@ class ProfileController extends Controller
         $user = Auth::user();
         $profile = $user->volunteerProfile;
 
-        // Data dummy untuk skills (nanti bisa diambil dari database)
         $skills = $profile?->skills ?? [];
 
-        // Data dummy untuk event history (nanti diambil dari relasi applications)
         $recentEvents = [
             [
                 'name' => 'Tech Summit Malang 2024',
