@@ -156,7 +156,7 @@
                                 </div>
                             </div>
 
-                            <a href="{{ route('events.detail', ['event' => $event['id'] ?? 1]) }}" 
+                            <a href="{{ route('events.detail', ['event' => $event['id'] ?? 1]) }}?from=dashboard" 
                                class="block w-full mt-4 py-2.5 bg-white text-[#4F46E5] text-sm font-bold rounded-xl border-2 border-[#4F46E5] hover:bg-[#4F46E5] hover:text-white transition text-center">
                                 Lihat Detail
                             </a>
