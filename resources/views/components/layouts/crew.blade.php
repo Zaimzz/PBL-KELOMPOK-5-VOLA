@@ -87,18 +87,20 @@
         
         <header class="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-3 flex items-center justify-between gap-4">
           
-            <form action="{{ route('search.index') }}" method="GET" class="hidden sm:flex flex-1 max-w-lg relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                </div>
-                <input 
-                    type="text" 
-                    name="q" 
-                    value="{{ request('q') }}" 
-                    class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#4F46E5] focus:border-[#4F46E5] sm:text-sm transition" 
-                    placeholder="Cari event, posisi volunteer, atau lokasi..."
-                >
-            </form>
+            @if(!request()->routeIs('search.*'))
+                <form action="{{ route('search.index') }}" method="GET" class="hidden sm:flex flex-1 max-w-lg relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                    <input 
+                        type="text" 
+                        name="q" 
+                        value="{{ request('q') }}" 
+                        class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-[#4F46E5] focus:border-[#4F46E5] sm:text-sm transition" 
+                        placeholder="Cari event, posisi volunteer, atau lokasi..."
+                    >
+                </form>
+            @endif
 
             <div class="flex items-center gap-4 ml-auto">
                 <!-- Status Badge -->
