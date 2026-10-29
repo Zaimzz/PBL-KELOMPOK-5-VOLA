@@ -2,18 +2,32 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
         <!-- Breadcrumb -->
+        @php $fromDashboard = request('from') === 'dashboard'; @endphp
         <div class="mb-4">
             <nav class="flex items-center text-sm text-gray-500 flex-wrap gap-1">
-                <a href="{{ route('search.index') }}" class="hover:text-[#4F46E5] flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    Kembali ke Cari Event
-                </a>
-                <span class="mx-1">/</span>
+                @if($fromDashboard)
+                    <a href="{{ route('dashboard') }}" class="hover:text-[#4F46E5] flex items-center gap-1 font-medium">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Kembali ke Beranda
+                    </a>
+                    <span class="mx-1">›</span>
+                    <span class="text-gray-700 font-medium">Beranda</span>
+                @else
+                    <a href="{{ route('search.index') }}" class="hover:text-[#4F46E5] flex items-center gap-1 font-medium">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Kembali ke Cari Event
+                    </a>
+                    <span class="mx-1">›</span>
+                    <span class="text-gray-700 font-medium">Cari Event</span>
+                @endif
+                <span class="mx-1">›</span>
                 <span class="text-gray-700 font-medium">{{ $eventData['category'] }}</span>
-                <span class="mx-1">/</span>
-                <span class="text-gray-900 font-bold">{{ $eventData['title'] }}</span>
+                <span class="mx-1">›</span>
+                <span class="text-gray-900 font-bold truncate max-w-xs">{{ $eventData['title'] }}</span>
             </nav>
         </div>
 

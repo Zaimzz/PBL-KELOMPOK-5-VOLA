@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Crew;
 
 use App\Http\Controllers\Controller;
+use App\Enums\EventStatus;
+use App\Enums\VerificationStatus;
+use App\Models\Application;
+use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -17,82 +21,85 @@ class CrewDashboardController extends Controller
         $userName = $user?->name ?? 'Crew';
         $firstName = explode(' ', trim($userName))[0];
 
-        $activeApplicationsCount = 3;
-        $pendingReviewCount = 2;
-        $acceptedCount = 1;
+        $applications = Application::query()
+            ->when(
+                $profile,
+                fn ($query) => $query->where(
+                    'volunteer_profile_id',
+                    $profile->id
+                ),
+                fn ($query) => $query->whereRaw('1 = 0')
+            );
 
-        $categories = ['Semua', 'Festival', 'Seminar', 'Sosial', 'Kampus', 'Komunitas', 'Olahraga'];
+        $activeApplicationsCount = (clone $applications)->count();
 
-        $recommendedEvents = [
-            [
-                'id' => 1,
-                'title' => 'Bandung Creative Tech Summit 2025',
-                'category' => 'Seminar', 
-                'filter_category' => 'Seminar',
-                'organizer' => 'Bandung Digital Hub',
-                'is_verified' => true,
-                'status_badge' => 'Pendaftaran Buka',
-                'status_badge_type' => 'success',
-                'date' => '12 – 13 Jun 2025',
-                'location' => 'Sabuga ITB, Bandung',
-                'positions' => 'Registrasi, Usher, Media',
-                'image' => asset('images/dashboard-crew/tech-summit.jpg'),
-                'is_active' => true,
-                'deadline' => '2025-06-10',
-            ],
-            [
-                'id' => 2,
-                'title' => 'Jakarta International Java Jazz Festival 2025',
-                'category' => 'Festival', 
-                'filter_category' => 'Festival',
-                'organizer' => 'PT Java Festival Production',
-                'is_verified' => true,
-                'status_badge' => 'Pendaftaran Buka',
-                'status_badge_type' => 'success',
-                'date' => '23 – 25 Mei 2025',
-                'location' => 'JIExpo Kemayoran, Jakarta',
-                'positions' => 'Liaison Officer (LO), Stage Crew, Ticketing',
-                'image' => asset('images/dashboard-crew/java-jazz.jpg'),
-                'is_active' => true,
-                'deadline' => '2025-05-20',
-            ],
-            [
-                'id' => 3,
-                'title' => 'Run For Earth Green Marathon 2025',
-                'category' => 'Olahraga', 
-                'filter_category' => 'Olahraga',
-                'organizer' => 'Yayasan Bumi Lestari',
-                'is_verified' => true,
-                'status_badge' => 'Sisa 5 Hari',
-                'status_badge_type' => 'warning',
-                'date' => '28 Jun 2025',
-                'location' => 'GBK Senayan, Jakarta',
-                'positions' => 'Water Marshal, Medis, Rute',
-                'image' => asset('images/dashboard-crew/green-marathon.jpg'),
-                'is_active' => true,
-                'deadline' => '2025-06-23',
-            ],
-            [
-                'id' => 4,
-                'title' => 'Nusantara Coffee & Food Expo 2025',
-                'category' => 'Kampus', 
-                'filter_category' => 'Kampus',
-                'organizer' => 'Kopi Kita Media Event',
-                'is_verified' => true,
-                'status_badge' => 'Pendaftaran Buka',
-                'status_badge_type' => 'success',
-                'date' => '4 – 6 Jul 2025',
-                'location' => 'Jogja Expo Center, Yogyakarta',
-                'positions' => 'Exhibition Crew & Guest Relation',
-                'image' => asset('images/dashboard-crew/coffee-expo.jpg'),
-                'is_active' => true,
-                'deadline' => '2025-07-01',
-            ],
+        $pendingReviewCount = (clone $applications)
+            ->where('status', 'pending')
+            ->count();
+
+        $acceptedCount = (clone $applications)
+            ->where('status', 'accepted')
+            ->count();
+
+        $categories = [
+            'Semua',
+            'Festival',
+            'Seminar',
+            'Sosial',
+            'Kampus',
+            'Komunitas',
+            'Olahraga',
         ];
 
-        $recommendedEvents = array_values(array_filter($recommendedEvents, function ($event) {
-            return $event['is_active'] === true;
-        }));
+        $eventsQuery = Event::query()
+            ->with(['category', 'organizer', 'positions'])
+            ->where('status', EventStatus::Active)
+            ->whereDate('registration_deadline', '>=', today())
+            ->whereHas('organizer', function ($query) {
+                $query->where(
+                    'verification_status',
+                    VerificationStatus::Verified
+                );
+            });
+
+        if ($request->filled('category')) {
+            $eventsQuery->whereHas('category', function ($query) use ($request) {
+                $query->where('slug', $request->input('category'));
+            });
+        }
+
+        $events = $eventsQuery
+            ->orderBy('start_date')
+            ->get();
+
+        $recommendedEvents = $events->map(function ($event) {
+            $categoryName = $event->category?->name ?? 'Lainnya';
+
+            return [
+                'id' => $event->id,
+                'title' => $event->title,
+                'category' => $categoryName,
+                'filter_category' => $categoryName,
+                'organizer' => $event->organizer?->organization_name
+                    ?? 'Penyelenggara',
+                'is_verified' => true,
+                'status_badge' => 'Pendaftaran Buka',
+                'status_badge_type' => 'success',
+                'date' => $event->start_date
+                    ? $event->start_date->translatedFormat('d M Y')
+                    : '-',
+                'location' => $event->location ?: ($event->city ?? '-'),
+                'positions' => $event->positions
+                    ->pluck('name')
+                    ->filter()
+                    ->implode(', '),
+                'image' => $event->poster_path
+                    ? asset('storage/' . $event->poster_path)
+                    : asset('images/dashboard-crew/tech-summit.jpg'),
+                'is_active' => true,
+                'deadline' => $event->registration_deadline?->format('Y-m-d'),
+            ];
+        })->values()->all();
 
         return view('crew.dashboard', compact(
             'user',

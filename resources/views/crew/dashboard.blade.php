@@ -1,6 +1,6 @@
 <x-layouts.crew title="VOLA - Beranda Crew">
-  
-    <div x-data="dashboardData()" 
+
+    <div x-data="dashboardData()"
          x-init="initEvents()"
          data-events='@json($recommendedEvents)'>
 
@@ -72,8 +72,8 @@
                     <h2 class="text-xl font-bold text-gray-900">Event yang Mungkin Cocok Untukmu</h2>
                     <p class="text-sm text-gray-500 mt-1">Pilihan kurasi relawan berdasarkan minat dan ketersediaanmu</p>
                 </div>
-               
-                <a href="{{ route('search.index') }}" 
+
+                <a href="{{ route('search.index') }}"
                    x-show="hasVisibleEvents"
                    class="hidden sm:inline-flex items-center gap-1 text-sm font-bold text-[#4F46E5] hover:text-indigo-800 transition">
                     Lihat Semua Event
@@ -87,10 +87,10 @@
                 @forelse($recommendedEvents as $event)
                     <div x-show="activeCategory === 'Semua' || activeCategory === '{{ $event['filter_category'] }}'"
                         x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 scale-95" 
+                        x-transition:enter-start="opacity-0 scale-95"
                         x-transition:enter-end="opacity-100 scale-100"
                         class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all flex flex-col group">
-                       
+
                         <div class="relative h-40 w-full overflow-hidden bg-gray-100 shrink-0">
                             <img src="{{ $event['image'] }}" alt="{{ $event['title'] }}"
                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -156,7 +156,7 @@
                                 </div>
                             </div>
 
-                            <a href="{{ route('events.detail', ['event' => $event['id'] ?? 1]) }}" 
+                            <a href="{{ route('events.detail', ['event' => $event['id'] ?? 1]) }}?from=dashboard"
                                class="block w-full mt-4 py-2.5 bg-white text-[#4F46E5] text-sm font-bold rounded-xl border-2 border-[#4F46E5] hover:bg-[#4F46E5] hover:text-white transition text-center">
                                 Lihat Detail
                             </a>
@@ -168,7 +168,7 @@
                     </div>
                 @endforelse
 
-                <div x-show="!hasVisibleEvents" 
+                <div x-show="!hasVisibleEvents"
                      x-transition:enter="transition ease-out duration-200"
                      x-transition:enter-start="opacity-0"
                      x-transition:enter-end="opacity-100"
