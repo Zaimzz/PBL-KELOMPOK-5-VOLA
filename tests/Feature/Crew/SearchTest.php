@@ -99,7 +99,12 @@ class SearchTest extends TestCase
 
         $response->assertOk();
         $response->assertViewIs('crew.event-detail');
-        $response->assertSee('Bandung Creative Tech Summit 2025');
+        $response->assertSee('Indonesia Comic & Pop Culture Con 2025');
+
+        // Test event 2 shows its own specific detail
+        $response2 = $this->actingAs($user)->get(route('events.detail', ['event' => 2]));
+        $response2->assertOk();
+        $response2->assertSee('Jogja International Street Festival 2025');
     }
 }
 
