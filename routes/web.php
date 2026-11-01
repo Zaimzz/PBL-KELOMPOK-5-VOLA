@@ -83,6 +83,10 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     Route::get('/api/notifications', [NotificationController::class, 'index']);
     Route::post('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+
+    // Lamaran Saya
+    Route::get('/lamaran-saya', [App\Http\Controllers\Crew\ApplicationController::class, 'index'])
+        ->name('applications.index');
 });
 
 Route::get('/events/{slug}', [PublicEventController::class, 'show'])
