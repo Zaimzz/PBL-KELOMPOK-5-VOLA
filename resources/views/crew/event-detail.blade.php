@@ -186,7 +186,7 @@
          <div class="lg:col-span-2">
              <div class="flex items-center justify-between mb-4">
                  <h2 class="text-lg font-bold text-gray-900">Posisi Volunteer yang Dibuka</h2>
-                 <span class="text-xs font-bold text-[#4F46E5] bg-indigo-50 px-3 py-1 rounded-full">Total Kuota: {{ $eventData['total_quota'] }} Kru</span>
+                 <span class="text-xs font-bold text-[#4F46E5] bg-indigo-50 px-3 py-1 rounded-full">Total Kuota: {{ $eventData['total_quota'] }} Crew</span>
              </div>
              <p class="text-sm text-gray-500 mb-4">Pilih divisi yang paling cocok dengan keahlian dan minat lapangan Anda.</p>
              <div class="space-y-3">
