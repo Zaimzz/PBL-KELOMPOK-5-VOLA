@@ -91,6 +91,10 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     // Event Saya
     Route::get('/event-saya', [App\Http\Controllers\Crew\MyEventController::class, 'index'])
         ->name('my-events.index');
+
+    // Riwayat Pengalaman
+    Route::get('/riwayat', [App\Http\Controllers\Crew\HistoryController::class, 'index'])
+        ->name('history.index');
 });
 
 Route::get('/events/{slug}', [PublicEventController::class, 'show'])
