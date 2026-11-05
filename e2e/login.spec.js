@@ -163,15 +163,15 @@ test.describe('Tampilan Login', () => {
     await selectRole(page, 'volunteer');
     await expect(crew).toBeChecked();
     await expect(eo).not.toBeChecked();
-    });
   });
+});
 
-  test.describe('Login Berhasil', () => {
-    for (const role of ['volunteer', 'eo', 'admin']) {
-      test(`${role} berhasil login ke dashboard`, async ({ page }) => {
-        await login(page, role);
-        await expectDashboard(page, role);
-      });
+test.describe('Login Berhasil', () => {
+  for (const role of ['volunteer', 'eo', 'admin']) {
+    test(`${role} berhasil login ke dashboard`, async ({ page }) => {
+      await login(page, role);
+      await expectDashboard(page, role);
+    });
   }
 });
 
@@ -293,7 +293,7 @@ test.describe('Validasi Role', () => {
 
     await expect(page.getByText(
       'Admin tidak perlu memilih role.',
-      { exact: false}
+      { exact: false }
     )).toHaveCount(0);
   });
 
