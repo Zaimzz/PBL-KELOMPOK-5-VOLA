@@ -15,6 +15,7 @@ use App\Http\Controllers\Crew\ProfileController as CrewProfileController;
 use App\Http\Controllers\Crew\SearchController;
 use App\Http\Controllers\Crew\SettingsController;
 use App\Http\Controllers\Eo\ApplicantController;
+use App\Http\Controllers\Eo\CrewCoordinationController;
 use App\Http\Controllers\Eo\EoDashboardController;
 use App\Http\Controllers\Eo\EventController;
 use App\Http\Controllers\Eo\EventPositionController;
@@ -160,6 +161,13 @@ Route::middleware(['auth', 'verified', 'role:eo'])
 
         Route::patch('/pendaftar/{application}/reject', [ApplicantController::class, 'reject'])
             ->name('applicants.reject');
+
+        // Koordinasi Crew
+        Route::get('/crew', [CrewCoordinationController::class, 'index'])
+            ->name('crew.index');
+
+        Route::get('/crew/export', [CrewCoordinationController::class, 'export'])
+            ->name('crew.export');
     });
 
 // Route Admin

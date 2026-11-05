@@ -71,7 +71,7 @@
                                 <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" placeholder="+62 812-xxxx-xxxx" class="text-sm font-bold text-gray-900 bg-transparent border-none p-0 focus:ring-0 w-full placeholder-gray-300">
                                 <p class="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    Digunakan untuk undangan grup koordinasi panitia event.
+                                    Nomor WhatsApp digunakan oleh EO untuk menghubungi Anda jika pendaftaran diterima.
                                 </p>
                             </div>
                             <button type="submit" class="px-4 py-2 text-xs font-bold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition whitespace-nowrap">Ubah Nomor</button>
