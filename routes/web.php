@@ -14,6 +14,7 @@ use App\Http\Controllers\Crew\NotificationController;
 use App\Http\Controllers\Crew\ProfileController as CrewProfileController;
 use App\Http\Controllers\Crew\SearchController;
 use App\Http\Controllers\Crew\SettingsController;
+use App\Http\Controllers\Eo\ApplicantController;
 use App\Http\Controllers\Eo\EoDashboardController;
 use App\Http\Controllers\Eo\EventController;
 use App\Http\Controllers\Eo\EventPositionController;
@@ -149,6 +150,16 @@ Route::middleware(['auth', 'verified', 'role:eo'])
 
         Route::delete('/events/{event}/positions/{position}', [EventPositionController::class, 'destroy'])
             ->name('events.positions.destroy');
+
+        // Pendaftar (Applicant Management)
+        Route::get('/pendaftar', [ApplicantController::class, 'index'])
+            ->name('applicants.index');
+
+        Route::patch('/pendaftar/{application}/accept', [ApplicantController::class, 'accept'])
+            ->name('applicants.accept');
+
+        Route::patch('/pendaftar/{application}/reject', [ApplicantController::class, 'reject'])
+            ->name('applicants.reject');
     });
 
 // Route Admin
