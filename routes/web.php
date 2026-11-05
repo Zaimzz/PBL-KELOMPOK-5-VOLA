@@ -95,6 +95,10 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     // Riwayat Pengalaman
     Route::get('/riwayat', [App\Http\Controllers\Crew\HistoryController::class, 'index'])
         ->name('history.index');
+
+    // Download Sertifikat Individual
+    Route::get('/riwayat/sertifikat/{id}', [App\Http\Controllers\Crew\HistoryController::class, 'downloadCertificate'])
+        ->name('history.downloadCertificate');
 });
 
 Route::get('/events/{slug}', [PublicEventController::class, 'show'])

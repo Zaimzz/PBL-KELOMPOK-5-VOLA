@@ -15,7 +15,6 @@
     $displayCity = $authUser->city ?? 'Indonesia';
     $unreadNotifs = $authUser?->unreadNotifications?->count() ?? 0;
 
-    // Avatar Logic
     $displayAvatar = null;
     if ($authUser?->avatar_path) {
         $displayAvatar = filter_var($authUser->avatar_path, FILTER_VALIDATE_URL)
@@ -44,7 +43,6 @@
                 Beranda
             </a>
             
-            <!-- PERBAIKAN: Menu ini akan aktif juga saat di halaman detail event -->
             <a href="{{ route('search.index') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl {{ request()->routeIs('search.*') || request()->routeIs('events.detail') ? 'bg-indigo-50 text-[#4F46E5]' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 Cari Event
@@ -91,7 +89,7 @@
         
         <header class="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-3 flex items-center justify-between gap-4">
           
-            @if(!request()->routeIs('search.*'))
+            @if(!request()->routeIs('search.*') && !request()->routeIs('history.*'))
                 <form action="{{ route('search.index') }}" method="GET" class="hidden sm:flex flex-1 max-w-lg relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -107,15 +105,7 @@
             @endif
 
             <div class="flex items-center gap-4 ml-auto">
-                <!-- Status Badge -->
-                <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full">
-                    <span class="relative flex h-2.5 w-2.5">
-                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                    </span>
-                    <span class="text-xs font-bold text-emerald-700">Status: Siap Bertugas</span>
-                </div>
-
-                <!-- Notification Dropdown (Versi Hardcode yang Stabil) -->
+             
                 <div x-data="{ 
                         open: false, 
                         activeTab: 'all',
@@ -177,8 +167,7 @@
                         }
                      }" 
                      class="relative" @click.outside="open = false">
-                    
-                    <!-- Tombol Notifikasi -->
+                   
                     <button @click="open = !open" class="relative p-2 text-gray-500 hover:text-[#4F46E5] hover:bg-indigo-50 rounded-full transition">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
@@ -188,14 +177,12 @@
                               x-text="unreadCount"></span>
                     </button>
 
-                    <!-- Dropdown Panel -->
                     <div x-show="open" 
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0 scale-95 translate-y-2"
                          x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                          class="absolute right-0 mt-2 w-[420px] bg-white rounded-2xl shadow-xl ring-1 ring-gray-200 overflow-hidden origin-top-right z-50">
-                        
-                        <!-- Header -->
+                      
                         <div class="px-5 pt-4 pb-3 border-b border-gray-100">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center gap-2">
@@ -204,8 +191,7 @@
                                 </div>
                                 <button @click="markAllAsRead()" class="text-xs font-bold text-[#4F46E5] hover:text-indigo-800 transition">Tandai semua dibaca</button>
                             </div>
-                            
-                            <!-- Tab Filter -->
+                        
                             <div class="flex gap-5 text-sm border-b border-gray-100">
                                 <button @click="activeTab = 'all'" 
                                         :class="activeTab === 'all' ? 'text-[#4F46E5] border-b-2 border-[#4F46E5] font-bold' : 'text-gray-500 hover:text-gray-700'"
@@ -220,14 +206,13 @@
                             </div>
                         </div>
                         
-                        <!-- List Notifikasi -->
                         <div class="max-h-[420px] overflow-y-auto">
                             <template x-for="notif in filteredNotifications" :key="notif.id">
                                 <div @click="markAsRead(notif.id)"
                                      class="px-5 py-4 hover:bg-gray-50 transition border-b border-gray-50 last:border-b-0 cursor-pointer"
                                      :class="!notif.read ? 'bg-white' : 'bg-gray-50/50'">
                                     <div class="flex gap-3">
-                                        <!-- Icon Bulat -->
+                                       
                                         <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                                              :class="{
                                                 'bg-emerald-100 text-emerald-600': notif.type === 'accepted',
@@ -249,7 +234,6 @@
                                             </template>
                                         </div>
                                         
-                                        <!-- Konten -->
                                         <div class="flex-1 min-w-0">
                                             <div class="flex items-start justify-between gap-2 mb-1">
                                                 <div class="flex items-center gap-1.5">
@@ -260,7 +244,6 @@
                                             </div>
                                             <p class="text-xs text-gray-600 leading-relaxed mb-1.5" x-html="notif.message"></p>
                                             
-                                            <!-- Link Detail -->
                                             <template x-if="notif.link && notif.link !== '#'">
                                                 <a :href="notif.link" @click.stop class="inline-flex items-center gap-1 text-xs font-bold text-[#4F46E5] hover:text-indigo-800 transition mt-1">
                                                     Lihat Detail Penugasan
@@ -272,7 +255,6 @@
                                 </div>
                             </template>
                             
-                            <!-- Empty State -->
                             <div x-show="!hasVisibleNotifications" class="px-5 py-12 text-center">
                                 <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
                                     <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -281,14 +263,12 @@
                             </div>
                         </div>
                         
-                        <!-- Footer -->
                         <div class="px-5 py-3 bg-gray-50 border-t border-gray-100 text-center">
                             <button @click="markAllAsRead()" class="text-xs font-bold text-[#4F46E5] hover:text-indigo-800 transition">Tandai Semua Notifikasi Terbaca</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- User Profile Dropdown -->
                 <div x-data="{ open: false }" class="relative" @click.outside="open = false">
                     <button @click="open = !open" class="flex items-center gap-3 hover:bg-gray-50 p-1.5 pr-3 rounded-full transition border border-transparent hover:border-gray-200">
                         @if($displayAvatar)
