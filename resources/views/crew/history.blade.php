@@ -1,17 +1,11 @@
 <x-layouts.crew title="Riwayat Pengalaman - VOLA">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-  
+   
     <div class="flex items-start justify-between mb-6 flex-wrap gap-4">
         <div>
             <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Riwayat Pengalaman</h1>
             <p class="mt-1 text-sm text-gray-500">Rekam jejak kontribusi volunteer kamu.</p>
         </div>
-        <button class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-50 transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            Unduh CV / Ringkasan PDF
-        </button>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -43,37 +37,45 @@
     </div>
 
     <div class="mb-6">
-        <nav class="flex gap-2 overflow-x-auto" x-data="{ activeTab: 'all' }">
-            <button @click="activeTab = 'all'" 
-                    :class="activeTab === 'all' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'"
-                    class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition">
+        <nav class="flex gap-2 overflow-x-auto">
+            <a href="{{ route('history.index', ['category' => 'all']) }}" 
+               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'all' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
                 Semua ({{ $counts['all'] }})
-            </button>
-            <button @click="activeTab = 'musik'" 
-                    :class="activeTab === 'musik' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'"
-                    class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition">
-                Musik & Festival ({{ $counts['musik'] }})
-            </button>
-            <button @click="activeTab = 'tech'" 
-                    :class="activeTab === 'tech' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'"
-                    class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition">
-                Konferensi & Teknologi ({{ $counts['tech'] }})
-            </button>
-            <button @click="activeTab = 'olahraga'" 
-                    :class="activeTab === 'olahraga' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'"
-                    class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition">
-                Sosial & Olahraga ({{ $counts['olahraga'] }})
-            </button>
+            </a>
+            <a href="{{ route('history.index', ['category' => 'festival']) }}" 
+               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'festival' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
+                Festival ({{ $counts['festival'] }})
+            </a>
+            <a href="{{ route('history.index', ['category' => 'seminar']) }}" 
+               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'seminar' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
+                Seminar ({{ $counts['seminar'] }})
+            </a>
+            <a href="{{ route('history.index', ['category' => 'sosial']) }}" 
+               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'sosial' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
+                Sosial ({{ $counts['sosial'] }})
+            </a>
+            <a href="{{ route('history.index', ['category' => 'kampus']) }}" 
+               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'kampus' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
+                Kampus ({{ $counts['kampus'] }})
+            </a>
+            <a href="{{ route('history.index', ['category' => 'komunitas']) }}" 
+               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'komunitas' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
+                Komunitas ({{ $counts['komunitas'] }})
+            </a>
+            <a href="{{ route('history.index', ['category' => 'olahraga']) }}" 
+               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'olahraga' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
+                Olahraga ({{ $counts['olahraga'] }})
+            </a>
+            <a href="{{ route('history.index', ['category' => 'musik']) }}" 
+               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'musik' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
+                Musik ({{ $counts['musik'] }})
+            </a>
         </nav>
     </div>
 
-    <div class="space-y-4" x-data="{ activeTab: 'all' }">
-        @foreach($histories as $history)
-        <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition"
-             x-show="activeTab === 'all' || 
-                     (activeTab === 'musik' && '{{ $history['category'] }}' === 'Musik & Festival') || 
-                     (activeTab === 'tech' && '{{ $history['category'] }}' === 'Konferensi & Teknologi') || 
-                     (activeTab === 'olahraga' && '{{ $history['category'] }}' === 'Sosial & Olahraga')">
+    <div class="space-y-4">
+        @forelse($paginatedHistories as $history)
+        <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
             
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 
@@ -121,8 +123,8 @@
                 </div>
 
                 <div class="shrink-0">
-                    <a href="{{ $history['certificate_url'] }}" 
-                       class="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#4F46E5] text-[#4F46E5] text-sm font-bold rounded-xl hover:bg-[#4F46E5] hover:text-white transition">
+                    <a href="{{ route('history.downloadCertificate', ['id' => $history['id']]) }}" 
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#4F46E5] text-[#4F46E5] text-sm font-bold rounded-xl hover:bg-[#4F46E5] hover:text-white transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                         </svg>
@@ -131,17 +133,57 @@
                 </div>
             </div>
         </div>
-        @endforeach
+        @empty
+        <div class="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+            </div>
+            <h3 class="text-base font-bold text-gray-900 mb-1">Tidak Ada Event</h3>
+            <p class="text-sm text-gray-500">Belum ada riwayat event untuk kategori ini.</p>
+        </div>
+        @endforelse
     </div>
 
-    <div class="mt-6 flex items-center justify-between">
-        <p class="text-sm text-gray-500">Menampilkan 4 dari 8 riwayat event</p>
-        <div class="flex items-center gap-1">
-            <button class="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition">Sebelumnya</button>
-            <button class="w-8 h-8 flex items-center justify-center text-sm rounded-lg bg-[#4F46E5] text-white font-bold">1</button>
-            <button class="w-8 h-8 flex items-center justify-center text-sm rounded-lg text-gray-600 hover:bg-gray-100 transition">2</button>
-            <button class="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition">Selanjutnya</button>
+    @if($totalPages > 1)
+    <div class="mt-6 flex items-center justify-end">
+        <div class="flex items-center gap-2">
+            
+            @if($currentPage > 1)
+                <a href="{{ route('history.index', array_merge(['category' => $activeCategory], ['page' => $currentPage - 1])) }}" 
+                   class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-300 transition shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    Sebelumnya
+                </a>
+            @endif
+
+            @for($i = 1; $i <= $totalPages; $i++)
+                @if($i === $currentPage)                  
+                    <span class="inline-flex items-center justify-center min-w-[2.5rem] h-10 px-3 text-sm font-bold text-white bg-[#4F46E5] rounded-lg shadow-md ring-2 ring-[#4F46E5] ring-offset-1">
+                        {{ $i }}
+                    </span>
+                @else                  
+                    <a href="{{ route('history.index', array_merge(['category' => $activeCategory], ['page' => $i])) }}" 
+                       class="inline-flex items-center justify-center min-w-[2.5rem] h-10 px-3 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-indigo-50 hover:text-[#4F46E5] hover:border-indigo-300 transition shadow-sm">
+                        {{ $i }}
+                    </a>
+                @endif
+            @endfor
+
+            @if($currentPage < $totalPages)
+                <a href="{{ route('history.index', array_merge(['category' => $activeCategory], ['page' => $currentPage + 1])) }}" 
+                   class="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-300 transition shadow-sm">
+                    Selanjutnya
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            @endif
         </div>
     </div>
+    @endif
 </div>
 </x-layouts.crew>
