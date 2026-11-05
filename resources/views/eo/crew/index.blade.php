@@ -1,9 +1,5 @@
 <x-layouts.eo title="Koordinasi Crew — Vola">
 
-    @php
-        use App\Http\Controllers\Eo\CrewCoordinationController;
-    @endphp
-
     {{-- ================================================================
          STATE 1: EO belum memiliki profil organisasi
     ================================================================ --}}
