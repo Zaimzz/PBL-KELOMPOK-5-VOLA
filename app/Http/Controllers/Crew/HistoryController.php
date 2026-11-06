@@ -220,4 +220,50 @@ class HistoryController extends Controller
 
         return $pdf->download($filename);
     }
+
+    public function downloadPdf()
+    {
+        if (!Auth::check()) {
+            abort(403, 'Anda harus login untuk mengunduh riwayat.');
+        }
+
+        $user = Auth::user();
+
+        if (!$user instanceof User) {
+            abort(403, 'Data pengguna tidak valid.');
+        }
+
+        $displayName = $user->name ?? 'Crew';
+        $displayEmail = $user->email ?? 'crew@vola.test';
+        $displayCity = $user->volunteerProfile?->city ?? 'Jakarta';
+
+        $allHistories = $this->getHistoriesData();
+        $totalEvents = count($allHistories);
+        $totalHours = $totalEvents * 16;
+        $totalCategories = count(array_unique(array_column($allHistories, 'category')));
+
+        $pdf = Pdf::loadView(
+            'crew.history-pdf',
+            compact(
+                'displayName',
+                'displayEmail',
+                'displayCity',
+                'totalEvents',
+                'totalHours',
+                'totalCategories',
+                'allHistories'
+            )
+        );
+
+        $pdf->setPaper('A4', 'portrait');
+        $pdf->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'defaultFont' => 'sans-serif',
+        ]);
+
+        $filename = 'Riwayat-Pengalaman-' . str_replace(' ', '-', $displayName) . '.pdf';
+
+        return $pdf->download($filename);
+    }
 }

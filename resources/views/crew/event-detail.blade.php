@@ -1,4 +1,4 @@
-﻿<x-layouts.crew title="{{ $eventData['title'] }} - VOLA">
+<x-layouts.crew title="{{ $eventData['title'] }} - VOLA">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     @php $fromDashboard = request('from') === 'dashboard'; @endphp
      <div class="mb-4">
@@ -370,10 +370,10 @@
                                  </svg>
                              @endif
                          </p>
-                         <p class="text-xs text-gray-500">Penyelenggara Pameran & Festival</p>
+                         <p class="text-xs text-gray-500">{{ $eventData['organizer_type'] ?? 'Penyelenggara Event' }}</p>
                      </div>
                  </div>
-                 <p class="text-sm text-gray-600 leading-relaxed">Penyelenggara pameran pop culture, festival komik, dan konvensi kreatif berskala nasional di Indonesia.</p>
+                 <p class="text-sm text-gray-600 leading-relaxed">{{ $eventData['organizer_desc'] ?? 'Penyelenggara event profesional di Indonesia.' }}</p>
              </div>
 
              {{-- CARD 3: Lokasi Event & Titik Kumpul --}}
@@ -396,7 +396,7 @@
                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                          </svg>
-                         Hall A & B Entrance
+                         {{ $eventData['entrance'] ?? 'Hall A & B Entrance' }}
                      </div>
                  </div>
 

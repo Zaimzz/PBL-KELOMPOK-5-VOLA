@@ -39,7 +39,7 @@ class EventDetailController extends Controller
                     'total_positions' => 5,
                     'total_quota' => 47,
                     'address' => 'Jl. Gatot Subroto No.1, Gelora, Kecamatan Tanah Abang, Kota Jakarta Pusat, DKI Jakarta 10270.',
-                    'meeting_point' => 'Pintu loading dock kru barat seberang Gelora Bung Karno Gate 7.',
+                    'meeting_point' => 'Pintu loading dock Crew barat seberang Gelora Bung Karno Gate 7.',
                     'image' => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
                 ],
                 'positions' => [
