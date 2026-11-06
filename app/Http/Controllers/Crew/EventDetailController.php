@@ -39,7 +39,7 @@ class EventDetailController extends Controller
                     'total_positions' => 5,
                     'total_quota' => 47,
                     'address' => 'Jl. Gatot Subroto No.1, Gelora, Kecamatan Tanah Abang, Kota Jakarta Pusat, DKI Jakarta 10270.',
-                    'meeting_point' => 'Pintu loading dock kru barat seberang Gelora Bung Karno Gate 7.',
+                    'meeting_point' => 'Pintu loading dock Crew barat seberang Gelora Bung Karno Gate 7.',
                     'image' => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
                 ],
                 'positions' => [
@@ -674,12 +674,11 @@ class EventDetailController extends Controller
 
         $eventNum = (int) $event;
 
-        // Cek data event dari koleksi 18 event
         if (isset($eventsData[$eventNum])) {
             $eventData = $eventsData[$eventNum]['eventData'];
             $positions = $eventsData[$eventNum]['positions'];
         } else {
-            // Fallback: periksa dari database Event
+            
             $dbEvent = Event::with(['category', 'organizer', 'positions'])->find($eventNum);
 
             if ($dbEvent) {
@@ -689,6 +688,7 @@ class EventDetailController extends Controller
                     'title' => $dbEvent->title,
                     'category' => $categoryName,
                     'filter_category' => $categoryName,
+                    'description' => $dbEvent->description ?? 'Event ini merupakan ajang berkumpulnya para komunitas dan profesional untuk berbagi wawasan serta pengalaman.',
                     'organizer' => $dbEvent->organizer?->organization_name ?? 'Penyelenggara Event',
                     'organizer_abbr' => strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $dbEvent->organizer?->organization_name ?? 'EVT'), 0, 3)),
                     'organizer_type' => 'Penyelenggara Event',
@@ -736,7 +736,7 @@ class EventDetailController extends Controller
                     ];
                 })->toArray();
             } else {
-                // Fallback default ke event 1
+              
                 $eventData = $eventsData[1]['eventData'];
                 $positions = $eventsData[1]['positions'];
             }
