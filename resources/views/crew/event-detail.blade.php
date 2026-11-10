@@ -32,7 +32,7 @@
             </span>
         </div>
         <div class="absolute bottom-0 left-0 right-0 p-6">
-            <p class="text-xs text-indigo-200 font-medium mb-2">Penyelenggara: {{ $eventData['organizer'] }}</p>
+            <p class="text-xs text-indigo-200 font-medium mb-2">Penyelenggara : {{ $eventData['organizer'] }}</p>
             <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight max-w-3xl">{{ $eventData['title'] }}</h1>
         </div>
     </div>
@@ -221,7 +221,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                                 </svg>
-                                Kuota: {{ $position['quota'] }} Orang
+                                Kuota : {{ $position['quota'] }} Orang
                             </span>
                             @if(!empty($position['date']))
                             <span class="flex items-center gap-1">
@@ -239,7 +239,7 @@
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                                 </svg>
-                                Syarat:
+                                Syarat :
                             </p>
                             <div class="flex flex-wrap gap-2">
                                 @foreach(array_slice($position['requirements'], 0, 3) as $req)
@@ -313,20 +313,6 @@
                                   rows="3" 
                                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent resize-none"
                                   placeholder="Pengalaman volunteer atau kerja tim sebelumnya (jika ada)..."></textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-bold text-gray-900 mb-2">
-                            Ketersediaan Waktu <span class="text-red-500">*</span>
-                        </label>
-                        <select x-model="applicationData.availability" 
-                                required
-                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F46E5] focus:border-transparent">
-                            <option value="">Pilih ketersediaan Anda</option>
-                            <option value="full">Saya tersedia penuh selama event berlangsung</option>
-                            <option value="partial">Saya tersedia sebagian hari (sebutkan di motivasi)</option>
-                            <option value="weekend">Hanya tersedia weekend</option>
-                        </select>
                     </div>
 
                     <div>
@@ -480,7 +466,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <p class="text-xs text-gray-500 mb-2">Posisi yang dipilih saat ini:</p>
+                    <p class="text-xs text-gray-500 mb-2">Posisi yang dipilih saat ini :</p>
                     <template x-if="selectedPosition === null">
                         <div class="bg-gray-50 border border-gray-100 rounded-xl p-4 text-center">
                             <p class="text-sm text-gray-400 italic">Belum ada posisi yang dipilih</p>
@@ -555,7 +541,7 @@
 
                 <div class="space-y-2">
                     <div>
-                        <p class="text-[10px] font-bold text-gray-500 uppercase mb-0.5">Alamat:</p>
+                        <p class="text-[10px] font-bold text-gray-500 uppercase mb-0.5">Alamat :</p>
                         <p class="text-sm text-gray-600 leading-relaxed">{{ $eventData['address'] }}</p>
                     </div>
                 </div>
