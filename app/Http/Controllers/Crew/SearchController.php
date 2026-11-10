@@ -14,8 +14,6 @@ class SearchController extends Controller
         $category = $request->input('category', 'Semua');
         $location = trim((string) $request->input('location', ''));
         $position = (array) $request->input('position', []);
-        $time = $request->input('time', '');
-        $status = (array) $request->input('status', []);
         $sort = strtolower((string) $request->input('sort', 'terdekat'));
         $page = max(1, (int) $request->input('page', 1));
         $perPage = 6;
@@ -25,7 +23,7 @@ class SearchController extends Controller
                 'id' => 1,
                 'title' => 'Indonesia Comic & Pop Culture Con 2025',
                 'category' => 'Festival',
-                'filter_category' => 'Festival',
+                'filter_category' => 'festival',
                 'organizer' => 'PT Pop Media Nusantara',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -43,7 +41,7 @@ class SearchController extends Controller
                 'id' => 2,
                 'title' => 'Jogja International Street Festival 2025',
                 'category' => 'Festival',
-                'filter_category' => 'Festival',
+                'filter_category' => 'festival',
                 'organizer' => 'Dinas Pariwisata DIY',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -61,7 +59,7 @@ class SearchController extends Controller
                 'id' => 3,
                 'title' => 'Surabaya Young Leaders Climate Conference',
                 'category' => 'Seminar',
-                'filter_category' => 'Seminar',
+                'filter_category' => 'seminar',
                 'organizer' => 'EcoYouth Initiative',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -79,7 +77,7 @@ class SearchController extends Controller
                 'id' => 4,
                 'title' => 'Festival Film Dokumenter Indonesia 2025',
                 'category' => 'Festival',
-                'filter_category' => 'Festival',
+                'filter_category' => 'festival',
                 'organizer' => 'Sinema Kolektif ID',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -94,28 +92,10 @@ class SearchController extends Controller
                 'image' => 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800',
             ],
             [
-                'id' => 5,
-                'title' => 'Web3 & AI Developer Summit Nusantara 2025',
-                'category' => 'Seminar',
-                'filter_category' => 'Seminar',
-                'organizer' => 'Nusantara Dev Hub',
-                'is_verified' => true,
-                'status_badge' => 'Event Informasi Saja',
-                'status_badge_type' => 'info',
-                'date' => '12 – 14 Juni 2025',
-                'location' => 'Menara Multimedia, Jakarta',
-                'positions' => 'Khusus Peserta / Audiens Hackathon',
-                'days_left' => 35,
-                'position_count' => 0,
-                'slot_label' => 'Tiket Gratis (RSVP)',
-                'slot_type' => 'rsvp',
-                'image' => 'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800',
-            ],
-            [
                 'id' => 6,
                 'title' => 'Pesta Rakyat UMKM & Kuliner Nusantara',
                 'category' => 'Komunitas',
-                'filter_category' => 'Komunitas',
+                'filter_category' => 'komunitas',
                 'organizer' => 'Asosiasi Kreatif Jabar',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -133,7 +113,7 @@ class SearchController extends Controller
                 'id' => 7,
                 'title' => 'Jakarta International Book Fair 2025',
                 'category' => 'Komunitas',
-                'filter_category' => 'Komunitas',
+                'filter_category' => 'komunitas',
                 'organizer' => 'IKAPI DKI Jakarta',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -151,7 +131,7 @@ class SearchController extends Controller
                 'id' => 8,
                 'title' => 'Bali Arts & Culture Week 2025',
                 'category' => 'Festival',
-                'filter_category' => 'Festival',
+                'filter_category' => 'festival',
                 'organizer' => 'Dinas Kebudayaan Bali',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -169,7 +149,7 @@ class SearchController extends Controller
                 'id' => 9,
                 'title' => 'Surabaya Startup Expo 2025',
                 'category' => 'Seminar',
-                'filter_category' => 'Seminar',
+                'filter_category' => 'seminar',
                 'organizer' => 'East Java Startup Hub',
                 'is_verified' => false,
                 'status_badge' => 'Open Volunteer',
@@ -187,7 +167,7 @@ class SearchController extends Controller
                 'id' => 10,
                 'title' => 'Nusantara Coffee & Food Expo 2025',
                 'category' => 'Kampus',
-                'filter_category' => 'Kampus',
+                'filter_category' => 'kampus',
                 'organizer' => 'Kopi Kita Media Event',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -205,7 +185,7 @@ class SearchController extends Controller
                 'id' => 11,
                 'title' => 'Bandung Design Week 2025',
                 'category' => 'Festival',
-                'filter_category' => 'Festival',
+                'filter_category' => 'festival',
                 'organizer' => 'Bandung Creative Network',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -223,7 +203,7 @@ class SearchController extends Controller
                 'id' => 12,
                 'title' => 'Run For Earth Green Marathon 2025',
                 'category' => 'Olahraga',
-                'filter_category' => 'Olahraga',
+                'filter_category' => 'olahraga',
                 'organizer' => 'Yayasan Bumi Lestari',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -241,7 +221,7 @@ class SearchController extends Controller
                 'id' => 13,
                 'title' => 'Makassar International Writers Festival 2025',
                 'category' => 'Komunitas',
-                'filter_category' => 'Komunitas',
+                'filter_category' => 'komunitas',
                 'organizer' => 'Yayasan La Galigo',
                 'is_verified' => false,
                 'status_badge' => 'Open Volunteer',
@@ -259,7 +239,7 @@ class SearchController extends Controller
                 'id' => 14,
                 'title' => 'Jakarta Fashion & Beauty Expo 2025',
                 'category' => 'Kampus',
-                'filter_category' => 'Kampus',
+                'filter_category' => 'kampus',
                 'organizer' => 'Fashionlink Indonesia',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -277,7 +257,7 @@ class SearchController extends Controller
                 'id' => 15,
                 'title' => 'Yogyakarta International Heritage Walk 2025',
                 'category' => 'Olahraga',
-                'filter_category' => 'Olahraga',
+                'filter_category' => 'olahraga',
                 'organizer' => 'Visit Jogja Foundation',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -295,7 +275,7 @@ class SearchController extends Controller
                 'id' => 16,
                 'title' => 'Bandung Creative Tech Summit 2025',
                 'category' => 'Seminar',
-                'filter_category' => 'Seminar',
+                'filter_category' => 'seminar',
                 'organizer' => 'Bandung Digital Hub',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -310,28 +290,10 @@ class SearchController extends Controller
                 'image' => 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800',
             ],
             [
-                'id' => 17,
-                'title' => 'Bali Beach Cleanup & Social Action 2025',
-                'category' => 'Sosial',
-                'filter_category' => 'Sosial',
-                'organizer' => 'Ocean Guardians Bali',
-                'is_verified' => true,
-                'status_badge' => 'Event Informasi Saja',
-                'status_badge_type' => 'info',
-                'date' => '15 Juni 2025',
-                'location' => 'Kuta Beach, Bali',
-                'positions' => 'Koordinator Lapangan, Dokumentasi, Logistik',
-                'days_left' => 33,
-                'position_count' => 0,
-                'slot_label' => 'Tiket Gratis (RSVP)',
-                'slot_type' => 'rsvp',
-                'image' => 'https://images.unsplash.com/photo-1618477247222-acbdb0e159b3?w=800',
-            ],
-            [
                 'id' => 18,
                 'title' => 'Jakarta International Java Jazz Festival 2025',
                 'category' => 'Musik',
-                'filter_category' => 'Musik',
+                'filter_category' => 'musik',
                 'organizer' => 'PT Java Festival Production',
                 'is_verified' => true,
                 'status_badge' => 'Open Volunteer',
@@ -347,15 +309,18 @@ class SearchController extends Controller
             ],
         ];
 
+        // Hapus event dengan status "Event Informasi Saja"
+        $allEvents = collect($allEvents)->filter(function ($event) {
+            return $event['status_badge'] !== 'Event Informasi Saja';
+        })->values()->all();
+
         // Pencarian dan filter event.
         $filteredEvents = collect($allEvents)->filter(
             function ($event) use (
                 $query,
                 $category,
                 $location,
-                $position,
-                $status,
-                $time
+                $position
             ) {
                 if ($query !== '') {
                     $searchable = strtolower(implode(' ', [
@@ -365,7 +330,6 @@ class SearchController extends Controller
                         $event['location'],
                         $event['positions'],
                     ]));
-
                     if (! str_contains($searchable, strtolower($query))) {
                         return false;
                     }
@@ -399,7 +363,6 @@ class SearchController extends Controller
 
                 if (! empty($position)) {
                     $hasPosition = false;
-
                     foreach ($position as $pos) {
                         if (str_contains(
                             strtolower($event['positions']),
@@ -409,45 +372,9 @@ class SearchController extends Controller
                             break;
                         }
                     }
-
                     if (! $hasPosition) {
                         return false;
                     }
-                }
-
-                if (! empty($status)) {
-                    $hasStatus = false;
-
-                    foreach ($status as $stat) {
-                        if (str_contains(
-                            strtolower($event['status_badge']),
-                            strtolower((string) $stat)
-                        )) {
-                            $hasStatus = true;
-                            break;
-                        }
-                    }
-
-                    if (! $hasStatus) {
-                        return false;
-                    }
-                }
-
-                if (
-                    $time === 'bulan-ini' &&
-                    $event['days_left'] > 30
-                ) {
-                    return false;
-                }
-
-                if (
-                    $time === '1-3-bulan' &&
-                    (
-                        $event['days_left'] <= 30 ||
-                        $event['days_left'] > 90
-                    )
-                ) {
-                    return false;
                 }
 
                 return true;
@@ -477,7 +404,6 @@ class SearchController extends Controller
         $totalPages = (int) ceil($totalEvents / $perPage);
         $page = max(1, min($page, max(1, $totalPages)));
         $offset = ($page - 1) * $perPage;
-
         $paginatedEvents = $filteredEvents
             ->slice($offset, $perPage)
             ->values();
@@ -487,11 +413,11 @@ class SearchController extends Controller
             'Semua',
             'Festival',
             'Seminar',
+            'Musik',
+            'Olahraga',
             'Sosial',
             'Kampus',
             'Komunitas',
-            'Olahraga',
-            'Musik',
         ];
 
         $locations = [
@@ -513,8 +439,6 @@ class SearchController extends Controller
             'category',
             'location',
             'position',
-            'time',
-            'status',
             'sort',
             'categories',
             'locations'
