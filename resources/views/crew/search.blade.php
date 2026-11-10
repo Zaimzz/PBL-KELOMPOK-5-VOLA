@@ -5,7 +5,7 @@
         <p class="mt-1 text-sm text-gray-500">Cari event dan posisi volunteer yang sesuai dengan minat dan keahlianmu.</p>
     </div>
 
-    <!-- Search Bar -->
+    {{-- Search Bar --}}
     <div class="bg-white border border-gray-200 rounded-2xl p-2 shadow-sm mb-6">
         <form action="{{ route('search.index') }}" method="GET" class="flex gap-2">
             <div class="relative flex-1">
@@ -29,12 +29,6 @@
             @foreach((array)$position as $pos)
                 <input type="hidden" name="position[]" value="{{ $pos }}">
             @endforeach
-            @if($time)
-                <input type="hidden" name="time" value="{{ $time }}">
-            @endif
-            @foreach((array)$status as $st)
-                <input type="hidden" name="status[]" value="{{ $st }}">
-            @endforeach
             @if(!empty($sort) && $sort !== 'terdekat')
                 <input type="hidden" name="sort" value="{{ $sort }}">
             @endif
@@ -48,9 +42,9 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {{-- Sidebar Filter --}}
         <div class="lg:col-span-1">
             <div class="bg-white border border-gray-200 rounded-2xl shadow-sm sticky top-24 overflow-hidden">
-
                 <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
                     <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
                         <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,15 +55,15 @@
                     <a href="{{ route('search.index') }}" class="text-sm font-semibold text-[#4F46E5] hover:text-indigo-800 transition">Reset Filter</a>
                 </div>
 
-                <!-- Form Filter -->
-                <form action="{{ route('search.index') }}" method="GET" class="p-5" x-data="{ selectedCategory: '{{ $category ?: "Semua" }}', selectedTime: '{{ $time }}' }">
+                {{-- Form Filter --}}
+                <form action="{{ route('search.index') }}" method="GET" class="p-5" x-data="{ selectedCategory: '{{ $category ?: "Semua" }}' }">
                     <input type="hidden" name="q" value="{{ $query }}">
                     <input type="hidden" name="category" :value="selectedCategory">
                     @if(!empty($sort) && $sort !== 'terdekat')
                         <input type="hidden" name="sort" value="{{ $sort }}">
                     @endif
 
-                    <!-- KATEGORI -->
+                    {{-- KATEGORI --}}
                     <div class="mb-6">
                         <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Kategori</p>
                         <div class="flex flex-wrap gap-2">
@@ -87,7 +81,7 @@
                         </div>
                     </div>
 
-                    <!-- LOKASI -->
+                    {{-- LOKASI --}}
                     <div class="mb-6">
                         <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Lokasi</p>
                         <div class="relative">
@@ -106,7 +100,7 @@
                         </div>
                     </div>
 
-                    <!-- POSISI VOLUNTEER -->
+                    {{-- POSISI VOLUNTEER --}}
                     <div class="mb-6">
                         <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Posisi Volunteer</p>
                         <div class="space-y-2.5">
@@ -124,47 +118,7 @@
                         </div>
                     </div>
 
-                    <!-- WAKTU -->
-                    <div class="mb-6">
-                        <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Waktu</p>
-                        <div class="space-y-2.5">
-                            <label class="flex items-center gap-2.5 cursor-pointer group">
-                                <input type="radio" name="time" value="bulan-ini"
-                                    x-model="selectedTime"
-                                    {{ $time === 'bulan-ini' ? 'checked' : '' }}
-                                    class="w-4 h-4 text-[#4F46E5] border-gray-300 focus:ring-[#4F46E5] focus:ring-offset-0 cursor-pointer">
-                                <span class="text-sm text-gray-700 group-hover:text-gray-900">Bulan Ini</span>
-                            </label>
-                            <label class="flex items-center gap-2.5 cursor-pointer group">
-                                <input type="radio" name="time" value="1-3-bulan"
-                                    x-model="selectedTime"
-                                    {{ $time === '1-3-bulan' ? 'checked' : '' }}
-                                    class="w-4 h-4 text-[#4F46E5] border-gray-300 focus:ring-[#4F46E5] focus:ring-offset-0 cursor-pointer">
-                                <span class="text-sm text-gray-700 group-hover:text-gray-900">1â€“3 Bulan Ke Depan</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- STATUS REKRUTMEN -->
-                    <div class="mb-6">
-                        <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Status Rekrutmen</p>
-                        <div class="space-y-2.5">
-                            <label class="flex items-center gap-2.5 cursor-pointer group">
-                                <input type="checkbox" name="status[]" value="Open Volunteer"
-                                    {{ in_array('Open Volunteer', (array)$status) ? 'checked' : '' }}
-                                    class="w-4 h-4 text-[#4F46E5] border-gray-300 rounded focus:ring-[#4F46E5] focus:ring-offset-0 cursor-pointer">
-                                <span class="text-sm text-gray-700 group-hover:text-gray-900">Open Volunteer</span>
-                            </label>
-                            <label class="flex items-center gap-2.5 cursor-pointer group">
-                                <input type="checkbox" name="status[]" value="Event Informasi Saja"
-                                    {{ in_array('Event Informasi Saja', (array)$status) ? 'checked' : '' }}
-                                    class="w-4 h-4 text-[#4F46E5] border-gray-300 rounded focus:ring-[#4F46E5] focus:ring-offset-0 cursor-pointer">
-                                <span class="text-sm text-gray-700 group-hover:text-gray-900">Event Informasi Saja</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Tombol Terapkan Filter -->
+                    {{-- Tombol Terapkan Filter --}}
                     <button type="submit" class="w-full py-3 bg-[#4F46E5] text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition shadow-sm">
                         Terapkan Filter
                     </button>
@@ -172,6 +126,7 @@
             </div>
         </div>
 
+        {{-- Event Cards --}}
         <div class="lg:col-span-3">
             <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <div class="flex items-center gap-2">
@@ -190,12 +145,6 @@
                     @endif
                     @foreach((array)$position as $pos)
                         <input type="hidden" name="position[]" value="{{ $pos }}">
-                    @endforeach
-                    @if(!empty($time))
-                        <input type="hidden" name="time" value="{{ $time }}">
-                    @endif
-                    @foreach((array)$status as $st)
-                        <input type="hidden" name="status[]" value="{{ $st }}">
                     @endforeach
                     <span class="text-gray-500">Urutkan:</span>
                     <select name="sort" onchange="this.form.submit()" class="border border-gray-200 rounded-lg pl-3 pr-10 py-1.5 text-sm bg-white focus:ring-2 focus:ring-[#4F46E5] outline-none cursor-pointer">
@@ -216,11 +165,6 @@
                                 <span class="absolute top-3 left-3 bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
                                     {{ $event['status_badge'] }}
                                 </span>
-                                <button class="absolute top-3 right-3 w-7 h-7 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition">
-                                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                                    </svg>
-                                </button>
                             </div>
                             <div class="p-4 flex flex-col flex-1">
                                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">{{ $event['category'] }}</p>
@@ -322,10 +266,11 @@
                     @endforeach
                 </div>
 
+                {{-- Pagination --}}
                 @if($totalPages > 1)
                     <div class="mt-6 flex items-center justify-between">
                         <p class="text-sm text-gray-500">
-                            Menampilkan {{ (($page - 1) * $perPage) + 1 }}â€“{{ min($page * $perPage, $totalEvents) }} dari {{ $totalEvents }} event
+                            Menampilkan {{ (($page - 1) * $perPage) + 1 }}–{{ min($page * $perPage, $totalEvents) }} dari {{ $totalEvents }} event
                         </p>
                         <div class="flex items-center gap-1">
                             @if($page > 1)
