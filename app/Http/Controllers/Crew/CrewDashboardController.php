@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers\Crew;
 
+use App\Enums\ApplicationStatus;
+use App\Enums\EventStatus;
+use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Event;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class CrewDashboardController extends Controller
@@ -12,104 +17,84 @@ class CrewDashboardController extends Controller
         $authUser = auth()->user();
         $firstName = explode(' ', $authUser->name)[0] ?? 'Crew';
 
-        $allEvents = [
-            [
-                'id' => 1,
-                'title' => 'Indonesia Comic & Pop Culture Con 2025',
-                'category' => 'Festival',
-                'filter_category' => 'festival',
-                'organizer' => 'PT Pop Media Nusantara',
-                'organizer_verified' => true,
-                'location' => 'JCC Senayan, Jakarta',
-                'date' => '14 – 16 Juni 2025',
-                'deadline' => '10 Juni 2025',
-                'status' => 'Open Volunteer',
-                'status_badge_type' => 'success',
-                'image' => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
-                'total_positions' => 5,
-                'positions_list' => 'Liaison Officer, Usher, Stage Crew, Dokumentasi, Registrasi',
-            ],
-            [
-                'id' => 2,
-                'title' => 'Jogja International Street Festival 2025',
-                'category' => 'Festival',
-                'filter_category' => 'festival',
-                'organizer' => 'Dinas Pariwisata DIY',
-                'organizer_verified' => true,
-                'location' => 'Malioboro, Yogyakarta',
-                'date' => '2 – 3 Mei 2025',
-                'deadline' => '25 April 2025',
-                'status' => 'Open Volunteer',
-                'status_badge_type' => 'success',
-                'image' => 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800',
-                'total_positions' => 3,
-                'positions_list' => 'Crowd Control, Info Desk, Medis',
-            ],
-            [
-                'id' => 3,
-                'title' => 'Surabaya Young Leaders Climate Conference',
-                'category' => 'Seminar',
-                'filter_category' => 'seminar',
-                'organizer' => 'EcoYouth Initiative',
-                'organizer_verified' => true,
-                'location' => 'Grand City, Surabaya',
-                'date' => '20 Mei 2025',
-                'deadline' => '15 Mei 2025',
-                'status' => 'Open Volunteer',
-                'status_badge_type' => 'success',
-                'image' => 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800',
-                'total_positions' => 4,
-                'positions_list' => 'LO Pembicara, Notulensi, Registrasi, VIP Handler',
-            ],
-            [
-                'id' => 4,
-                'title' => 'Festival Film Dokumenter Indonesia 2025',
-                'category' => 'Festival',
-                'filter_category' => 'festival',
-                'organizer' => 'Sinema Kolektif ID',
-                'organizer_verified' => true,
-                'location' => 'TIM, Jakarta Pusat',
-                'date' => '1 – 5 Juli 2025',
-                'deadline' => '25 Juni 2025',
-                'status' => 'Open Volunteer',
-                'status_badge_type' => 'success',
-                'image' => 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800',
-                'total_positions' => 3,
-                'positions_list' => 'Screening Officer, Ticketing, Dokumentasi',
-            ],
-        ];
+        $volunteerProfile = $authUser->volunteerProfile;
 
-        $recommendedEvents = $allEvents;
-        $featuredEvents = $allEvents;
-        
-        $activeApplicationsCount = 2;
-        $acceptedCount = 1;
-        $pendingReviewCount = 1;
+        $activeApplicationsCount = 0;
+        $pendingReviewCount = 0;
+        $acceptedCount = 0;
 
-        $stats = [
-            'total_events' => count($allEvents),
-            'applied' => 2,
-            'accepted' => 1,
-            'completed' => 3,
-        ];
+        if ($volunteerProfile !== null) {
+            $applications = $volunteerProfile->applications;
+            $activeApplicationsCount = $applications
+                ->whereNotIn('status', [ApplicationStatus::Withdrawn, ApplicationStatus::Rejected])
+                ->count();
+            $pendingReviewCount = $applications
+                ->where('status', ApplicationStatus::Pending)
+                ->count();
+            $acceptedCount = $applications
+                ->where('status', ApplicationStatus::Accepted)
+                ->count();
+        }
+
+        $dbEvents = Event::query()
+            ->with(['category', 'organizer', 'positions'])
+            ->where('status', EventStatus::Active)
+            ->whereNotNull('published_at')
+            ->whereDate('registration_deadline', '>=', now()->toDateString())
+            ->latest('published_at')
+            ->take(4)
+            ->get();
+
+        $recommendedEvents = $dbEvents->map(function (Event $event): array {
+            $positionNames = $event->positions->pluck('name');
+            $positionsText = $positionNames->take(3)->implode(', ');
+            if ($positionNames->count() > 3) {
+                $positionsText .= '... ('.$positionNames->count().' posisi)';
+            }
+
+            $startDate = $event->start_date?->translatedFormat('d M Y');
+            $endDate = $event->end_date?->translatedFormat('d M Y');
+            $dateFormatted = $endDate && $endDate !== $startDate
+                ? $startDate.' – '.$endDate
+                : ($startDate ?? '-');
+
+            $imageUrl = $event->poster_path
+                ? Storage::url($event->poster_path)
+                : 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';
+
+            $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
+
+            return [
+                'id' => $event->id,
+                'title' => $event->title,
+                'category' => $event->category?->name ?? 'Umum',
+                'filter_category' => strtolower($event->category?->name ?? 'umum'),
+                'organizer' => $event->organizer?->organization_name ?? '-',
+                'organizer_verified' => $isVerified,
+                'location' => trim(($event->location ?? '').($event->city ? ', '.$event->city : ''), ', '),
+                'date' => $dateFormatted,
+                'status' => 'Open Volunteer',
+                'status_badge_type' => 'success',
+                'image' => $imageUrl,
+                'positions_list' => $positionsText ?: 'Belum ada posisi',
+            ];
+        })->values()->all();
 
         $categories = [
-            ['slug' => 'all', 'name' => 'Semua', 'count' => count($allEvents)],
-            ['slug' => 'festival', 'name' => 'Festival', 'count' => count(array_filter($allEvents, fn($e) => $e['filter_category'] === 'festival'))],
-            ['slug' => 'seminar', 'name' => 'Seminar', 'count' => count(array_filter($allEvents, fn($e) => $e['filter_category'] === 'seminar'))],
-            ['slug' => 'musik', 'name' => 'Musik', 'count' => count(array_filter($allEvents, fn($e) => $e['filter_category'] === 'musik'))],
-            ['slug' => 'olahraga', 'name' => 'Olahraga', 'count' => count(array_filter($allEvents, fn($e) => $e['filter_category'] === 'olahraga'))],
-            ['slug' => 'sosial', 'name' => 'Sosial', 'count' => count(array_filter($allEvents, fn($e) => $e['filter_category'] === 'sosial'))],
+            ['slug' => 'all', 'name' => 'Semua'],
+            ['slug' => 'festival', 'name' => 'Festival'],
+            ['slug' => 'seminar', 'name' => 'Seminar'],
+            ['slug' => 'musik', 'name' => 'Musik'],
+            ['slug' => 'olahraga', 'name' => 'Olahraga'],
+            ['slug' => 'sosial', 'name' => 'Sosial'],
         ];
 
         return view('crew.dashboard', compact(
             'firstName',
             'recommendedEvents',
-            'featuredEvents',
             'activeApplicationsCount',
             'acceptedCount',
             'pendingReviewCount',
-            'stats',
             'categories'
         ));
     }

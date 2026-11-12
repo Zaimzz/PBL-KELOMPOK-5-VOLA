@@ -124,9 +124,10 @@ class ReviewEventController extends Controller
      */
     public function approve(Request $request, Event $event)
     {
+        // After admin approval, event moves to awaiting_payment so the EO
+        // must pay the publication fee before the event goes live for volunteers.
         $event->update([
-            'status' => EventStatus::Active,
-            'published_at' => now(),
+            'status' => EventStatus::AwaitingPayment,
             'reviewed_by' => $request->user()?->id,
             'reviewed_at' => now(),
             'rejection_reason' => null,
@@ -139,13 +140,13 @@ class ReviewEventController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Event berhasil disetujui dan siap tayang ke publik.',
+                'message' => 'Event berhasil disetujui. EO perlu melakukan pembayaran untuk mempublikasikan event.',
                 'event' => $event,
             ]);
         }
 
         return redirect()->route('admin.review-events.index')
-            ->with('success', 'Event "'.$event->title.'" berhasil disetujui dan kini siap tayang secara publik.');
+            ->with('success', 'Event "'.$event->title.'" berhasil disetujui. EO perlu melakukan pembayaran publikasi.');
     }
 
     /**

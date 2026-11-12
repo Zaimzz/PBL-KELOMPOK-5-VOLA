@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Eo;
 
 use App\Enums\ApplicationStatus;
+use App\Enums\EventStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Event;
@@ -36,8 +37,9 @@ class CrewCoordinationController extends Controller
             ]);
         }
 
-        // All events owned by this EO
+        // All active events owned by this EO
         $events = Event::where('organizer_id', $organizerProfile->id)
+            ->where('status', EventStatus::Active)
             ->orderByDesc('created_at')
             ->get();
 
@@ -235,4 +237,3 @@ class CrewCoordinationController extends Controller
         return 'https://wa.me/'.$normalized.'?text='.urlencode($message);
     }
 }
-
