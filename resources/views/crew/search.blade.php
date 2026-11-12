@@ -5,7 +5,6 @@
         <p class="mt-1 text-sm text-gray-500">Cari event dan posisi volunteer yang sesuai dengan minat dan keahlianmu.</p>
     </div>
 
-    {{-- Search Bar --}}
     <div class="bg-white border border-gray-200 rounded-2xl p-2 shadow-sm mb-6">
         <form action="{{ route('search.index') }}" method="GET" class="flex gap-2">
             <div class="relative flex-1">
@@ -42,7 +41,6 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {{-- Sidebar Filter --}}
         <div class="lg:col-span-1">
             <div class="bg-white border border-gray-200 rounded-2xl shadow-sm sticky top-24 overflow-hidden">
                 <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -55,7 +53,6 @@
                     <a href="{{ route('search.index') }}" class="text-sm font-semibold text-[#4F46E5] hover:text-indigo-800 transition">Reset Filter</a>
                 </div>
 
-                {{-- Form Filter --}}
                 <form action="{{ route('search.index') }}" method="GET" class="p-5" x-data="{ selectedCategory: '{{ $category ?: "Semua" }}' }">
                     <input type="hidden" name="q" value="{{ $query }}">
                     <input type="hidden" name="category" :value="selectedCategory">
@@ -63,7 +60,6 @@
                         <input type="hidden" name="sort" value="{{ $sort }}">
                     @endif
 
-                    {{-- KATEGORI --}}
                     <div class="mb-6">
                         <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Kategori</p>
                         <div class="flex flex-wrap gap-2">
@@ -81,7 +77,6 @@
                         </div>
                     </div>
 
-                    {{-- LOKASI --}}
                     <div class="mb-6">
                         <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Lokasi</p>
                         <div class="relative">
@@ -100,7 +95,6 @@
                         </div>
                     </div>
 
-                    {{-- POSISI VOLUNTEER --}}
                     <div class="mb-6">
                         <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Posisi Volunteer</p>
                         <div class="space-y-2.5">
@@ -117,8 +111,6 @@
                             @endforeach
                         </div>
                     </div>
-
-                    {{-- Tombol Terapkan Filter --}}
                     <button type="submit" class="w-full py-3 bg-[#4F46E5] text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition shadow-sm">
                         Terapkan Filter
                     </button>
@@ -126,7 +118,6 @@
             </div>
         </div>
 
-        {{-- Event Cards --}}
         <div class="lg:col-span-3">
             <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <div class="flex items-center gap-2">
@@ -161,7 +152,8 @@
                         <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all flex flex-col group">
                             <div class="relative h-40 w-full overflow-hidden bg-gray-100 shrink-0">
                                 <img src="{{ $event['image'] }}" alt="{{ $event['title'] }}"
-                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';">
                                 <span class="absolute top-3 left-3 bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
                                     {{ $event['status_badge'] }}
                                 </span>
@@ -266,7 +258,6 @@
                     @endforeach
                 </div>
 
-                {{-- Pagination --}}
                 @if($totalPages > 1)
                     <div class="mt-6 flex items-center justify-between">
                         <p class="text-sm text-gray-500">

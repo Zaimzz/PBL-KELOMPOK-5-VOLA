@@ -8,6 +8,23 @@ use Illuminate\View\View;
 
 class EventDetailController extends Controller
 {
+    private const CATEGORY_IMAGES = [
+        'festival'  => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800',
+        'seminar'   => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
+        'musik'     => 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800',
+        'olahraga'  => 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
+        'sosial'    => 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800',
+        'kampus'    => 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800',
+        'komunitas' => 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800',
+        'umum'      => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800',
+    ];
+
+    private function getImageByCategory(?string $category): string
+    {
+        $key = strtolower(trim($category ?? 'umum'));
+        return self::CATEGORY_IMAGES[$key] ?? self::CATEGORY_IMAGES['umum'];
+    }
+
     public function show($event): View
     {
         $eventsData = [
@@ -40,7 +57,7 @@ class EventDetailController extends Controller
                     'total_quota' => 47,
                     'address' => 'Jl. Gatot Subroto No.1, Gelora, Kecamatan Tanah Abang, Kota Jakarta Pusat, DKI Jakarta 10270.',
                     'meeting_point' => 'Pintu loading dock Crew barat seberang Gelora Bung Karno Gate 7.',
-                    'image' => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
+                    'image' => $this->getImageByCategory('Festival'), // ✅ Pakai mapping
                 ],
                 'positions' => [
                     ['id' => 1, 'title' => 'Liaison Officer (LO) Bintang Tamu', 'badge' => 'Unggulan', 'sisa_kursi' => 2, 'description' => 'Mendampingi cosplayer global, artist undangan internasional, dan pengisi suara sepanjang jadwal panel wawancara dan meet & greet.', 'quota' => 8, 'date' => '13 Juni 2025 (Briefing H-1)', 'requirements' => ['Lancar Bahasa Inggris / Jepang', 'Penampilan Rapi & Ramah', 'Komunikatif'], 'is_selected' => false, 'capacity' => 6, 'filled' => 6, 'percentage' => 75],
@@ -79,7 +96,7 @@ class EventDetailController extends Controller
                     'total_quota' => 25,
                     'address' => 'Lapangan Gasibu, Jl. Diponegoro, Bandung 40115.',
                     'meeting_point' => 'Pintu Gerbang Selatan Gasibu, Bandung.',
-                    'image' => 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800',
+                    'image' => $this->getImageByCategory('Komunitas'), // ✅ Pakai mapping
                 ],
                 'positions' => [
                     ['id' => 1, 'title' => 'Booth Coordinator & Pendamping UMKM', 'badge' => 'Unggulan', 'sisa_kursi' => 5, 'description' => 'Mendampingi lebih dari 80 stan kuliner tradisional dalam kebutuhan fasilitas listrik dan kebersihan.', 'quota' => 10, 'date' => '27 Mei 2025 (Briefing H-1)', 'requirements' => ['Komunikatif & Sigap', 'Tahan di Area Outdoor'], 'is_selected' => false, 'capacity' => 5, 'filled' => 5, 'percentage' => 50],
@@ -116,7 +133,7 @@ class EventDetailController extends Controller
                     'total_quota' => 40,
                     'address' => 'Jl. Pintu Satu Senayan, Gelora, Tanah Abang, Jakarta Pusat 10270.',
                     'meeting_point' => 'Plaza Barat GBK, dekat pintu masuk utama.',
-                    'image' => 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
+                    'image' => $this->getImageByCategory('Olahraga'), // ✅ Pakai mapping
                 ],
                 'positions' => [
                     ['id' => 1, 'title' => 'Water Marshal & Hydration Point', 'badge' => 'Urgent', 'sisa_kursi' => 2, 'description' => 'Menjaga stasiun air di sepanjang lintasan 10K dan 21K, memastikan pelari mendapatkan hidrasi tanpa sampah berserakan.', 'quota' => 12, 'date' => '27 Juni 2025 (Briefing H-1)', 'requirements' => ['Siap Bangun Subuh (04.00 WIB)', 'Fisik Prima & Bersemangat'], 'is_selected' => false, 'capacity' => 10, 'filled' => 10, 'percentage' => 83],
@@ -153,7 +170,7 @@ class EventDetailController extends Controller
                     'total_quota' => 15,
                     'address' => 'Jl. Ir. H. Djuanda No.1, Tamansari, Coblong, Bandung 40132.',
                     'meeting_point' => 'Lobby Utama Gedung Sabuga ITB / Bandung Digital Hub.',
-                    'image' => 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800',
+                    'image' => $this->getImageByCategory('Seminar'), // ✅ Pakai mapping
                 ],
                 'positions' => [
                     ['id' => 1, 'title' => 'Exhibition Crew & Tech Demo Assistant', 'badge' => 'Unggulan', 'sisa_kursi' => 3, 'description' => 'Membantu instalasi prototipe IoT dan demo kecerdasan buatan dari berbagai startup teknologi.', 'quota' => 8, 'date' => '9 April 2025 (Briefing H-1)', 'requirements' => ['Familiar Hardware / Software Dasar', 'Komunikatif'], 'is_selected' => false, 'capacity' => 5, 'filled' => 5, 'percentage' => 62],
@@ -199,7 +216,9 @@ class EventDetailController extends Controller
                     'total_quota' => (int) $dbEvent->positions->sum('quota'),
                     'address' => $dbEvent->location ?: 'Lokasi penyelenggaraan event resmi.',
                     'meeting_point' => 'Pintu Masuk Utama / Meja Informasi Panitia.',
-                    'image' => $dbEvent->poster_path ? asset('storage/' . $dbEvent->poster_path) : 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
+                    'image' => $dbEvent->poster_path
+                        ? asset('storage/' . $dbEvent->poster_path)
+                        : $this->getImageByCategory($categoryName),
                 ];
                 $positions = $dbEvent->positions->map(function ($pos, $index) {
                     $quota = $pos->quota ?? 5;
