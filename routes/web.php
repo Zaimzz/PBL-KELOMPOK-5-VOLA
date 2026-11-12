@@ -82,6 +82,14 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     // Lamaran Saya
     Route::get('/lamaran-saya', [ApplicationController::class, 'index'])->name('applications.index');
 
+    // Download Bukti Penerimaan
+    Route::get('/lamaran-saya/{id}/bukti-penerimaan', [ApplicationController::class, 'downloadAcceptanceLetter'])
+        ->name('applications.download-acceptance');
+
+    Route::get('/events/{event}', [EventDetailController::class, 'show'])
+    ->whereNumber('event')
+    ->name('events.detail');
+
     // Event Saya
     Route::get('/event-saya', [MyEventController::class, 'index'])
         ->name('my-events.index');
