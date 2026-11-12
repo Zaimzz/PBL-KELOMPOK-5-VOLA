@@ -50,8 +50,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('account.profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
@@ -211,7 +210,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('/review-events/{event}', [ReviewEventController::class, 'show'])->name('review-events.show');
         Route::post('/review-events/{event}/approve', [ReviewEventController::class, 'approve'])->name('review-events.approve');
         Route::post('/review-events/{event}/reject', [ReviewEventController::class, 'reject'])->name('review-events.reject');
-        
+
         // Alias route Review Events
         Route::get('/review-event', [ReviewEventController::class, 'index'])->name('review-event.index');
         Route::get('/review-events-list', [ReviewEventController::class, 'index'])->name('review-events');
