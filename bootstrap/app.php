@@ -29,6 +29,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'vola_remember',
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/midtrans',
+        ]);
+
         $middleware->web(append: [
             EnsureValidSession::class,
         ]);

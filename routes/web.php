@@ -18,7 +18,9 @@ use App\Http\Controllers\Crew\ProfileController as CrewProfileController;
 use App\Http\Controllers\Crew\SearchController;
 use App\Http\Controllers\Crew\SettingsController;
 use App\Http\Controllers\Eo\ApplicantController;
+use App\Http\Controllers\Eo\BillingController;
 use App\Http\Controllers\Eo\CrewCoordinationController;
+use App\Http\Controllers\MidtransWebhookController;
 use App\Http\Controllers\Eo\EoDashboardController;
 use App\Http\Controllers\Eo\EventController;
 use App\Http\Controllers\Eo\EventPositionController;
@@ -167,6 +169,28 @@ Route::middleware(['auth', 'verified', 'role:eo'])
 
         Route::get('/crew/export', [CrewCoordinationController::class, 'export'])
             ->name('crew.export');
+
+        // Pembayaran & Tagihan
+        Route::get('/billing', [BillingController::class, 'index'])
+            ->name('billing.index');
+
+        Route::post('/billing/invoice', [BillingController::class, 'createInvoice'])
+            ->name('billing.invoice.create');
+
+        Route::get('/billing/{payment}', [BillingController::class, 'show'])
+            ->name('billing.show');
+
+        Route::get('/billing/{payment}/download', [BillingController::class, 'downloadInvoice'])
+            ->name('billing.download');
+
+        Route::get('/billing/{payment}/status', [BillingController::class, 'status'])
+            ->name('billing.status');
+
+        Route::get('/billing/{payment}/finish', [BillingController::class, 'finishPayment'])
+            ->name('billing.finish');
+
+        Route::post('/billing/{payment}/verify', [BillingController::class, 'verify'])
+            ->name('billing.verify');
     });
 
 // Route Admin
@@ -219,5 +243,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('/transactions/{payment}/download', [TransactionController::class, 'downloadInvoice'])->name('transactions.download-invoice');
         Route::get('/transactions-list', [TransactionController::class, 'index'])->name('transactions');
     });
+
+// Midtrans Webhook — no auth, no CSRF (excluded via bootstrap/app.php or VerifyCsrfToken)
+Route::post('/webhooks/midtrans', [MidtransWebhookController::class, 'handle'])
+    ->name('webhooks.midtrans');
 
 require __DIR__.'/auth.php';

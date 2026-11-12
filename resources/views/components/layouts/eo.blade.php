@@ -79,13 +79,13 @@
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2 mt-4">Keuangan</p>
 
                     <!-- Placeholder - Fase 5 -->
-                    <span class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed select-none"
-                          title="Akan tersedia di pembaruan berikutnya">
+                    <a href="{{ route('eo.billing.index') }}"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('eo.billing.*') ? 'bg-brand-50 text-brand-700 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
                         </svg>
                         Pembayaran & Tagihan
-                    </span>
+                    </a>
                 </div>
 
                 <!-- AKUN -->

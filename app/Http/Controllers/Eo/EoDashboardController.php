@@ -22,6 +22,7 @@ class EoDashboardController extends Controller
         $totalEvents = 0;
         $draftCount = 0;
         $pendingReviewCount = 0;
+        $awaitingPaymentCount = 0;
         $rejectedCount = 0;
 
         if ($organizerProfile) {
@@ -36,6 +37,7 @@ class EoDashboardController extends Controller
             $totalEvents = $allEvents->count();
             $draftCount = $allEvents->where('status', EventStatus::Draft)->count();
             $pendingReviewCount = $allEvents->where('status', EventStatus::PendingReview)->count();
+            $awaitingPaymentCount = $allEvents->where('status', EventStatus::AwaitingPayment)->count();
             $rejectedCount = $allEvents->where('status', EventStatus::Rejected)->count();
         }
 
@@ -45,6 +47,7 @@ class EoDashboardController extends Controller
             'totalEvents',
             'draftCount',
             'pendingReviewCount',
+            'awaitingPaymentCount',
             'rejectedCount',
         ));
     }
