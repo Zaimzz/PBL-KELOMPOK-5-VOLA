@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -31,9 +32,9 @@
 
             <div class="vola-nav-actions">
                 @auth
-                    <a href="{{ match(auth()->user()->role) { \App\Enums\UserRole::Admin => route('admin.dashboard'), \App\Enums\UserRole::Eo => route('eo.dashboard'), default => route('profile.show') } }}"
+                    <a href="{{ route('profile.edit') }}"
                        class="vola-btn vola-btn-primary vola-btn-small">
-                        {{ auth()->user()->role === \App\Enums\UserRole::Volunteer ? 'Profil Saya' : 'Dashboard' }}
+                        Profil Saya
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="vola-login-link">

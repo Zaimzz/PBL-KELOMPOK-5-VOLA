@@ -37,7 +37,7 @@ class AuthenticatedSessionController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('login')->withErrors(['email' => 'Email atau kata sandi tidak valid.']);
+            return redirect()->route('login')->withErrors(['email' => 'Admin tidak dapat masuk melalui halaman ini.']);
         }
 
         $remember = $request->boolean('remember');

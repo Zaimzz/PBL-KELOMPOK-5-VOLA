@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <div class="w-full bg-white/90 backdrop-blur-xl rounded-[28px] shadow-[0_20px_50px_rgba(69,52,230,0.08)] hover:shadow-[0_25px_60px_rgba(69,52,230,0.12)] p-6 sm:p-10 z-10 border border-white/80 transition-all duration-300 animate-card-entry">
+    <div class="w-full bg-white/90 backdrop-blur-xl rounded-[28px] shadow-[0_20px_50px_rgba(69,52,230,0.08)] hover:shadow-[0_25px_60px_rgba(69,52,230,0.12)] p-7 sm:p-10 z-10 border border-white/80 transition-all duration-300 animate-card-entry">
         
         <div class="flex justify-center items-center mb-5 animate-stagger-item delay-50">
             <div class="flex items-center space-x-1.5">
@@ -8,30 +8,29 @@
         </div>
 
         <div class="text-center mb-6 animate-stagger-item delay-100">
-            <h2 class="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight">Gabung di VOLA</h2>
+            <h2 class="text-[26px] sm:text-[28px] font-bold text-gray-900 tracking-tight">Gabung di VOLA</h2>
             <p class="mt-1.5 text-sm text-gray-500 font-medium">Mulai temukan event dan bangun pengalamanmu.</p>
         </div>
 
         <form method="POST" action="{{ route('register') }}" class="space-y-4 sm:space-y-4.5" x-data="{ 
-            role: @js(old('role', 'volunteer')),
-            name: @js(old('name', '')),
-            email: @js(old('email', '')),
+            role: '{{ old('role', 'volunteer') }}',
+            name: '{{ old('name') }}',
+            email: '{{ old('email') }}',
             password: '',
             password_confirmation: '',
             showPassword: false, 
             showConfirmPassword: false,
             isSubmitting: false,
             errors: {
-                role: @js($errors->first('role')),
-                name: @js($errors->first('name')),
-                email: @js($errors->first('email')),
-                password: @js($errors->first('password')),
-                password_confirmation: @js($errors->first('password_confirmation'))
+                role: '{{ $errors->first('role') }}',
+                name: '{{ $errors->first('name') }}',
+                email: '{{ $errors->first('email') }}',
+                password: '{{ $errors->first('password') }}',
+                password_confirmation: '{{ $errors->first('password_confirmation') }}'
             },
             get passwordValidLength() { return this.password.length >= 8; },
             get passwordValidCombination() { return /^(?=.*[A-Za-z])(?=.*\d).+$/.test(this.password); },
             validate() {
-                this.errors.role = '';
                 this.errors.name = '';
                 this.errors.email = '';
                 this.errors.password = '';
@@ -39,17 +38,15 @@
                 
                 let isValid = true;
                 
-                if (!this.name || !this.name.trim()) {
-                    this.errors.name = this.role === 'volunteer'
-                        ? 'Nama lengkap wajib diisi.'
-                        : 'Nama organisasi wajib diisi.';
+                if (!this.name) {
+                    this.errors.name = 'Nama lengkap wajib diisi.';
                     isValid = false;
                 }
                 
-                if (!this.email || !this.email.trim()) {
+                if (!this.email) {
                     this.errors.email = 'Email wajib diisi.';
                     isValid = false;
-                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim())) {
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
                     this.errors.email = 'Format email tidak valid.';
                     isValid = false;
                 }
@@ -73,19 +70,11 @@
                 return isValid;
             },
             handleRegisterSubmit(event) {
-                if (this.isSubmitting) {
-                    event.preventDefault();
-                    return;
-                }
-
                 if (!this.validate()) {
                     event.preventDefault();
                     return;
                 }
-
                 this.isSubmitting = true;
-                sessionStorage.setItem('vola_session_active', 'true');
-                document.cookie = 'vola_session_active=1; path=/; SameSite=Lax';
             }
         }" @submit="handleRegisterSubmit($event)" novalidate>
             @csrf
@@ -102,10 +91,10 @@
 
                     <!-- Crew -->
                     <label class="relative z-10 flex-1 cursor-pointer select-none">
-                        <input type="radio" name="role" value="volunteer" x-model="role" @change="errors.role = ''" class="sr-only" {{ old('role', 'volunteer') === 'volunteer' ? 'checked' : '' }}>
-                        <div class="flex items-center justify-center py-2.5 px-2 sm:px-3 rounded-xl transition-all duration-200"
+                        <input type="radio" name="role" value="volunteer" x-model="role" class="sr-only" {{ old('role', 'volunteer') === 'volunteer' ? 'checked' : '' }}>
+                        <div class="flex items-center justify-center py-2.5 px-3 rounded-xl transition-all duration-200"
                              :class="role === 'volunteer' ? 'text-indigo-600 font-semibold' : 'text-gray-500 hover:text-gray-800 font-medium'">
-                            <svg class="w-4 h-4 mr-1.5 sm:mr-2 shrink-0 transition-transform duration-200" :class="role === 'volunteer' ? 'scale-110 text-indigo-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 mr-2 transition-transform duration-200" :class="role === 'volunteer' ? 'scale-110 text-indigo-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
                             <span class="text-xs">Crew</span>
@@ -114,13 +103,13 @@
 
                     <!-- EO -->
                     <label class="relative z-10 flex-1 cursor-pointer select-none">
-                        <input type="radio" name="role" value="eo" x-model="role" @change="errors.role = ''" class="sr-only" {{ old('role') === 'eo' ? 'checked' : '' }}>
-                        <div class="flex items-center justify-center py-2.5 px-2 sm:px-3 rounded-xl transition-all duration-200"
+                        <input type="radio" name="role" value="eo" x-model="role" class="sr-only" {{ old('role') === 'eo' ? 'checked' : '' }}>
+                        <div class="flex items-center justify-center py-2.5 px-3 rounded-xl transition-all duration-200"
                              :class="role === 'eo' ? 'text-indigo-600 font-semibold' : 'text-gray-500 hover:text-gray-800 font-medium'">
-                            <svg class="w-4 h-4 mr-1.5 sm:mr-2 shrink-0 transition-transform duration-200" :class="role === 'eo' ? 'scale-110 text-indigo-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 mr-2 transition-transform duration-200" :class="role === 'eo' ? 'scale-110 text-indigo-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
                             </svg>
-                            <span class="text-xs truncate">Event Organizer</span>
+                            <span class="text-xs whitespace-nowrap">Event Organizer</span>
                         </div>
                     </label>
                 </div>

@@ -183,7 +183,7 @@ test.describe('Kredensial Salah', () => {
     });
 
     await expect(page).toHaveURL(exactPath('/login'));
-    await expectError(page, 'Email atau kata sandi tidak valid.');
+    await expectError(page, 'Email belum terdaftar.');
   });
 
   test('LGN-07: password salah', async ({ page }) => {
@@ -195,7 +195,7 @@ test.describe('Kredensial Salah', () => {
     });
 
     await expect(page).toHaveURL(exactPath('/login'));
-    await expectError(page, 'Email atau kata sandi tidak valid.');
+    await expectError(page, 'Kata sandi salah.');
   });
 
   test('LGN-08: email Admin tidak terdaftar', async ({ page }) => {
@@ -205,7 +205,7 @@ test.describe('Kredensial Salah', () => {
     });
 
     await expect(page).toHaveURL(exactPath('/admin/login'));
-    await expectError(page, 'Email atau kata sandi tidak valid.');
+    await expectError(page, 'Kredensial tidak valid.');
   });
 
   test('LGN-09: password Admin salah', async ({ page }) => {
@@ -217,7 +217,7 @@ test.describe('Kredensial Salah', () => {
     });
 
     await expect(page).toHaveURL(exactPath('/admin/login'));
-    await expectError(page, 'Email atau kata sandi tidak valid.');
+    await expectError(page, 'Kata sandi salah.');
   });
 });
 

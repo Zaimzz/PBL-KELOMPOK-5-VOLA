@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -20,18 +21,6 @@ class AdminLoginRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
-    }
-
-    /**
-     * Prepare the data for validation.
-     */
-    protected function prepareForValidation(): void
-    {
-        if (is_string($this->email)) {
-            $this->merge([
-                'email' => Str::lower(trim($this->email)),
-            ]);
-        }
     }
 
     /**
@@ -65,29 +54,34 @@ class AdminLoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        $user = User::where('email', $this->email)->first();
 
+        if (! $user) {
+            RateLimiter::hit($this->throttleKey());
             throw ValidationException::withMessages([
-                'email' => 'Email atau kata sandi tidak valid.',
+                'email' => 'Kredensial tidak valid.',
             ]);
         }
 
-        $user = Auth::user();
-
         if ($user->role !== UserRole::Admin) {
-            Auth::logout();
             RateLimiter::hit($this->throttleKey());
-
             throw ValidationException::withMessages([
                 'email' => 'Akses ditolak. Hanya admin yang dapat masuk.',
             ]);
         }
 
+        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+            RateLimiter::hit($this->throttleKey());
+            throw ValidationException::withMessages([
+                'password' => 'Kata sandi salah.',
+            ]);
+        }
+
+        $user = Auth::user();
+
         if ($user->status === UserStatus::Suspended) {
             Auth::logout();
             RateLimiter::hit($this->throttleKey());
-
             throw ValidationException::withMessages([
                 'email' => 'Akun ini ditangguhkan.',
             ]);
@@ -124,6 +118,6 @@ class AdminLoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate('admin|'.Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -25,22 +26,14 @@ class LoginRequest extends FormRequest
 
     /**
      * Prepare the data for validation.
-     * Default role to volunteer (Crew) if empty, and normalize email.
+     * Default role to volunteer (Crew) if empty.
      */
     protected function prepareForValidation(): void
     {
-        $merged = [];
-
         if (blank($this->role)) {
-            $merged['role'] = 'volunteer';
-        }
-
-        if (is_string($this->email)) {
-            $merged['email'] = Str::lower(trim($this->email));
-        }
-
-        if ($merged !== []) {
-            $this->merge($merged);
+            $this->merge([
+                'role' => 'volunteer',
+            ]);
         }
     }
 
@@ -58,9 +51,6 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    /**
-     * Custom validation messages.
-     */
     public function messages(): array
     {
         return [
@@ -80,58 +70,56 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $invalidCredentialsMessage = 'Email atau kata sandi tidak valid.';
+        $user = User::where('email', $this->email)->first();
 
-        if (! Auth::attempt(
-            $this->only('email', 'password'),
-            $this->boolean('remember')
-        )) {
+        if (! $user) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => $invalidCredentialsMessage,
-                'password' => $invalidCredentialsMessage,
+                'email' => 'Email belum terdaftar.',
+            ]);
+        }
+
+        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'password' => 'Kata sandi salah.',
             ]);
         }
 
         $user = Auth::user();
 
-        // Admin tidak diperbolehkan masuk melalui halaman login Crew/EO.
         if ($user->role === UserRole::Admin) {
+            if (filled($this->role)) {
+                Auth::logout();
+
+                throw ValidationException::withMessages([
+                    'email' => 'Email atau kata sandi tidak valid.',
+                ]);
+            }
+        } else {
+            $selectedRole = $this->role ?: 'volunteer';
+
+            if ($user->role->value !== $selectedRole) {
+                Auth::logout();
+                RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'email' => 'Role yang dipilih tidak sesuai dengan akun.',
+                ]);
+            }
+        }
+
+        if ($user->status === UserStatus::Suspended) {
             Auth::logout();
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => $invalidCredentialsMessage,
-                'password' => $invalidCredentialsMessage,
+                'email' => 'Akun ini ditangguhkan.',
             ]);
         }
 
-        $selectedRole = $this->role ?: 'volunteer';
-
-        // Kredensial benar, tetapi role yang dipilih tidak sesuai.
-        // Gunakan pesan umum agar informasi role akun tidak bocor.
-        if ($user->role->value !== $selectedRole) {
-            Auth::logout();
-            RateLimiter::clear($this->throttleKey());
-
-            throw ValidationException::withMessages([
-                'email' => $invalidCredentialsMessage,
-                'password' => $invalidCredentialsMessage,
-            ]);
-        }
-
-        // Akun yang ditangguhkan tidak boleh melanjutkan login.
-        if ($user->status === UserStatus::Suspended) {
-            Auth::logout();
-            RateLimiter::clear($this->throttleKey());
-
-            throw ValidationException::withMessages([
-                'auth' => 'Akun tidak dapat diakses saat ini. Silakan hubungi administrator.',
-            ]);
-        }
-
-        // Login berhasil, hapus hitungan percobaan login.
         RateLimiter::clear($this->throttleKey());
     }
 
@@ -163,8 +151,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(
-            Str::lower($this->string('email')) . '|' . $this->ip()
-        );
+        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
     }
 }
