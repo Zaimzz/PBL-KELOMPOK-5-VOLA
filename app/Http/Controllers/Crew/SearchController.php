@@ -12,6 +12,23 @@ use Illuminate\View\View;
 
 class SearchController extends Controller
 {
+    private const CATEGORY_IMAGES = [
+        'festival'  => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800',
+        'seminar'   => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
+        'musik'     => 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800',
+        'olahraga'  => 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
+        'sosial'    => 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800',
+        'kampus'    => 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800',
+        'komunitas' => 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800',
+        'umum'      => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800',
+    ];
+
+    private function getImageByCategory(?string $category): string
+    {
+        $key = strtolower(trim($category ?? 'umum'));
+        return self::CATEGORY_IMAGES[$key] ?? self::CATEGORY_IMAGES['umum'];
+    }
+
     public function index(Request $request): View
     {
         $query = trim((string) $request->input('q', ''));
@@ -33,11 +50,11 @@ class SearchController extends Controller
         if ($query !== '') {
             $dbQuery->where(function ($q) use ($query, $operator) {
                 $q->where('title', $operator, '%'.$query.'%')
-                    ->orWhere('location', $operator, '%'.$query.'%')
-                    ->orWhere('city', $operator, '%'.$query.'%')
-                    ->orWhereHas('category', fn ($cq) => $cq->where('name', $operator, '%'.$query.'%'))
-                    ->orWhereHas('organizer', fn ($oq) => $oq->where('organization_name', $operator, '%'.$query.'%'))
-                    ->orWhereHas('positions', fn ($pq) => $pq->where('name', $operator, '%'.$query.'%'));
+                  ->orWhere('location', $operator, '%'.$query.'%')
+                  ->orWhere('city', $operator, '%'.$query.'%')
+                  ->orWhereHas('category', fn ($cq) => $cq->where('name', $operator, '%'.$query.'%'))
+                  ->orWhereHas('organizer', fn ($oq) => $oq->where('organization_name', $operator, '%'.$query.'%'))
+                  ->orWhereHas('positions', fn ($pq) => $pq->where('name', $operator, '%'.$query.'%'));
             });
         }
 
@@ -48,7 +65,7 @@ class SearchController extends Controller
         if ($location !== '' && $location !== 'Semua Lokasi') {
             $dbQuery->where(function ($q) use ($location, $operator) {
                 $q->where('city', $operator, '%'.$location.'%')
-                    ->orWhere('location', $operator, '%'.$location.'%');
+                  ->orWhere('location', $operator, '%'.$location.'%');
             });
         }
 
@@ -101,17 +118,19 @@ class SearchController extends Controller
                 ? $startDate.' – '.$endDate
                 : ($startDate ?? '-');
 
+            $categoryName = $event->category?->name ?? 'Umum';
+
             $imageUrl = $event->poster_path
                 ? Storage::url($event->poster_path)
-                : 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';
+                : $this->getImageByCategory($categoryName);
 
             $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
 
             return [
                 'id' => $event->id,
                 'title' => $event->title,
-                'category' => $event->category?->name ?? 'Umum',
-                'filter_category' => strtolower($event->category?->name ?? 'umum'),
+                'category' => $categoryName,
+                'filter_category' => strtolower($categoryName),
                 'organizer' => $event->organizer?->organization_name ?? '-',
                 'is_verified' => $isVerified,
                 'status_badge' => 'Open Volunteer',
@@ -128,47 +147,23 @@ class SearchController extends Controller
         });
 
         $totalEvents = $allEvents->count();
-
-        // Pagination.
         $totalPages = (int) ceil($totalEvents / $perPage);
         $page = max(1, min($page, max(1, $totalPages)));
         $offset = ($page - 1) * $perPage;
         $paginatedEvents = $allEvents->slice($offset, $perPage)->values();
 
-        // Filter options (category names from seed data).
         $categories = [
-            'Semua',
-            'Festival',
-            'Seminar',
-            'Musik',
-            'Olahraga',
-            'Sosial',
-            'Kampus',
-            'Komunitas',
+            'Semua', 'Festival', 'Seminar', 'Musik',
+            'Olahraga', 'Sosial', 'Kampus', 'Komunitas',
         ];
-
         $locations = [
-            'Semua Lokasi',
-            'Jakarta',
-            'Bandung',
-            'Yogyakarta',
-            'Surabaya',
-            'Bali',
+            'Semua Lokasi', 'Jakarta', 'Bandung',
+            'Yogyakarta', 'Surabaya', 'Bali',
         ];
 
         return view('crew.search', compact(
-            'paginatedEvents',
-            'totalEvents',
-            'totalPages',
-            'page',
-            'perPage',
-            'query',
-            'category',
-            'location',
-            'position',
-            'sort',
-            'categories',
-            'locations',
+            'paginatedEvents', 'totalEvents', 'totalPages', 'page', 'perPage',
+            'query', 'category', 'location', 'position', 'sort', 'categories', 'locations'
         ));
     }
 }

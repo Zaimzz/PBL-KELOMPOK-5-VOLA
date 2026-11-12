@@ -23,7 +23,9 @@
     </div>
 
     <div class="relative rounded-2xl overflow-hidden mb-6 h-72">
-        <img src="{{ $eventData['image'] }}" alt="{{ $eventData['title'] }}" class="absolute inset-0 w-full h-full object-cover">
+        <img src="{{ $eventData['image'] }}" alt="{{ $eventData['title'] }}"
+            class="w-full h-full object-cover"
+            onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1511578314322-379afb476865?w=800';">
         <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30"></div>
         <div class="absolute top-4 left-4 right-4 flex items-start justify-between">
             <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">
