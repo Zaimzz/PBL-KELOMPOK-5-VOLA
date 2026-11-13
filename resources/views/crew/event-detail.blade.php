@@ -80,11 +80,14 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" 
          x-data="{ 
-             selectedPositionId: null, 
-             activeTab: 'positions', 
-             showApplicationForm: false,
-             uploadedFileName: '',
-             positions: {{ Js::from($positions) }},
+            selectedPositionId: null, 
+            activeTab: 'positions', 
+            showApplicationForm: false,
+            isSubmitting: false,
+            showSuccessModal: false,
+            showErrorModal: false,
+            modalMessage: '',
+            positions: {{ Js::from($positions) }},
              applicationData: {
                  motivation: '',
                  experience: '',
@@ -109,44 +112,54 @@
                      document.getElementById('application-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
                  });
              },
-             handleFileUpload(event) {
-                 const file = event.target.files[0];
-                 if (file) {
-                     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-                     const maxSize = 2 * 1024 * 1024; // 2MB
-                     
-                     if (!allowedTypes.includes(file.type)) {
-                         alert('Format file tidak valid! Gunakan PDF, DOC, atau DOCX.');
-                         event.target.value = '';
-                         return;
-                     }
-                     if (file.size > maxSize) {
-                         alert('Ukuran file terlalu besar! Maksimal 2MB.');
-                         event.target.value = '';
-                         return;
-                     }
-                     this.uploadedFileName = file.name;
-                 }
-             },
-             removeFile() {
-                 this.uploadedFileName = '';
-                 document.getElementById('cv-upload').value = '';
-             },
              submitApplication() {
-                 if (!this.applicationData.agree) {
-                     alert('Anda harus menyetujui syarat dan ketentuan!');
-                     return;
-                 }
-                 if (!this.uploadedFileName) {
-                     alert('Silakan upload CV/Resume terlebih dahulu!');
-                     return;
-                 }
-                 alert('Lamaran berhasil diajukan! Tim kami akan menghubungi Anda segera.');
-                 this.showApplicationForm = false;
-                 this.selectedPositionId = null;
-                 this.uploadedFileName = '';
-                 this.applicationData = { motivation: '', experience: '', availability: '', agree: false };
-             }
+                if (!this.applicationData.agree) {
+                    this.modalMessage = 'Anda harus menyetujui syarat dan ketentuan!';
+                    this.showErrorModal = true;
+                    return;
+                }
+                
+                this.isSubmitting = true;
+                
+                const formData = new FormData();
+                formData.append('position_id', this.selectedPositionId);
+                formData.append('motivation', this.applicationData.motivation);
+                formData.append('experience', this.applicationData.experience);
+                formData.append('availability', this.applicationData.availability);
+                formData.append('agree', this.applicationData.agree ? '1' : '0');
+                formData.append('_token', '{{ csrf_token() }}');
+
+                fetch('{{ route("applications.store") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.modalMessage = data.message;
+                        this.showSuccessModal = true;
+                        
+                        this.showApplicationForm = false;
+                        this.selectedPositionId = null;
+                        this.applicationData = { motivation: '', experience: '', availability: '', agree: false };
+                    } else {
+                        this.modalMessage = data.message || 'Terjadi kesalahan saat mengajukan lamaran.';
+                        this.showErrorModal = true;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    this.modalMessage = 'Terjadi kesalahan jaringan. Silakan coba lagi.';
+                    this.showErrorModal = true;
+                })
+                .finally(() => {
+                    this.isSubmitting = false;
+                });
+            }
          }">
 
         <div class="lg:col-span-2">
@@ -234,24 +247,6 @@
                             </span>
                             @endif
                         </div>
-
-                        @if(!empty($position['requirements']))
-                        <div class="mt-3 pt-3 border-t border-gray-100">
-                            <p class="text-xs font-bold text-gray-500 mb-2 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                                </svg>
-                                Syarat :
-                            </p>
-                            <div class="flex flex-wrap gap-2">
-                                @foreach(array_slice($position['requirements'], 0, 3) as $req)
-                                    <span class="inline-flex items-center px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded border border-gray-200">
-                                        {{ $req }}
-                                    </span>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endif
                     </div>
                     @endforeach
                 </div>
@@ -282,7 +277,7 @@
                     <div class="bg-white border-2 border-[#4F46E5] rounded-2xl p-5 mb-6">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-xs text-gray-500 mb-1">Posisi yang dipilih:</p>
+                                <p class="text-xs text-gray-500 mb-1">Posisi yang dipilih :</p>
                                 <h4 class="text-lg font-bold text-[#4F46E5]" x-text="selectedPosition.title"></h4>
                                 <p class="text-sm text-gray-600 mt-1" x-text="selectedPosition.description"></p>
                             </div>
@@ -317,50 +312,6 @@
                                   placeholder="Pengalaman volunteer atau kerja tim sebelumnya (jika ada)..."></textarea>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-bold text-gray-900 mb-2">
-                            Upload CV/Resume <span class="text-red-500">*</span>
-                        </label>
-                        
-                        <template x-if="!uploadedFileName">
-                            <label class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-[#4F46E5] transition cursor-pointer block">
-                                <svg class="w-10 h-10 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                                </svg>
-                                <p class="text-sm text-gray-600">Klik untuk upload atau drag & drop file</p>
-                                <p class="text-xs text-gray-400 mt-1">Format: PDF, DOC, DOCX (Max. 2MB)</p>
-                                <input id="cv-upload" 
-                                       type="file" 
-                                       class="hidden" 
-                                       accept=".pdf,.doc,.docx"
-                                       @change="handleFileUpload($event)">
-                            </label>
-                        </template>
-
-                        <template x-if="uploadedFileName">
-                            <div class="border-2 border-[#4F46E5] bg-indigo-50 rounded-xl p-4">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 bg-[#4F46E5] rounded-lg flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                            </svg>
-                                        </div>
-                                        <div class="text-left">
-                                            <p class="text-sm font-bold text-gray-900" x-text="uploadedFileName"></p>
-                                            <p class="text-xs text-gray-500">File berhasil diupload</p>
-                                        </div>
-                                    </div>
-                                    <button type="button" @click="removeFile()" class="text-red-500 hover:text-red-700">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-
                     <div class="flex items-start gap-3">
                         <input type="checkbox" x-model="applicationData.agree" required class="mt-1 w-4 h-4 text-[#4F46E5] border-gray-300 rounded focus:ring-[#4F46E5]">
                         <label class="text-sm text-gray-600">
@@ -376,8 +327,13 @@
                             Batal
                         </button>
                         <button type="submit" 
-                                class="flex-1 px-6 py-3 bg-[#4F46E5] text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
-                            Kirim Lamaran
+                                :disabled="isSubmitting"
+                                class="flex-1 px-6 py-3 bg-[#4F46E5] text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                            <svg x-show="isSubmitting" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-text="isSubmitting ? 'Mengirim...' : 'Kirim Lamaran'"></span>
                         </button>
                     </div>
                 </form>
@@ -563,6 +519,81 @@
             </div>
 
         </div>
-    </div>
-</div>
+
+        <div x-show="showSuccessModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+             style="display: none;">
+            
+            <div @click.outside="showSuccessModal = false"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+                
+                <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
+                        <svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Lamaran Berhasil Diajukan! 🎉</h3>
+                <p class="text-sm text-gray-600 text-center mb-6" x-text="modalMessage"></p>
+                
+                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-6">
+                    <p class="text-xs text-indigo-700 text-center">
+                        📧 Tim kami akan menghubungi Anda melalui email/WhatsApp dalam 1-3 hari kerja.
+                    </p>
+                </div>
+                
+                <button @click="showSuccessModal = false"
+                        class="w-full py-3 bg-[#4F46E5] text-white font-bold rounded-xl hover:bg-indigo-700 transition">
+                    Oke, Mengerti!
+                </button>
+            </div>
+        </div>
+
+        <div x-show="showErrorModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+             style="display: none;">
+            
+            <div @click.outside="showErrorModal = false"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+                
+                <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <h3 class="text-lg font-bold text-gray-900 text-center mb-2">Terjadi Kesalahan</h3>
+                <p class="text-sm text-gray-600 text-center mb-6" x-text="modalMessage"></p>
+                
+                <button @click="showErrorModal = false"
+                        class="w-full py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition">
+                    Tutup
+                </button>
+            </div>
+        </div>
+
+    </div> 
+</div> 
 </x-layouts.crew>

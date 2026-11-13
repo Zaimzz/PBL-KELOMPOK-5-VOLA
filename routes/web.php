@@ -82,6 +82,9 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     // Lamaran Saya
     Route::get('/lamaran-saya', [ApplicationController::class, 'index'])->name('applications.index');
 
+    // Route untuk menyimpan lamaran baru
+    Route::post('/lamaran/ajukan', [ApplicationController::class, 'store'])->name('applications.store');
+
     // Download Bukti Penerimaan
     Route::get('/lamaran-saya/{id}/bukti-penerimaan', [ApplicationController::class, 'downloadAcceptanceLetter'])
         ->name('applications.download-acceptance');
@@ -102,9 +105,6 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     Route::get('/riwayat/sertifikat/{id}', [HistoryController::class, 'downloadCertificate'])
         ->name('history.downloadCertificate');
 
-    // Download Ringkasan Riwayat PDF
-    Route::get('/riwayat/download-pdf', [HistoryController::class, 'downloadPdf'])
-        ->name('history.downloadPdf');
 });
 
 // Public Event Detail
