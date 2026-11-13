@@ -114,35 +114,19 @@ class SearchController extends Controller
 
             $startDate = $event->start_date?->translatedFormat('d M Y');
             $endDate = $event->end_date?->translatedFormat('d M Y');
-            $dateFormatted = $endDate && $endDate !== $startDate
-                ? $startDate.' – '.$endDate
-                : ($startDate ?? '-');
+            $dateFormatted = $endDate && $endDate !== $startDate ? $startDate.' – '.$endDate : ($startDate ?? '-');
 
-            $categoryName = $event->category?->name ?? 'Umum';
-
-            $imageUrl = $event->poster_path
-                ? Storage::url($event->poster_path)
-                : $this->getImageByCategory($categoryName);
+            $imageUrl = $event->poster_path ? Storage::url($event->poster_path) : $this->getImageByCategory($event->category?->name);
 
             $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
 
             return [
-                'id' => $event->id,
-                'title' => $event->title,
-                'category' => $categoryName,
-                'filter_category' => strtolower($categoryName),
-                'organizer' => $event->organizer?->organization_name ?? '-',
-                'is_verified' => $isVerified,
-                'status_badge' => 'Open Volunteer',
-                'status_badge_type' => 'success',
-                'date' => $dateFormatted,
-                'location' => trim(($event->location ?? '').($event->city ? ', '.$event->city : ''), ', '),
-                'positions' => $positionsText ?: 'Belum ada posisi',
-                'days_left' => $daysLeft,
-                'position_count' => $positionCount,
-                'slot_label' => $slotLabel,
-                'slot_type' => $slotType,
-                'image' => $imageUrl,
+                'id' => $event->id, 'title' => $event->title, 'category' => $event->category?->name ?? 'Umum',
+                'filter_category' => strtolower($event->category?->name ?? 'umum'), 'organizer' => $event->organizer?->organization_name ?? '-',
+                'is_verified' => $isVerified, 'status_badge' => 'Open Volunteer', 'status_badge_type' => 'success',
+                'date' => $dateFormatted, 'location' => trim(($event->location ?? '').($event->city ? ', '.$event->city : ''), ', '),
+                'positions' => $positionsText ?: 'Belum ada posisi', 'days_left' => $daysLeft, 'position_count' => $positionCount,
+                'slot_label' => $slotLabel, 'slot_type' => $slotType, 'image' => $imageUrl,
             ];
         });
 
@@ -152,18 +136,9 @@ class SearchController extends Controller
         $offset = ($page - 1) * $perPage;
         $paginatedEvents = $allEvents->slice($offset, $perPage)->values();
 
-        $categories = [
-            'Semua', 'Festival', 'Seminar', 'Musik',
-            'Olahraga', 'Sosial', 'Kampus', 'Komunitas',
-        ];
-        $locations = [
-            'Semua Lokasi', 'Jakarta', 'Bandung',
-            'Yogyakarta', 'Surabaya', 'Bali',
-        ];
+        $categories = ['Semua', 'Festival', 'Seminar', 'Musik', 'Olahraga', 'Sosial', 'Kampus', 'Komunitas'];
+        $locations = ['Semua Lokasi', 'Jakarta', 'Bandung', 'Yogyakarta', 'Surabaya', 'Bali'];
 
-        return view('crew.search', compact(
-            'paginatedEvents', 'totalEvents', 'totalPages', 'page', 'perPage',
-            'query', 'category', 'location', 'position', 'sort', 'categories', 'locations'
-        ));
+        return view('crew.search', compact('paginatedEvents', 'totalEvents', 'totalPages', 'page', 'perPage', 'query', 'category', 'location', 'position', 'sort', 'categories', 'locations'));
     }
 }
