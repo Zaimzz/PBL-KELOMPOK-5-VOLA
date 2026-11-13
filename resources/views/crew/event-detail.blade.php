@@ -549,7 +549,7 @@
                 
                 <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-6">
                     <p class="text-xs text-indigo-700 text-center">
-                        📧 Tim kami akan menghubungi Anda melalui email/WhatsApp dalam 1-3 hari kerja.
+                        📧 Tim kami akan menghubungi Anda melalui email/WhatsApp.
                     </p>
                 </div>
                 
