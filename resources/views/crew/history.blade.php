@@ -1,11 +1,9 @@
 <x-layouts.crew title="Riwayat Pengalaman - VOLA">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
    
-    <div class="flex items-start justify-between mb-6 flex-wrap gap-4">
-        <div>
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Riwayat Pengalaman</h1>
-            <p class="mt-1 text-sm text-gray-500">Rekam jejak kontribusi volunteer kamu.</p>
-        </div>
+    <div class="mb-6">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Riwayat Pengalaman</h1>
+        <p class="mt-1 text-sm text-gray-500">Rekam jejak kontribusi volunteer kamu.</p>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -36,40 +34,35 @@
         </div>
     </div>
 
-    <div class="mb-6">
-        <nav class="flex gap-2 overflow-x-auto">
-            <a href="{{ route('history.index', ['category' => 'all']) }}" 
-               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'all' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
-                Semua ({{ $counts['all'] }})
-            </a>
-            <a href="{{ route('history.index', ['category' => 'festival']) }}" 
-               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'festival' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
-                Festival ({{ $counts['festival'] }})
-            </a>
-            <a href="{{ route('history.index', ['category' => 'seminar']) }}" 
-               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'seminar' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
-                Seminar ({{ $counts['seminar'] }})
-            </a>
-            <a href="{{ route('history.index', ['category' => 'sosial']) }}" 
-               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'sosial' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
-                Sosial ({{ $counts['sosial'] }})
-            </a>
-            <a href="{{ route('history.index', ['category' => 'kampus']) }}" 
-               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'kampus' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
-                Kampus ({{ $counts['kampus'] }})
-            </a>
-            <a href="{{ route('history.index', ['category' => 'komunitas']) }}" 
-               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'komunitas' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
-                Komunitas ({{ $counts['komunitas'] }})
-            </a>
-            <a href="{{ route('history.index', ['category' => 'olahraga']) }}" 
-               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'olahraga' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
-                Olahraga ({{ $counts['olahraga'] }})
-            </a>
-            <a href="{{ route('history.index', ['category' => 'musik']) }}" 
-               class="px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition {{ $activeCategory === 'musik' ? 'bg-[#4F46E5] text-white' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' }}">
-                Musik ({{ $counts['musik'] }})
-            </a>
+    <div class="mb-6 border-b border-gray-200">
+        <nav class="flex gap-6 overflow-x-auto pb-1">
+            @php
+                $tabs = [
+                    'all' => 'Semua',
+                    'festival' => 'Festival',
+                    'seminar' => 'Seminar',
+                    'sosial' => 'Sosial',
+                    'kampus' => 'Kampus',
+                    'komunitas' => 'Komunitas',
+                    'olahraga' => 'Olahraga',
+                    'musik' => 'Musik',
+                ];
+            @endphp
+
+            @foreach($tabs as $key => $label)
+                @php
+                    $isActive = $activeCategory === $key;
+                    $count = $counts[$key] ?? 0;
+                    $textClass = $isActive ? 'border-[#4F46E5] text-[#4F46E5]' : 'border-transparent text-gray-500 hover:text-gray-700';
+                    $numberDisplay = $count; 
+                @endphp
+                
+                <a href="{{ route('history.index', ['category' => $key]) }}" 
+                   class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition flex items-center gap-1.5 {{ $textClass }}">
+                    {{ $label }} 
+                    <span class="{{ $isActive ? 'text-[#4F46E5]' : 'text-gray-400' }}">{{ $numberDisplay }}</span>
+                </a>
+            @endforeach
         </nav>
     </div>
 

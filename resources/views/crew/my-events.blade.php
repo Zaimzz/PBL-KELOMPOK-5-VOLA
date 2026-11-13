@@ -13,18 +13,23 @@
         <nav class="flex gap-6 overflow-x-auto">
             <button @click="activeTab = 'upcoming'" 
                     :class="activeTab === 'upcoming' ? 'border-[#4F46E5] text-[#4F46E5]' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition">
-                Akan Datang <span class="text-gray-400 ml-1">{{ $counts['upcoming'] }}</span>
+                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition flex items-center gap-1.5">
+                Akan Datang 
+                <span :class="activeTab === 'upcoming' ? 'text-[#4F46E5]' : 'text-gray-400'">{{ $counts['upcoming'] }}</span>
             </button>
+           
             <button @click="activeTab = 'ongoing'" 
                     :class="activeTab === 'ongoing' ? 'border-[#4F46E5] text-[#4F46E5]' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition">
-                Sedang Berlangsung <span class="text-gray-400 ml-1">{{ $counts['ongoing'] }}</span>
+                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition flex items-center gap-1.5">
+                Sedang Berlangsung 
+                <span :class="activeTab === 'ongoing' ? 'text-[#4F46E5]' : 'text-gray-400'">{{ $counts['ongoing'] }}</span>
             </button>
+           
             <button @click="activeTab = 'completed'" 
                     :class="activeTab === 'completed' ? 'border-[#4F46E5] text-[#4F46E5]' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition">
-                Selesai <span class="text-gray-400 ml-1">{{ $counts['completed'] }}</span>
+                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition flex items-center gap-1.5">
+                Selesai 
+                <span :class="activeTab === 'completed' ? 'text-[#4F46E5]' : 'text-gray-400'">{{ $counts['completed'] }}</span>
             </button>
         </nav>
     </div>
