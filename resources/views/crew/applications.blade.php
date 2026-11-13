@@ -6,44 +6,59 @@
         <p class="mt-1 text-sm text-gray-500">Pantau status pendaftaran volunteer kamu.</p>
     </div>
 
-    <div class="mb-6 border-b border-gray-200">
+        <div class="mb-6 border-b border-gray-200">
         <nav class="flex gap-6 overflow-x-auto pb-1">
+          
             <button @click="activeTab = 'all'" 
                     :class="activeTab === 'all' ? 'border-[#4F46E5] text-[#4F46E5]' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition">
-                Semua <span class="text-gray-400 ml-1">{{ count($applications) }}</span>
+                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition flex items-center gap-1.5">
+                Semua 
+                <span :class="activeTab === 'all' ? 'text-[#4F46E5]' : 'text-gray-400'">{{ count($applications) }}</span>
             </button>
+            
             <button @click="activeTab = 'pending'" 
                     :class="activeTab === 'pending' ? 'border-[#4F46E5] text-[#4F46E5]' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition">
-                Menunggu Seleksi <span class="text-gray-400 ml-1">{{ count(array_filter($applications, fn($a) => $a['status'] === 'pending')) }}</span>
+                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition flex items-center gap-1.5">
+                Menunggu Seleksi 
+                <span :class="activeTab === 'pending' ? 'text-[#4F46E5]' : 'text-gray-400'">{{ count(array_filter($applications, fn($a) => $a['status'] === 'pending')) }}</span>
             </button>
+            
             <button @click="activeTab = 'processing'" 
                     :class="activeTab === 'processing' ? 'border-[#4F46E5] text-[#4F46E5]' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition">
-                Sedang Diproses <span class="text-gray-400 ml-1">{{ count(array_filter($applications, fn($a) => $a['status'] === 'processing')) }}</span>
+                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition flex items-center gap-1.5">
+                Sedang Diproses 
+                <span :class="activeTab === 'processing' ? 'text-[#4F46E5]' : 'text-gray-400'">{{ count(array_filter($applications, fn($a) => $a['status'] === 'processing')) }}</span>
             </button>
+          
             <button @click="activeTab = 'accepted'" 
                     :class="activeTab === 'accepted' ? 'border-[#4F46E5] text-[#4F46E5]' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition">
-                Diterima <span class="text-gray-400 ml-1">{{ count(array_filter($applications, fn($a) => $a['status'] === 'accepted')) }}</span>
+                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition flex items-center gap-1.5">
+                Diterima 
+                <span :class="activeTab === 'accepted' ? 'text-[#4F46E5]' : 'text-gray-400'">{{ count(array_filter($applications, fn($a) => $a['status'] === 'accepted')) }}</span>
             </button>
+            
             <button @click="activeTab = 'rejected'" 
                     :class="activeTab === 'rejected' ? 'border-[#4F46E5] text-[#4F46E5]' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition">
-                Ditolak <span class="text-gray-400 ml-1">{{ count(array_filter($applications, fn($a) => $a['status'] === 'rejected')) }}</span>
+                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition flex items-center gap-1.5">
+                Ditolak 
+                <span :class="activeTab === 'rejected' ? 'text-[#4F46E5]' : 'text-gray-400'">{{ count(array_filter($applications, fn($a) => $a['status'] === 'rejected')) }}</span>
             </button>
         </nav>
     </div>
 
-    <div class="space-y-4">
-        @forelse($applications as $application)
-      
-        <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition"
+    <div class="space-y-4" :key="'list-' + activeTab"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform translate-y-4"
+         x-transition:enter-end="opacity-100 transform translate-y-0">
+
+        @forelse($applications as $index => $application)
+        
+        <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300"
              x-show="activeTab === 'all' || activeTab === '{{ $application['status'] }}'"
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 scale-95"
-             x-transition:enter-end="opacity-100 scale-100">
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform scale-95 translate-y-2"
+             x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
+             :style="`transition-delay: ${({{ $index }} % 5) * 50}ms`">
            
             <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center gap-2">
@@ -149,18 +164,71 @@
             </div>
         </div>
         @empty
-        <div class="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center">
-            <div class="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-full flex items-center justify-center">
-                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+         
+            <div x-show="activeTab === 'all'" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform translate-y-4"
+                 x-transition:enter-end="opacity-100 transform translate-y-0"
+                 class="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center">
+                <div class="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Belum Ada Lamaran</h3>
+                <p class="text-sm text-gray-500 mb-6 max-w-sm mx-auto">Kamu belum mengajukan lamaran volunteer apapun. Yuk cari event yang cocok!</p>
+                <a href="{{ route('search.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#4F46E5] text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    Cari Event Sekarang
+                </a>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Belum Ada Lamaran</h3>
-            <p class="text-sm text-gray-500 mb-6 max-w-sm mx-auto">Kamu belum mengajukan lamaran volunteer apapun. Yuk cari event yang cocok!</p>
+        @endforelse
+
+        <div x-show="activeTab === 'pending' && {{ count(array_filter($applications, fn($a) => $a['status'] === 'pending')) }} === 0" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform translate-y-4"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             class="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center" style="display: none;">
+            <div class="w-16 h-16 mx-auto mb-4 bg-amber-50 rounded-full flex items-center justify-center">
+                <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Tidak Ada Lamaran Menunggu</h3>
+        </div>
+
+        <div x-show="activeTab === 'processing' && {{ count(array_filter($applications, fn($a) => $a['status'] === 'processing')) }} === 0" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform translate-y-4"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             class="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center" style="display: none;">
+            <div class="w-16 h-16 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center">
+                <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Tidak Ada Lamaran Diproses</h3>
+        </div>
+
+        <div x-show="activeTab === 'accepted' && {{ count(array_filter($applications, fn($a) => $a['status'] === 'accepted')) }} === 0" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform translate-y-4"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             class="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center" style="display: none;">
+            <div class="w-16 h-16 mx-auto mb-4 bg-emerald-50 rounded-full flex items-center justify-center">
+                <svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Belum Ada Lamaran Diterima</h3>
             <a href="{{ route('search.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#4F46E5] text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                Cari Event Sekarang
+                Cari Event Lainnya
             </a>
         </div>
-        @endforelse
+
+        <div x-show="activeTab === 'rejected' && {{ count(array_filter($applications, fn($a) => $a['status'] === 'rejected')) }} === 0" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform translate-y-4"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             class="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center" style="display: none;">
+            <div class="w-16 h-16 mx-auto mb-4 bg-red-50 rounded-full flex items-center justify-center">
+                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Tidak Ada Lamaran Ditolak</h3>
+        </div>
+
     </div>
 </div>
 </x-layouts.crew>
