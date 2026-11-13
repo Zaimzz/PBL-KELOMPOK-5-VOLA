@@ -84,7 +84,7 @@
                         </span>
                     @endif
                 </div>
-                <span class="text-xs text-gray-400 font-medium">Dilamar: {{ $application['applied_at'] }}</span>
+                <span class="text-xs text-gray-400 font-medium">Dilamar : {{ $application['applied_at'] }}</span>
             </div>
 
             <div class="mb-4">
