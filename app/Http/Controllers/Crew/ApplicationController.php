@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Crew;
 
+use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Application;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Barryvdh\DomPDF\Facade\Pdf;
-use App\Models\Application;
 
 class ApplicationController extends Controller
 {
@@ -49,9 +49,11 @@ class ApplicationController extends Controller
                         'processing' => ['label' => 'Sedang Diproses', 'type' => 'info', 'msg' => 'Berkas sedang dalam tahap wawancara/verifikasi.'],
                         'accepted' => ['label' => 'Diterima', 'type' => 'success', 'msg' => 'Selamat! Kamu lolos seleksi. Silakan cek detail di menu Event Saya.'],
                         'rejected' => ['label' => 'Tidak Lolos', 'type' => 'error', 'msg' => 'Maaf, kamu belum lolos seleksi untuk posisi ini.'],
+                        'withdrawn' => ['label' => 'Dibatalkan', 'type' => 'error', 'msg' => 'Lamaran telah dibatalkan.'],
                         'cancelled' => ['label' => 'Dibatalkan', 'type' => 'error', 'msg' => 'Lamaran telah dibatalkan.'],
                     ];
-                    $st = $statusLabels[$app->status->value] ?? $statusLabels['pending'];
+                    $statusValue = $app->status instanceof ApplicationStatus ? $app->status->value : (string) $app->status;
+                    $st = $statusLabels[$statusValue] ?? $statusLabels['pending'];
 
                     return [
                         'id' => $app->id,
@@ -61,12 +63,12 @@ class ApplicationController extends Controller
                         'event_category' => $event?->category?->name ?? 'Umum',
                         'position' => $app->position?->name ?? '-',
                         'location' => $event?->location ?? '-',
-                        'status' => $app->status->value,
+                        'status' => $statusValue,
                         'status_label' => $st['label'],
                         'applied_at' => $app->applied_at?->translatedFormat('d F Y') ?? '-',
                         'message' => $st['msg'],
                         'message_type' => $st['type'],
-                        'can_cancel' => in_array($app->status->value, ['pending', 'processing']),
+                        'can_cancel' => $statusValue === 'pending',
                     ];
                 })->toArray();
             } else {
@@ -90,13 +92,12 @@ class ApplicationController extends Controller
         $user = auth()->user();
         $profile = $user?->volunteerProfile;
 
-        if (!$profile) {
+        if (! $profile) {
             return response()->json(['success' => false, 'message' => 'Profil volunteer belum lengkap.'], 400);
         }
 
         $exists = Application::where('volunteer_profile_id', $profile->id)
             ->where('position_id', $validated['position_id'])
-            ->whereIn('status', ['pending', 'processing', 'accepted'])
             ->exists();
 
         if ($exists) {
@@ -107,7 +108,7 @@ class ApplicationController extends Controller
             'volunteer_profile_id' => $profile->id,
             'position_id' => $validated['position_id'],
             'cover_letter' => $validated['motivation'],
-            'status' => 'pending',
+            'status' => ApplicationStatus::Pending,
             'applied_at' => now(),
         ]);
 

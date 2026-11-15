@@ -20,32 +20,41 @@ class ReviewEventController extends Controller
     {
         $query = Event::with(['organizer.user', 'category', 'positions']);
 
-        // Search by event title or organizer/pic name
+        // Search by event title, location, organizer/pic name, category
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $operator = $q->getConnection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
                 $q->where('title', $operator, '%'.$search.'%')
+                    ->orWhere('city', $operator, '%'.$search.'%')
+                    ->orWhere('location', $operator, '%'.$search.'%')
+                    ->orWhere('pic_name', $operator, '%'.$search.'%')
                     ->orWhereHas('organizer', function ($oq) use ($search, $operator) {
                         $oq->where('organization_name', $operator, '%'.$search.'%')
-                            ->orWhere('pic_name', $operator, '%'.$search.'%');
+                            ->orWhere('pic_name', $operator, '%'.$search.'%')
+                            ->orWhere('city', $operator, '%'.$search.'%');
+                    })
+                    ->orWhereHas('category', function ($cq) use ($search, $operator) {
+                        $cq->where('name', $operator, '%'.$search.'%');
                     });
             });
         }
 
-        // PERBAIKAN: Batasi ruang lingkup hanya untuk event di tahap kurasi
+        // Ruang lingkup untuk event di tahap kurasi & pasca-kurasi
         $curationStatuses = [
             EventStatus::PendingReview,
+            EventStatus::AwaitingPayment,
             EventStatus::Active,
             EventStatus::Rejected,
-            // EventStatus::AwaitingPayment // Buka komentar ini jika status ini dianggap masuk panel kurasi
         ];
 
         // Status filter
         if ($request->filled('status')) {
             if ($request->status === 'all') {
-                // Jangan biarkan kosong. Kunci query HANYA pada status kurasi.
                 $query->whereIn('status', $curationStatuses);
+            } elseif ($request->status === 'active' || $request->status === 'approved') {
+                // Event disetujui mencakup yang siap tayang maupun yang sedang menunggu pembayaran EO
+                $query->whereIn('status', [EventStatus::Active, EventStatus::AwaitingPayment]);
             } else {
                 $query->where('status', $request->status);
             }
@@ -59,12 +68,12 @@ class ReviewEventController extends Controller
         // Metrics for header
         $stats = [
             'pending' => Event::where('status', EventStatus::PendingReview)->count(),
-            'approved_this_month' => Event::where('status', EventStatus::Active)
+            'approved_this_month' => Event::whereIn('status', [EventStatus::Active, EventStatus::AwaitingPayment])
                 ->where(function ($q) {
-                    $q->whereMonth('published_at', now()->month)
-                        ->whereYear('published_at', now()->year)
+                    $q->whereMonth('reviewed_at', now()->month)
+                        ->whereYear('reviewed_at', now()->year)
                         ->orWhere(function ($sq) {
-                            $sq->whereNull('published_at')
+                            $sq->whereNull('reviewed_at')
                                 ->whereMonth('updated_at', now()->month)
                                 ->whereYear('updated_at', now()->year);
                         });
@@ -109,7 +118,7 @@ class ReviewEventController extends Controller
         }
 
         return view('admin.review-event.index', [
-            'events' => Event::with(['organizer.user', 'category', 'positions'])->where('status', EventStatus::PendingReview)->latest()->paginate(10),
+            'events' => Event::with(['organizer.user', 'category', 'positions'])->where('status', EventStatus::PendingReview)->latest()->paginate(10)->withQueryString(),
             'stats' => [
                 'pending' => Event::where('status', EventStatus::PendingReview)->count(),
                 'approved_this_month' => Event::where('status', EventStatus::Active)->count(),
@@ -125,7 +134,7 @@ class ReviewEventController extends Controller
     public function approve(Request $request, Event $event)
     {
         // After admin approval, event moves to awaiting_payment so the EO
-        // must pay the publication fee before the event goes live for volunteers.
+        // must pay the publication fee before the event goes live for crew.
         $event->update([
             'status' => EventStatus::AwaitingPayment,
             'reviewed_by' => $request->user()?->id,

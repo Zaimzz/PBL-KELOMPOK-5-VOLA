@@ -12,13 +12,13 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Review Event</h1>
-                <p class="text-gray-500 text-sm mt-1">Kurasi dan tinjau kelayakan pengajuan event baru sebelum dipublikasikan ke feed pencarian relawan.</p>
+                <p class="text-gray-500 text-sm mt-1">Kurasi dan tinjau kelayakan pengajuan event baru sebelum dipublikasikan ke feed pencarian crew.</p>
             </div>
 
             <!-- Header Metrics: Luxury Cards -->
             <div class="flex flex-wrap items-center gap-3">
                 <!-- Pengajuan Menunggu -->
-                <div class="bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm flex items-center gap-3">
+                <div class="bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm flex items-center gap-3 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
                     <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -31,7 +31,7 @@
                 </div>
 
                 <!-- Disetujui Bulan Ini -->
-                <div class="bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm flex items-center gap-3">
+                <div class="bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm flex items-center gap-3 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
                     <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
@@ -79,7 +79,7 @@
                             <input type="text"
                                    name="search"
                                    value="{{ request('search') }}"
-                                   placeholder="Cari EO, pengajuan event..."
+                                   placeholder="Cari judul pengajuan event, kategori, atau nama penyelenggara"
                                    class="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
                         </div>
 
@@ -103,6 +103,20 @@
                                     class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors {{ request('status') === 'all' ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                                 Semua Status
                             </button>
+
+                            @if(request('search') || (request('status') && request('status') !== 'pending_review'))
+                                <a href="{{ route('admin.review-events.index') }}" 
+                                   x-data="{ resetting: false }"
+                                   @click="resetting = true"
+                                   class="group inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all whitespace-nowrap">
+                                    <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
+                                         :class="{ 'animate-spin text-brand-600': resetting }"
+                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    <span>Reset</span>
+                                </a>
+                            @endif
                         </div>
                     </form>
                 </x-card>
@@ -133,6 +147,10 @@
                                     @elseif($status === 'active')
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60">
                                             Disetujui
+                                        </span>
+                                    @elseif($status === 'awaiting_payment')
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200/60">
+                                            Menunggu Pembayaran
                                         </span>
                                     @elseif($status === 'rejected')
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200/60">
@@ -195,7 +213,7 @@
                                 {{ $event->title }}
                             </h3>
 
-                            <!-- Bottom Row: Organizer Info & Volunteer Quota -->
+                            <!-- Bottom Row: Organizer Info & Crew Quota -->
                             <div class="flex items-center gap-2 text-xs text-gray-500">
                                 <div class="flex items-center gap-1 font-medium text-gray-700">
                                     <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,7 +222,7 @@
                                     <span>{{ $event->organizer->organization_name ?? 'Penyelenggara' }}</span>
                                 </div>
                                 <span class="text-gray-300">&bull;</span>
-                                <span class="font-normal">{{ $totalQuota }} Kuota Relawan</span>
+                                <span class="font-normal">{{ $totalQuota }} Kuota Crew</span>
                             </div>
                         </div>
                     @empty
@@ -217,18 +235,16 @@
                     @endforelse
                 </div>
 
-                <!-- Pagination -->
-                @if($events->hasPages())
-                    <div class="pt-2">
-                        {{ $events->links() }}
-                    </div>
-                @endif
+                <!-- Pagination Bar -->
+                <div class="pt-2">
+                    {{ $events->links() }}
+                </div>
             </div>
 
             <!-- ============================================== -->
             <!-- PANEL KANAN: DETAIL PENGAJUAN EVENT (5 Cols)   -->
             <!-- ============================================== -->
-            <div class="lg:col-span-5">
+            <div id="event-detail-preview-panel" class="lg:col-span-5">
                 <div class="sticky top-20 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
 
                     <template x-if="selectedEvent">
@@ -310,11 +326,11 @@
                                     <p class="text-sm text-gray-600 leading-relaxed" x-text="selectedEvent.description"></p>
                                 </div>
 
-                                <!-- Section: Kebutuhan Kuota Relawan -->
+                                <!-- Section: Kebutuhan Kuota Crew -->
                                 <div>
                                     <div class="flex items-center justify-between mb-2">
-                                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">KEBUTUHAN KUOTA RELAWAN</p>
-                                        <p class="text-xs font-bold text-brand-600">Total: <span x-text="selectedEvent.total_quota"></span> Relawan</p>
+                                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">KEBUTUHAN KUOTA CREW</p>
+                                        <p class="text-xs font-bold text-brand-600">Total: <span x-text="selectedEvent.total_quota"></span> Crew</p>
                                     </div>
                                     
                                     <div class="flex flex-wrap gap-2">
@@ -324,7 +340,7 @@
                                             </span>
                                         </template>
                                         <template x-if="!selectedEvent.positions || selectedEvent.positions.length === 0">
-                                            <span class="text-xs text-gray-400 italic">Belum ada rincian divisi posisi relawan.</span>
+                                            <span class="text-xs text-gray-400 italic">Belum ada rincian divisi posisi crew.</span>
                                         </template>
                                     </div>
                                 </div>
@@ -414,93 +430,95 @@
         </div>
 
         <!-- ============================================== -->
-        <!-- MODAL TOLAK PENGAJUAN EVENT (TUGAS 1 STANDARD) -->
+        <!-- MODAL TOLAK PENGAJUAN EVENT (COMPACT)          -->
         <!-- ============================================== -->
         <x-modal name="reject-event-modal" :show="false" maxWidth="md">
             <form method="POST" 
                   :action="selectedEvent ? selectedEvent.reject_url : ''" 
-                  class="p-6"
+                  class="p-5 flex flex-col space-y-3"
                   x-data="{ reason: '', hasError: false }"
                   @submit.prevent="reason.trim() === '' ? hasError = true : $el.submit()">
                 @csrf
 
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
                     </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-gray-900">
+                    <div class="min-w-0">
+                        <h2 class="text-base font-extrabold text-gray-900 truncate">
                             Tolak Pengajuan Event?
                         </h2>
-                        <p class="text-xs text-gray-500 truncate max-w-xs" x-text="selectedEvent ? selectedEvent.title : ''"></p>
+                        <p class="text-xs text-gray-500 truncate" x-text="selectedEvent ? selectedEvent.title : ''"></p>
                     </div>
                 </div>
 
-                <p class="text-sm text-gray-600 mb-4">
-                    Silakan berikan alasan penolakan. Alasan ini akan dikirimkan ke pihak EO terkait agar mereka dapat memperbaikinya.
+                <p class="text-xs text-gray-600 leading-relaxed">
+                    Berikan alasan penolakan spesifik agar pihak penyelenggara dapat memperbaiki berkas pengajuannya.
                 </p>
 
-                <div class="mt-4">
-                    <x-input-label for="alasan_reject_event" value="Alasan Penolakan" />
+                <div>
+                    <label for="alasan_reject_event" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                        Alasan Penolakan <span class="text-rose-500">*</span>
+                    </label>
                     <textarea 
                         id="alasan_reject_event" 
                         name="alasan" 
                         x-model="reason"
                         @input="if (reason.trim() !== '') hasError = false"
-                        rows="3" 
+                        rows="2" 
                         placeholder="Contoh: Dokumen perizinan tidak lengkap, deskripsi kegiatan kurang jelas..."
-                        class="mt-1 block w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-md shadow-sm text-sm"
-                        x-bind:class="hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''"
+                        class="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors"
+                        x-bind:class="hasError ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-200' : ''"
                     >{{ old('alasan') }}</textarea>
-                    <p x-show="hasError" class="text-red-500 text-sm mt-1" x-cloak>Alasan penolakan wajib diisi!</p>
-                    <x-input-error :messages="$errors->get('alasan')" class="mt-2" />
-                    <x-input-error :messages="$errors->get('rejection_reason')" class="mt-2" />
+                    <p x-show="hasError" class="text-rose-500 text-xs font-semibold mt-0.5" x-cloak>Alasan penolakan wajib diisi!</p>
+                    <x-input-error :messages="$errors->get('alasan')" class="mt-1" />
+                    <x-input-error :messages="$errors->get('rejection_reason')" class="mt-1" />
                 </div>
 
-                <div class="mt-6 flex justify-end gap-3">
+                <div class="pt-2 flex justify-end gap-2 border-t border-gray-100">
                     <x-secondary-button x-on:click="$dispatch('close')">
                         Batal
                     </x-secondary-button>
-                    <x-danger-button type="submit">
+                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors">
                         Kirim Penolakan
-                    </x-danger-button>
+                    </button>
                 </div>
             </form>
         </x-modal>
 
         <!-- ============================================== -->
-        <!-- MODAL KONFIRMASI SETUJUI EVENT                 -->
+        <!-- MODAL KONFIRMASI SETUJUI EVENT (COMPACT)       -->
         <!-- ============================================== -->
         <x-modal name="approve-event-modal" :show="false" maxWidth="md">
-            <form method="POST" :action="selectedEvent ? selectedEvent.approve_url : ''" class="p-6">
+            <form method="POST" :action="selectedEvent ? selectedEvent.approve_url : ''" class="p-5 flex flex-col space-y-3">
                 @csrf
 
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                         </svg>
                     </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-gray-900">
+                    <div class="min-w-0">
+                        <h2 class="text-base font-extrabold text-gray-900 truncate">
                             Setujui Pengajuan Event?
                         </h2>
-                        <p class="text-xs text-gray-500 truncate max-w-xs" x-text="selectedEvent ? selectedEvent.title : ''"></p>
+                        <p class="text-xs text-gray-500 truncate" x-text="selectedEvent ? selectedEvent.title : ''"></p>
                     </div>
                 </div>
 
-                <p class="text-sm text-gray-600 mb-6">
-                    Event yang disetujui akan langsung aktif dan siap tayang secara publik di feed pencarian relawan. Sistem akan mengirimkan notifikasi persetujuan ke akun EO.
+                <p class="text-xs text-gray-600 leading-relaxed">
+                    Event yang disetujui akan dialihkan ke status siap terbit dan dapat dipublikasikan ke pencarian crew. Sistem akan mengirimkan notifikasi ke akun EO.
                 </p>
 
-                <div class="flex justify-end gap-3">
+                <div class="pt-2 flex justify-end gap-2 border-t border-gray-100">
                     <x-secondary-button x-on:click="$dispatch('close')">
                         Batal
                     </x-secondary-button>
                     <button type="submit"
-                            class="inline-flex items-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-colors">
+                            class="inline-flex items-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors">
                         Setujui & Publikasikan
                     </button>
                 </div>
@@ -537,6 +555,13 @@
                     const cached = this.events.find(e => e.id === id);
                     if (cached) {
                         this.selectedEvent = cached;
+                    }
+
+                    // Auto smooth scroll to detail panel on mobile / tablet screens
+                    if (window.innerWidth < 1024) {
+                        this.$nextTick(() => {
+                            document.getElementById('event-detail-preview-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        });
                     }
 
                     // Fetch detail from show endpoint (JSON)

@@ -39,21 +39,21 @@
                     class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden" 
                     style="display: none;">
                     <div class="py-1">
-                        <a href="{{ route('admin.transactions.download-report', ['month' => request('month')]) }}" target="_blank" 
+                        <a href="{{ route('admin.transactions.download-report', ['period' => request('period'), 'month' => request('month'), 'status' => request('status')]) }}" target="_blank" 
                         class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition-colors">
                             <svg class="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                             </svg>
                             Cetak PDF
                         </a>
-                        <a href="{{ route('admin.transactions.download-excel', ['month' => request('month')]) }}" 
+                        <a href="{{ route('admin.transactions.download-excel', ['period' => request('period'), 'month' => request('month'), 'status' => request('status')]) }}" 
                         class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition-colors border-t border-gray-50">
                             <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                             Ekspor Excel (.xlsx)
                         </a>
-                        <a href="{{ route('admin.transactions.download-csv', ['month' => request('month')]) }}" 
+                        <a href="{{ route('admin.transactions.download-csv', ['period' => request('period'), 'month' => request('month'), 'status' => request('status')]) }}" 
                         class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition-colors border-t border-gray-50">
                             <svg class="w-4 h-4 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
@@ -68,7 +68,7 @@
         <!-- 3 Metrics Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
             <!-- Total Volume Pembayaran -->
-            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-200">
                 <div class="flex items-start justify-between">
                     <div>
                         <span class="text-xs font-semibold text-gray-500">Total Volume Pembayaran</span>
@@ -89,7 +89,7 @@
             </div>
 
             <!-- Transaksi Berhasil -->
-            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-200">
                 <div class="flex items-start justify-between">
                     <div>
                         <span class="text-xs font-semibold text-gray-500">Transaksi Berhasil</span>
@@ -107,7 +107,7 @@
             </div>
 
             <!-- Menunggu Pembayaran -->
-            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-200">
                 <div class="flex items-start justify-between">
                     <div>
                         <span class="text-xs font-semibold text-gray-500">Menunggu Pembayaran</span>
@@ -145,7 +145,7 @@
                     <input type="text"
                            name="search"
                            value="{{ request('search') }}"
-                           placeholder="Cari nomor invoice (#INV-), nama event, atau EO..."
+                           placeholder="Cari nomor invoice #INV, nama event, atau penyelenggara"
                            class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
                 </div>
 
@@ -172,17 +172,94 @@
                     </button>
                 </div>
 
-                <!-- Month Filter Dropdown -->
-                <div class="w-full sm:w-48 shrink-0">
-                    <select name="month" onchange="this.form.submit()" class="w-full py-2.5 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
-                        <option value="all">Semua Bulan</option>
-                        @foreach($availableMonths as $monthItem)
-                            <option value="{{ $monthItem['value'] }}" {{ request('month') == $monthItem['value'] ? 'selected' : '' }}>
-                                {{ $monthItem['label'] }}
-                            </option>
-                        @endforeach
-                    </select>
+                <!-- Period / Date Range Filter Dropdown + Conditional Month Picker -->
+                @php
+                    $rawPeriod = request('period', 'all');
+                    $selectedPeriod = str_starts_with($rawPeriod, 'month:') ? 'custom_month' : ($rawPeriod === 'all' && request('month') ? 'custom_month' : $rawPeriod);
+                    $selectedMonth = str_starts_with($rawPeriod, 'month:') ? substr($rawPeriod, 6) : request('month', now()->format('Y-m'));
+                @endphp
+                <div x-data="{ 
+                        open: false,
+                        period: '{{ $selectedPeriod }}',
+                        options: {
+                            'all': 'Semua Waktu',
+                            '1_year': '1 Tahun Terakhir',
+                            '6_months': '6 Bulan Terakhir',
+                            'this_month': 'Bulan Ini',
+                            'custom_month': 'Pilih Bulan Tertentu'
+                        },
+                        select(val) {
+                            this.period = val;
+                            this.open = false;
+                            if (val !== 'custom_month') {
+                                $nextTick(() => { this.$refs.hiddenPeriod.form.submit(); });
+                            }
+                        }
+                    }" 
+                    class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto shrink-0 relative"
+                    @click.away="open = false">
+                    
+                    <input type="hidden" name="period" :value="period" x-ref="hiddenPeriod">
+
+                    <!-- Custom Dropdown Button -->
+                    <div class="relative w-full sm:w-56 shrink-0">
+                        <button type="button" 
+                                @click="open = !open" 
+                                class="w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-gray-50 hover:bg-gray-100/80 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-left">
+                            <span class="truncate" x-text="options[period] || 'Semua Waktu'"></span>
+                            <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200" 
+                                 :class="{ 'rotate-180 text-brand-600': open }" 
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div x-show="open" 
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                             class="absolute left-0 right-0 mt-1.5 py-1.5 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden" 
+                             style="display: none;" 
+                             x-cloak>
+                            <template x-for="(label, key) in options" :key="key">
+                                <button type="button" 
+                                        @click="select(key)"
+                                        class="w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm text-left transition-colors"
+                                        :class="period === key ? 'bg-brand-50 text-brand-700 font-bold' : 'text-gray-700 hover:bg-gray-50'">
+                                    <span x-text="label"></span>
+                                    <svg x-show="period === key" class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <input type="month"
+                           name="month"
+                           value="{{ $selectedMonth }}"
+                           x-show="period === 'custom_month'"
+                           x-cloak
+                           @change="$el.form.submit()"
+                           class="w-full sm:w-auto py-2 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
                 </div>
+
+                @if(request('search') || (request('status') && request('status') !== 'all') || (request('period') && request('period') !== 'all') || request('month'))
+                    <a href="{{ route('admin.transactions.index') }}" 
+                       x-data="{ resetting: false }"
+                       @click="resetting = true"
+                       class="group inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all shrink-0">
+                        <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
+                             :class="{ 'animate-spin text-brand-600': resetting }"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <span>Reset</span>
+                    </a>
+                @endif
             </form>
         </x-card>
 
@@ -301,8 +378,8 @@
                                         <button type="button"
                                                 x-on:click="openDetail({{ $tx->id }})"
                                                 title="Lihat Detail Transaksi"
-                                                class="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-brand-50 text-brand-600 border border-brand-200/80 hover:bg-brand-600 hover:text-white hover:shadow-xs transition-all duration-150 group">
+                                            <svg class="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
@@ -312,8 +389,8 @@
                                         <a href="{{ route('admin.transactions.download-invoice', $tx) }}"
                                            target="_blank"
                                            title="Unduh Invoice PDF"
-                                           class="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200/80 hover:bg-emerald-600 hover:text-white hover:shadow-xs transition-all duration-150 group">
+                                            <svg class="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                                             </svg>
                                         </a>
@@ -341,85 +418,97 @@
         </div>
 
         <!-- ============================================== -->
-        <!-- MODAL DETAIL TRANSAKSI / INVOICE               -->
+        <!-- MODAL DETAIL TRANSAKSI / INVOICE (COMPACT)     -->
         <!-- ============================================== -->
-        <x-modal name="transaction-detail-modal" :show="false" maxWidth="lg">
-            <div class="p-6">
+        <x-modal name="transaction-detail-modal" :show="false" maxWidth="2xl">
+            <div class="p-5 flex flex-col flex-1 min-h-0 overflow-hidden">
                 <template x-if="loading">
-                    <div class="py-12 text-center text-gray-400">
-                        <svg class="w-8 h-8 animate-spin mx-auto text-brand-600 mb-2" fill="none" viewBox="0 0 24 24">
+                    <div class="py-12 text-center text-gray-400 my-auto">
+                        <svg class="w-8 h-8 animate-spin mx-auto text-brand-600 mb-2.5" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                         </svg>
-                        <p class="text-xs">Memuat detail transaksi...</p>
+                        <p class="text-xs font-medium text-gray-600">Memuat rincian transaksi & invoice...</p>
                     </div>
                 </template>
 
-                <template x-if="!loading && currentTx">
-                    <div>
-                        <!-- Modal Header -->
-                        <div class="flex items-start justify-between pb-4 border-b border-gray-100 mb-4">
-                            <div>
-                                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Detail Transaksi</span>
-                                <h3 class="text-lg font-extrabold text-gray-900 mt-0.5" x-text="'#' + currentTx.invoice_number"></h3>
-                            </div>
-                            <button type="button" x-on:click="$dispatch('close')" class="text-gray-400 hover:text-gray-600 p-1">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                <template x-if="!loading && hasError">
+                    <div class="py-10 text-center space-y-3.5 my-auto">
+                        <div class="w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 mx-auto flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-900">Gagal Memuat Detail Transaksi</h4>
+                            <p class="text-xs text-gray-500 mt-0.5" x-text="errorMessage"></p>
+                        </div>
+                        <div>
+                            <button type="button" @click="openDetail(currentTxId)"
+                                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                 </svg>
+                                Coba Lagi
                             </button>
+                        </div>
+                    </div>
+                </template>
+
+                <template x-if="!loading && !hasError && currentTx">
+                    <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                        <!-- Modal Header -->
+                        <div class="pb-3 border-b border-gray-100 shrink-0">
+                            <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Detail Transaksi</span>
+                            <h3 class="text-base sm:text-lg font-extrabold text-gray-900 mt-0.5" x-text="'#' + currentTx.invoice_number"></h3>
                         </div>
 
                         <!-- Info Grid -->
-                        <div class="space-y-4 text-sm">
-                            <div class="bg-gray-50 p-4 rounded-xl space-y-2.5">
+                        <div class="space-y-3 text-xs flex-1 overflow-y-auto overscroll-y-contain min-h-0 py-3 pr-1">
+                            <div class="bg-gray-50 p-3 rounded-xl space-y-2 border border-gray-100">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-xs text-gray-500">Status Pembayaran</span>
-                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold"
+                                    <span class="text-[11px] text-gray-500">Status Pembayaran</span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold"
                                           :class="currentTx.status === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'"
                                           x-text="currentTx.status_label"></span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="text-xs text-gray-500">Total Nominal</span>
-                                    <span class="text-base font-extrabold text-gray-900" x-text="currentTx.amount_formatted"></span>
+                                    <span class="text-[11px] text-gray-500">Total Nominal</span>
+                                    <span class="text-sm font-extrabold text-gray-900" x-text="currentTx.amount_formatted"></span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="text-xs text-gray-500">Metode</span>
+                                    <span class="text-[11px] text-gray-500">Metode</span>
                                     <span class="text-xs font-semibold text-gray-800" x-text="currentTx.payment_type"></span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="text-xs text-gray-500">Waktu Tagihan</span>
+                                    <span class="text-[11px] text-gray-500">Waktu Tagihan</span>
                                     <span class="text-xs font-semibold text-gray-800" x-text="currentTx.created_at"></span>
                                 </div>
                                 <div class="flex justify-between items-center" x-show="currentTx.paid_at && currentTx.paid_at !== '-'">
-                                    <span class="text-xs text-gray-500">Waktu Lunas</span>
+                                    <span class="text-[11px] text-gray-500">Waktu Lunas</span>
                                     <span class="text-xs font-semibold text-emerald-700" x-text="currentTx.paid_at"></span>
                                 </div>
                             </div>
 
                             <!-- Event Details -->
-                            <div class="border border-gray-100 rounded-xl p-4 space-y-2">
-                                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Terkait Event</span>
-                                <h4 class="font-bold text-gray-900 text-sm" x-text="currentTx.event.title"></h4>
-                                <p class="text-xs text-gray-500" x-text="'Penyelenggara: ' + currentTx.organizer.name"></p>
-                                <p class="text-xs text-gray-500" x-text="'PIC: ' + currentTx.organizer.pic_name + ' (' + currentTx.organizer.pic_phone + ')'"></p>
+                            <div class="border border-gray-100 rounded-xl p-3 space-y-1.5 bg-white">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Terkait Event</span>
+                                <h4 class="font-bold text-gray-900 text-xs" x-text="currentTx.event.title"></h4>
+                                <p class="text-[11px] text-gray-500" x-text="'Penyelenggara: ' + currentTx.organizer.name"></p>
+                                <p class="text-[11px] text-gray-500" x-text="'PIC: ' + currentTx.organizer.pic_name + ' (' + currentTx.organizer.pic_phone + ')'"></p>
                             </div>
                         </div>
 
                         <!-- Footer Actions -->
-                        <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                        <div class="pt-3 border-t border-gray-100 flex items-center justify-end shrink-0">
                             <a :href="currentTx.download_url"
                                target="_blank"
-                               class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                                 </svg>
                                 Unduh Invoice
                             </a>
-
-                            <x-secondary-button x-on:click="$dispatch('close')">
-                                Tutup
-                            </x-secondary-button>
                         </div>
                     </div>
                 </template>
@@ -439,9 +528,16 @@
             return {
                 currentTx: null,
                 loading: false,
+                hasError: false,
+                errorMessage: '',
+                currentTxId: null,
 
                 async openDetail(id) {
+                    this.currentTxId = id;
                     this.loading = true;
+                    this.hasError = false;
+                    this.errorMessage = '';
+                    this.currentTx = null;
                     this.$dispatch('open-modal', 'transaction-detail-modal');
 
                     try {
@@ -452,11 +548,15 @@
                             }
                         });
 
-                        if (response.ok) {
-                            this.currentTx = await response.json();
+                        if (!response.ok) {
+                            throw new Error('Gagal mengambil rincian transaksi (HTTP ' + response.status + ')');
                         }
+
+                        this.currentTx = await response.json();
                     } catch (error) {
                         console.error('Gagal mengambil rincian transaksi:', error);
+                        this.hasError = true;
+                        this.errorMessage = error.message || 'Gagal mengambil rincian transaksi.';
                     } finally {
                         this.loading = false;
                     }

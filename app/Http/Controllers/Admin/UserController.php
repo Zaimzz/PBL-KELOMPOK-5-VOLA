@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
@@ -29,7 +30,7 @@ class UserController extends Controller
             'total_users' => User::whereIn('role', [UserRole::Volunteer, UserRole::Eo])->count(),
             'active_volunteers' => User::where('role', UserRole::Volunteer)->where('status', UserStatus::Active)->count(),
             'total_eos' => User::where('role', UserRole::Eo)->count(),
-            'suspended_users' => User::where('status', UserStatus::Suspended)->count(),
+            'suspended_users' => User::where('status', UserStatus::Suspended)->whereIn('role', [UserRole::Volunteer, UserRole::Eo])->count(),
         ];
 
         // 2. Query Utama Pengguna (Kecualikan Admin)
@@ -38,18 +39,30 @@ class UserController extends Controller
 
         // Filter Pencarian
         if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhereHas('volunteerProfile', function ($vq) use ($search) {
-                        $vq->where('institution', 'like', "%{$search}%")
-                            ->orWhere('city', 'like', "%{$search}%");
+            $cleanSearch = ltrim($search, '#');
+            $hasNib = Schema::hasColumn('organizer_profiles', 'nib');
+            $hasLegalNum = Schema::hasColumn('organizer_profiles', 'legal_number');
+
+            $query->where(function ($q) use ($search, $cleanSearch, $hasNib, $hasLegalNum) {
+                $operator = $q->getConnection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
+                $q->where('name', $operator, "%{$search}%")
+                    ->orWhere('email', $operator, "%{$search}%")
+                    ->orWhere('phone', $operator, "%{$search}%")
+                    ->orWhereHas('volunteerProfile', function ($vq) use ($search, $operator) {
+                        $vq->where('institution', $operator, "%{$search}%")
+                            ->orWhere('city', $operator, "%{$search}%");
                     })
-                    ->orWhereHas('organizerProfile', function ($oq) use ($search) {
-                        $oq->where('organization_name', 'like', "%{$search}%")
-                            ->orWhere('pic_name', 'like', "%{$search}%")
-                            ->orWhere('city', 'like', "%{$search}%");
+                    ->orWhereHas('organizerProfile', function ($oq) use ($search, $cleanSearch, $operator, $hasNib, $hasLegalNum) {
+                        $oq->where('organization_name', $operator, "%{$search}%")
+                            ->orWhere('pic_name', $operator, "%{$search}%")
+                            ->orWhere('city', $operator, "%{$search}%");
+
+                        if ($hasNib) {
+                            $oq->orWhere('nib', $operator, "%{$cleanSearch}%");
+                        }
+                        if ($hasLegalNum) {
+                            $oq->orWhere('legal_number', $operator, "%{$cleanSearch}%");
+                        }
                     });
             });
         }
@@ -96,7 +109,7 @@ class UserController extends Controller
             'email' => $user->email,
             'phone' => $user->phone ?? '-',
             'role' => $user->role->value,
-            'role_label' => $user->role === UserRole::Volunteer ? 'Volunteer' : 'Event Organizer',
+            'role_label' => $user->role === UserRole::Volunteer ? 'Crew' : 'Event Organizer',
             'status' => $user->status->value,
             'status_label' => $user->status === UserStatus::Active ? 'Aktif' : 'Ditangguhkan',
             'avatar_url' => $user->avatar_path ? Storage::url($user->avatar_path) : null,
