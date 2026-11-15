@@ -60,7 +60,7 @@ class UserManagementTest extends TestCase
         $response->assertSee('Budi Volunteer');
         $response->assertSee('Siti Organizer');
         $response->assertSee('Total Pengguna');
-        $response->assertSee('Volunteer Aktif');
+        $response->assertSee('Crew Aktif');
         $response->assertSee('Event Organizer');
     }
 

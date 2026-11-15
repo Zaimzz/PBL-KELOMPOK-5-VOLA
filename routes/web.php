@@ -3,6 +3,7 @@
 use App\Enums\EventStatus;
 use App\Http\Controllers\Admin\ActiveEventController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminNavbarController;
 use App\Http\Controllers\Admin\EoVerificationController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ReviewEventController;
@@ -20,11 +21,11 @@ use App\Http\Controllers\Crew\SettingsController;
 use App\Http\Controllers\Eo\ApplicantController;
 use App\Http\Controllers\Eo\BillingController;
 use App\Http\Controllers\Eo\CrewCoordinationController;
-use App\Http\Controllers\MidtransWebhookController;
 use App\Http\Controllers\Eo\EoDashboardController;
 use App\Http\Controllers\Eo\EventController;
 use App\Http\Controllers\Eo\EventPositionController;
 use App\Http\Controllers\Eo\OrganizerProfileController;
+use App\Http\Controllers\MidtransWebhookController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicEventController;
 use App\Models\Event;
@@ -91,7 +92,12 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     Route::post('/lamaran/ajukan', [ApplicationController::class, 'store'])->name('applications.store');
 
     // Download Bukti Penerimaan
-    Route::get('/lamaran-saya/{id}/bukti-penerimaan', [ApplicationController::class, 'downloadAcceptanceLetter'])->name('applications.download-acceptance');
+    Route::get('/lamaran-saya/{id}/bukti-penerimaan', [ApplicationController::class, 'downloadAcceptanceLetter'])
+        ->name('applications.download-acceptance');
+
+    Route::get('/events/{event}', [EventDetailController::class, 'show'])
+        ->whereNumber('event')
+        ->name('events.detail');
 
     // Event Saya
     Route::get('/event-saya', [MyEventController::class, 'index'])->name('my-events.index');
@@ -246,6 +252,12 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('/transactions/{payment}', [TransactionController::class, 'show'])->name('transactions.show');
         Route::get('/transactions/{payment}/download', [TransactionController::class, 'downloadInvoice'])->name('transactions.download-invoice');
         Route::get('/transactions-list', [TransactionController::class, 'index'])->name('transactions');
+
+        // API Navbar Admin (Global Search & Notifikasi Dinamis)
+        Route::get('/api/global-search', [AdminNavbarController::class, 'globalSearch'])->name('api.global-search');
+        Route::get('/api/notifications', [AdminNavbarController::class, 'getNotifications'])->name('api.notifications');
+        Route::post('/api/notifications/mark-all-read', [AdminNavbarController::class, 'markAllAsRead'])->name('api.notifications.mark-all-read');
+        Route::post('/api/notifications/{id}/read', [AdminNavbarController::class, 'markAsRead'])->name('api.notifications.read');
     });
 
 // Midtrans Webhook — no auth, no CSRF (excluded via bootstrap/app.php or VerifyCsrfToken)

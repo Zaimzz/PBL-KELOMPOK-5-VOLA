@@ -32,7 +32,7 @@ class ActiveEventController extends Controller
 
         $query = Event::query()->whereIn('status', $allowedStatuses);
 
-        // Search Filter: event title, location, city, organizer name
+        // Search Filter: event title, location, city, organizer name, category, positions
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -40,9 +40,16 @@ class ActiveEventController extends Controller
                 $q->where('title', $operator, '%'.$search.'%')
                     ->orWhere('location', $operator, '%'.$search.'%')
                     ->orWhere('city', $operator, '%'.$search.'%')
+                    ->orWhere('pic_name', $operator, '%'.$search.'%')
                     ->orWhereHas('organizer', function ($oq) use ($search, $operator) {
                         $oq->where('organization_name', $operator, '%'.$search.'%')
                             ->orWhere('pic_name', $operator, '%'.$search.'%');
+                    })
+                    ->orWhereHas('category', function ($cq) use ($search, $operator) {
+                        $cq->where('name', $operator, '%'.$search.'%');
+                    })
+                    ->orWhereHas('positions', function ($pq) use ($search, $operator) {
+                        $pq->where('name', $operator, '%'.$search.'%');
                     });
             });
         }
@@ -63,22 +70,27 @@ class ActiveEventController extends Controller
             if ($status === 'buka_rekrutmen') {
                 $query->where('status', EventStatus::Active)
                     ->where(function ($q) use ($today) {
+                        $q->whereNull('end_date')
+                            ->orWhereDate('end_date', '>=', $today);
+                    })
+                    ->where(function ($q) use ($today) {
                         $q->whereNull('registration_deadline')
                             ->orWhereDate('registration_deadline', '>=', $today);
                     });
             } elseif ($status === 'sedang_berjalan') {
                 $query->where('status', EventStatus::Active)
                     ->where(function ($q) use ($today) {
-                        $q->whereDate('registration_deadline', '<', $today)
-                            ->orWhere(function ($sq) use ($today) {
-                                $sq->whereDate('start_date', '<=', $today)
-                                    ->whereDate('end_date', '>=', $today);
-                            });
-                    });
+                        $q->whereNull('end_date')
+                            ->orWhereDate('end_date', '>=', $today);
+                    })
+                    ->whereDate('registration_deadline', '<', $today);
             } elseif ($status === 'selesai' || $status === 'finished') {
                 $query->where(function ($q) use ($today) {
                     $q->where('status', EventStatus::Finished)
-                        ->orWhereDate('end_date', '<', $today);
+                        ->orWhere(function ($sq) use ($today) {
+                            $sq->whereNotNull('end_date')
+                                ->whereDate('end_date', '<', $today);
+                        });
                 });
             } elseif ($status === 'active') {
                 $query->where('status', EventStatus::Active);
@@ -88,15 +100,20 @@ class ActiveEventController extends Controller
         }
 
         // Header Metrics
+        $todayStr = now()->toDateString();
         $stats = [
             'total_active' => Event::where('status', EventStatus::Active)->count(),
             'registered_volunteers' => Application::where('status', ApplicationStatus::Accepted)
                 ->whereHas('position.event', fn ($q) => $q->whereIn('status', $allowedStatuses))
                 ->count(),
             'open_registration' => Event::where('status', EventStatus::Active)
-                ->where(function ($q) {
+                ->where(function ($q) use ($todayStr) {
+                    $q->whereNull('end_date')
+                        ->orWhereDate('end_date', '>=', $todayStr);
+                })
+                ->where(function ($q) use ($todayStr) {
                     $q->whereNull('registration_deadline')
-                        ->orWhereDate('registration_deadline', '>=', now()->toDateString());
+                        ->orWhereDate('registration_deadline', '>=', $todayStr);
                 })->count(),
         ];
 
