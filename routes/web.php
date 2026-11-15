@@ -63,21 +63,26 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     Route::get('/profile/edit', [CrewProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [CrewProfileController::class, 'update'])->name('profile.update');
 
-    // Settings
+    // SKILLS
+    Route::put('/profile/skills', [CrewProfileController::class, 'updateSkills'])->name('profile.update.skills');
+
+    Route::post('/profile/documents/upload', [CrewProfileController::class, 'uploadDocument'])->name('profile.documents.upload');
+    Route::delete('/profile/documents/{type}', [CrewProfileController::class, 'deleteDocument'])->name('profile.documents.delete');
+
+     // Settings
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-    Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.update.profile');
-    Route::put('/settings/preferences', [SettingsController::class, 'updatePreferences'])->name('settings.update.preferences');
+    Route::put('/settings/email', [SettingsController::class, 'updateEmail'])->name('settings.update.email');
+    Route::put('/settings/phone', [SettingsController::class, 'updatePhone'])->name('settings.update.phone');
+    Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.update.password');
 
     // Pencarian & Detail Event
     Route::get('/search', [SearchController::class, 'index'])->name('search.index');
-    Route::get('/events/{event}', [EventDetailController::class, 'show'])
-        ->whereNumber('event')
-        ->name('events.detail');
+    Route::get('/events/{event}', [EventDetailController::class, 'show'])->whereNumber('event')->name('events.detail');
 
     // Notifikasi API
-    Route::get('/api/notifications', [NotificationController::class, 'index']);
-    Route::post('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-    Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::get('/api/notifications', [NotificationController::class, 'index'])->name('api.notifications.index'); // ✅ Tambahkan ->name(...)
+    Route::post('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('api.notifications.mark-as-read');
+    Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('api.notifications.mark-all-as-read');
 
     // Lamaran Saya
     Route::get('/lamaran-saya', [ApplicationController::class, 'index'])->name('applications.index');
@@ -86,24 +91,16 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     Route::post('/lamaran/ajukan', [ApplicationController::class, 'store'])->name('applications.store');
 
     // Download Bukti Penerimaan
-    Route::get('/lamaran-saya/{id}/bukti-penerimaan', [ApplicationController::class, 'downloadAcceptanceLetter'])
-        ->name('applications.download-acceptance');
-
-    Route::get('/events/{event}', [EventDetailController::class, 'show'])
-    ->whereNumber('event')
-    ->name('events.detail');
+    Route::get('/lamaran-saya/{id}/bukti-penerimaan', [ApplicationController::class, 'downloadAcceptanceLetter'])->name('applications.download-acceptance');
 
     // Event Saya
-    Route::get('/event-saya', [MyEventController::class, 'index'])
-        ->name('my-events.index');
+    Route::get('/event-saya', [MyEventController::class, 'index'])->name('my-events.index');
 
     // Riwayat Pengalaman
-    Route::get('/riwayat', [HistoryController::class, 'index'])
-        ->name('history.index');
+    Route::get('/riwayat', [HistoryController::class, 'index'])->name('history.index');
 
     // Download Sertifikat Individual
-    Route::get('/riwayat/sertifikat/{id}', [HistoryController::class, 'downloadCertificate'])
-        ->name('history.downloadCertificate');
+    Route::get('/riwayat/sertifikat/{id}', [HistoryController::class, 'downloadCertificate'])->name('history.downloadCertificate');
 
 });
 

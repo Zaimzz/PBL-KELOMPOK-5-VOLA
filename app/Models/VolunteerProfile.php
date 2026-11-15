@@ -12,8 +12,15 @@ class VolunteerProfile extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'bio', 'institution', 'city',
-        'skills', 'experience', 'cv_path', 'portfolio_path',
+        'user_id', 
+        'bio', 
+        'institution', 
+        'city',
+        'photo_path',
+        'skills', 
+        'experience', 
+        'cv_path', 
+        'portfolio_path',
     ];
 
     protected function casts(): array
