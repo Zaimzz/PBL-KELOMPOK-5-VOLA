@@ -12,32 +12,29 @@
     $authUser = auth()->user();
     $profile = $authUser?->volunteerProfile;
     $displayName = $authUser?->name ?? 'Crew';
-    $displayCity = $authUser->city ?? 'Indonesia';
+    
+    $displayCity = $profile?->city ?? 'Indonesia';
+    
     $unreadNotifs = $authUser?->unreadNotifications?->count() ?? 0;
 
     $totalApplications = 0;
+    $acceptedCount = 0;
+    
     if ($profile) {
         $totalApplications = \App\Models\Application::where('volunteer_profile_id', $profile->id)->count();
-    }
-    if ($totalApplications === 0) {
-        $totalApplications = 4; 
-    }
-
-    $acceptedCount = 0;
-    if ($profile) {
         $acceptedCount = \App\Models\Application::where('volunteer_profile_id', $profile->id)
             ->where('status', 'accepted')->count();
     }
-    if ($acceptedCount === 0) {
-        $acceptedCount = 1; 
-    }
 
     $displayAvatar = null;
-    if ($authUser?->avatar_path) {
+    if ($profile && $profile->photo_path) {
+        $displayAvatar = asset('storage/' . $profile->photo_path);
+    } elseif ($authUser?->avatar_path) {
         $displayAvatar = filter_var($authUser->avatar_path, FILTER_VALIDATE_URL)
             ? $authUser->avatar_path
             : \Illuminate\Support\Facades\Storage::url($authUser->avatar_path);
     }
+
     $words = array_values(array_filter(explode(' ', trim($displayName))));
     $initials = count($words) >= 2 
         ? strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1))
@@ -45,7 +42,7 @@
 @endphp
 
 <div class="flex min-h-screen">
-   
+  
     <aside class="hidden md:flex w-64 flex-col bg-white border-r border-gray-200 fixed h-full z-10">
         <div class="p-6 flex items-center gap-1">
             <span class="text-2xl font-black tracking-tighter text-gray-900">VOLA<span class="text-[#4F46E5]">.</span></span>
@@ -102,12 +99,11 @@
             <a href="{{ route('profile.show') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl {{ request()->routeIs('profile.*') ? 'bg-indigo-50 text-[#4F46E5]' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 Profil Saya
-            </a>
+            </a>           
         </nav>
     </aside>
 
     <div class="flex-1 flex flex-col md:pl-64 w-full">
-        
         <header class="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-3 flex items-center justify-between gap-4">
 
             @if(request()->routeIs('dashboard'))
@@ -130,22 +126,86 @@
             @endif
 
             <div class="flex items-center gap-4 ml-auto">
-              
                 <div x-data="{ 
                         open: false, 
                         activeTab: 'all',
-                        notifications: [
-                            { id: 1, type: 'accepted', title: 'Lamaran Diterima!', message: 'Selamat, kamu diterima sebagai <strong>Liaison Officer</strong> untuk event <strong>Indonesia Comic & Pop Culture Con 2025</strong>.', time: '15 mnt lalu', read: false, link: '#' },
-                            { id: 2, type: 'briefing', title: 'Pengingat Briefing Online', message: 'Briefing teknis via Zoom akan diselenggarakan besok pukul 19.30 WIB.', time: '2 jam lalu', read: false, link: '#' },
-                            { id: 3, type: 'review', title: 'Berkas Sedang Ditinjau', message: 'Berkas lamaranmu untuk <strong>Bandung Creative Tech Summit 2025</strong> sedang dalam proses kurasi.', time: 'Kemarin, 14:15', read: true, link: '#' },
-                            { id: 4, type: 'reminder', title: 'Pengingat Profil', message: 'Lengkapi profil dan unggah CV kamu untuk meningkatkan peluang diterima.', time: '2 hari lalu', read: true, link: '#' }
-                        ],
-                        get unreadCount() { return this.notifications.filter(n => !n.read).length; },
-                        get hasVisibleNotifications() { if (this.activeTab === 'all') return this.notifications.length > 0; return this.notifications.some(n => !n.read); },
-                        get filteredNotifications() { if (this.activeTab === 'all') return this.notifications; return this.notifications.filter(n => !n.read); },
-                        markAsRead(id) { const notif = this.notifications.find(n => n.id === id); if (notif) notif.read = true; },
-                        markAllAsRead() { this.notifications.forEach(n => n.read = true); }
+                        notifications: [], 
+                        isLoading: true, 
+                        
+                        async init() {
+                            await this.fetchNotifications();
+                        },
+
+                        async fetchNotifications() {
+                            this.isLoading = true; // Mulai loading
+                            try {
+                                const res = await fetch('{{ route("api.notifications.index") }}');
+                                if (res.ok) {
+                                    this.notifications = await res.json();
+                                }
+                            } catch (err) {
+                                console.error('Gagal memuat notifikasi:', err);
+                            } finally {
+                                this.isLoading = false; // Selesai loading (baik sukses atau gagal)
+                            }
+                        },
+
+                        get unreadCount() { 
+                            return this.notifications.filter(n => !n.read).length; 
+                        },
+                        get hasVisibleNotifications() { 
+                            if (this.activeTab === 'all') return this.notifications.length > 0; 
+                            return this.notifications.some(n => !n.read); 
+                        },
+                        get filteredNotifications() { 
+                            if (this.activeTab === 'all') return this.notifications; 
+                            return this.notifications.filter(n => !n.read); 
+                        },
+                        
+                        async handleNotifClick(notif) {
+                            if (!notif.read) {
+                                await this.markAsRead(notif.id);
+                            }
+                            if (notif.link && notif.link !== '#') {
+                                window.location.href = notif.link;
+                            }
+                        },
+
+                        async markAsRead(id) {
+                            const notif = this.notifications.find(n => n.id === id);
+                            if (notif) notif.read = true;
+
+                            try {
+                                await fetch(`/api/notifications/${id}/read`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Content-Type': 'application/json'
+                                    }
+                                });
+                            } catch (err) {
+                                console.error(err);
+                            }
+                        },
+
+                        async markAllAsRead() {
+                            // Optimistic update
+                            this.notifications.forEach(n => n.read = true);
+
+                            try {
+                                await fetch('/api/notifications/read-all', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Content-Type': 'application/json'
+                                    }
+                                });
+                            } catch (err) {
+                                console.error(err);
+                            }
+                        }
                      }" 
+                     x-init="init()" 
                      class="relative" @click.outside="open = false">
                    
                     <button @click="open = !open" class="relative p-2 text-gray-500 hover:text-[#4F46E5] hover:bg-indigo-50 rounded-full transition">
@@ -162,7 +222,6 @@
                                     <h3 class="font-bold text-gray-900 text-base">Notifikasi</h3>
                                     <span x-show="unreadCount > 0" class="px-2 py-0.5 bg-indigo-50 text-[#4F46E5] text-xs font-bold rounded-full" x-text="unreadCount + ' Baru'"></span>
                                 </div>
-                                <button @click="markAllAsRead()" class="text-xs font-bold text-[#4F46E5] hover:text-indigo-800 transition">Tandai semua dibaca</button>
                             </div>
                             <div class="flex gap-5 text-sm border-b border-gray-100">
                                 <button @click="activeTab = 'all'" :class="activeTab === 'all' ? 'text-[#4F46E5] border-b-2 border-[#4F46E5] font-bold' : 'text-gray-500 hover:text-gray-700'" class="pb-2.5 transition">Semua (<span x-text="notifications.length"></span>)</button>
@@ -170,8 +229,12 @@
                             </div>
                         </div>
                         <div class="max-h-[420px] overflow-y-auto">
+                            <div x-show="isLoading" class="px-5 py-12 text-center">
+                                 <p class="text-sm text-gray-400">Memuat notifikasi...</p>
+                            </div>
+
                             <template x-for="notif in filteredNotifications" :key="notif.id">
-                                <div @click="markAsRead(notif.id)" class="px-5 py-4 hover:bg-gray-50 transition border-b border-gray-50 last:border-b-0 cursor-pointer" :class="!notif.read ? 'bg-white' : 'bg-gray-50/50'">
+                                <div @click="handleNotifClick(notif)" class="px-5 py-4 hover:bg-gray-50 transition border-b border-gray-50 last:border-b-0 cursor-pointer" :class="!notif.read ? 'bg-white' : 'bg-gray-50/50'">
                                     <div class="flex gap-3">
                                         <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="{ 'bg-emerald-100 text-emerald-600': notif.type === 'accepted', 'bg-indigo-100 text-indigo-600': notif.type === 'briefing', 'bg-blue-100 text-blue-600': notif.type === 'review', 'bg-amber-100 text-amber-600': notif.type === 'reminder' }">
                                             <template x-if="notif.type === 'accepted'"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg></template>
@@ -188,19 +251,22 @@
                                                 <span class="text-[11px] text-gray-400 whitespace-nowrap shrink-0" x-text="notif.time"></span>
                                             </div>
                                             <p class="text-xs text-gray-600 leading-relaxed mb-1.5" x-html="notif.message"></p>
+                                            
                                             <template x-if="notif.link && notif.link !== '#'">
-                                                <a :href="notif.link" @click.stop class="inline-flex items-center gap-1 text-xs font-bold text-[#4F46E5] hover:text-indigo-800 transition mt-1">Lihat Detail Penugasan <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg></a>
+                                                <span class="inline-flex items-center gap-1 text-xs font-bold text-[#4F46E5] mt-1">Lihat Detail <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg></span>
                                             </template>
                                         </div>
                                     </div>
                                 </div>
                             </template>
-                            <div x-show="!hasVisibleNotifications" class="px-5 py-12 text-center">
+
+                            <div x-show="!isLoading && !hasVisibleNotifications" class="px-5 py-12 text-center">
                                 <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
                                     <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                 </div>
-                                <p class="text-sm font-medium text-gray-500" x-text="activeTab === 'unread' ? 'Semua notifikasi sudah dibaca' : 'Belum ada notifikasi'"></p>
+                                <p class="text-sm font-medium text-gray-500" x-text="activeTab === 'unread' ? 'Semua notifikasi sudah dibaca' : 'Tidak ada notifikasi...'"></p>
                             </div>
+
                         </div>
                         <div class="px-5 py-3 bg-gray-50 border-t border-gray-100 text-center">
                             <button @click="markAllAsRead()" class="text-xs font-bold text-[#4F46E5] hover:text-indigo-800 transition">Tandai Semua Notifikasi Terbaca</button>
@@ -254,7 +320,7 @@
         </main>
 
         <footer class="py-6 text-center text-xs text-gray-400 border-t border-gray-200 bg-white">
-            © 2026 VOLA Platform Relawan Indonesia. All rights reserved.
+            © {{ date('Y') }} VOLA Platform Relawan Indonesia. All rights reserved.
         </footer>
     </div>
 </div>
