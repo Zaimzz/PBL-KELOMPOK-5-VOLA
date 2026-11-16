@@ -59,8 +59,8 @@ class CrewDashboardController extends Controller
                 : ($startDate ?? '-');
 
             $imageUrl = $event->poster_path
-                ? Storage::url($event->poster_path)
-                : 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';
+                ? Storage::disk('public')->url($event->poster_path)
+                : asset('images/event-placeholder.svg');
 
             $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
 

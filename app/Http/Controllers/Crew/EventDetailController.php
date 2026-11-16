@@ -4,25 +4,14 @@ namespace App\Http\Controllers\Crew;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class EventDetailController extends Controller
 {
-    private const CATEGORY_IMAGES = [
-        'festival'  => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800',
-        'seminar'   => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
-        'musik'     => 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800',
-        'olahraga'  => 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
-        'sosial'    => 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800',
-        'kampus'    => 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800',
-        'komunitas' => 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800',
-        'umum'      => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800',
-    ];
-
     private function getImageByCategory(?string $category): string
     {
-        $key = strtolower(trim($category ?? 'umum'));
-        return self::CATEGORY_IMAGES[$key] ?? self::CATEGORY_IMAGES['umum'];
+        return asset('images/event-placeholder.svg');
     }
 
     public function show($event): View
@@ -217,7 +206,7 @@ class EventDetailController extends Controller
                     'address' => $dbEvent->location ?: 'Lokasi penyelenggaraan event resmi.',
                     'meeting_point' => 'Pintu Masuk Utama / Meja Informasi Panitia.',
                     'image' => $dbEvent->poster_path
-                        ? asset('storage/' . $dbEvent->poster_path)
+                        ? Storage::disk('public')->url($dbEvent->poster_path)
                         : $this->getImageByCategory($categoryName),
                 ];
                 $positions = $dbEvent->positions->map(function ($pos, $index) {

@@ -69,7 +69,7 @@
 
                         @if ($event->poster_path)
                             <div class="mb-3 relative inline-block" x-show="!posterPreview">
-                                <img src="{{ Storage::url($event->poster_path) }}"
+                                <img src="{{ Storage::disk('public')->url($event->poster_path) }}"
                                      alt="Poster event"
                                      class="w-48 h-32 object-cover rounded-lg border border-gray-200">
                                 <span class="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">Poster aktif</span>

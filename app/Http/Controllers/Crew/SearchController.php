@@ -12,21 +12,9 @@ use Illuminate\View\View;
 
 class SearchController extends Controller
 {
-    private const CATEGORY_IMAGES = [
-        'festival'  => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800',
-        'seminar'   => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
-        'musik'     => 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800',
-        'olahraga'  => 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
-        'sosial'    => 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800',
-        'kampus'    => 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800',
-        'komunitas' => 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800',
-        'umum'      => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800',
-    ];
-
     private function getImageByCategory(?string $category): string
     {
-        $key = strtolower(trim($category ?? 'umum'));
-        return self::CATEGORY_IMAGES[$key] ?? self::CATEGORY_IMAGES['umum'];
+        return asset('images/event-placeholder.svg');
     }
 
     public function index(Request $request): View
@@ -121,7 +109,7 @@ class SearchController extends Controller
             $categoryName = $event->category?->name ?? 'Umum';
 
             $imageUrl = $event->poster_path
-                ? Storage::url($event->poster_path)
+                ? Storage::disk('public')->url($event->poster_path)
                 : $this->getImageByCategory($categoryName);
 
             $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
