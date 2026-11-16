@@ -50,13 +50,16 @@
     <!-- Overview Metrics (At a Glance) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <!-- 1. Total Event Berjalan -->
-        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-200 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
+        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-200 transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
             <div class="flex items-start justify-between">
                 <div>
                     <span class="text-xs font-semibold text-gray-500">Total Event Berjalan</span>
                     <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ number_format($activeEventCount, 0, ',', '.') }}</h3>
-                    <p class="text-xs text-emerald-600 font-semibold flex items-center gap-1 mt-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <p class="text-xs text-emerald-600 font-semibold flex items-center gap-1.5 mt-2">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
                         Publikasi aktif & terbuka
                     </p>
                 </div>
@@ -69,12 +72,12 @@
         </div>
 
         <!-- 2. Transaksi Bulan Ini -->
-        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-200 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
+        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-200 transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
             <div class="flex items-start justify-between">
-                <div>
+                <div class="min-w-0 pr-2">
                     <span class="text-xs font-semibold text-gray-500">Transaksi Bulan Ini</span>
-                    <h3 class="text-xl sm:text-2xl font-extrabold text-gray-900 mt-1">Rp {{ number_format($monthlyRevenue, 0, ',', '.') }}</h3>
-                    <p class="text-xs text-gray-500 font-medium mt-2">
+                    <h3 class="text-xl sm:text-2xl xl:text-3xl font-extrabold text-gray-900 mt-1 truncate">Rp {{ number_format($monthlyRevenue, 0, ',', '.') }}</h3>
+                    <p class="text-xs text-gray-500 font-medium mt-2 truncate">
                         Dari {{ $transactionCount }} riwayat pembayaran
                     </p>
                 </div>
@@ -87,12 +90,18 @@
         </div>
 
         <!-- 3. Laporan Menunggu Tindakan -->
-        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-200 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
+        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-200 transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
             <div class="flex items-start justify-between">
                 <div>
                     <span class="text-xs font-semibold text-gray-500">Laporan Menunggu</span>
                     <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ number_format($pendingReportsCount, 0, ',', '.') }}</h3>
-                    <p class="text-xs font-semibold {{ $pendingReportsCount > 0 ? 'text-amber-600' : 'text-gray-400' }} mt-2">
+                    <p class="text-xs font-semibold {{ $pendingReportsCount > 0 ? 'text-amber-600' : 'text-gray-400' }} flex items-center gap-1.5 mt-2">
+                        @if($pendingReportsCount > 0)
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                            </span>
+                        @endif
                         {{ $pendingReportsCount > 0 ? 'Aduan butuh tindakan admin' : 'Tidak ada aduan aktif' }}
                     </p>
                 </div>
@@ -104,14 +113,14 @@
             </div>
         </div>
 
-        <!-- 4. Total Relawan -->
-        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-200 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
+        <!-- 4. Total Crew -->
+        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-200 transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
             <div class="flex items-start justify-between">
                 <div>
-                    <span class="text-xs font-semibold text-gray-500">Total Relawan</span>
+                    <span class="text-xs font-semibold text-gray-500">Total Crew</span>
                     <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ number_format($totalVolunteersCount, 0, ',', '.') }}</h3>
                     <p class="text-xs text-blue-600 font-semibold mt-2">
-                        Volunteer terdaftar di platform
+                        Crew terdaftar di platform
                     </p>
                 </div>
                 <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
@@ -154,7 +163,7 @@
                 </div>
                 <div class="min-w-0">
                     <div class="font-bold text-gray-900 text-sm truncate">Kontrol Basis Akun</div>
-                    <div class="text-[11px] text-gray-400 truncate">Volunteer & EO</div>
+                    <div class="text-[11px] text-gray-400 truncate">Crew & EO</div>
                 </div>
             </a>
 

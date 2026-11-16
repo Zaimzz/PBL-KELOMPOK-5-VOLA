@@ -3,6 +3,7 @@
 use App\Enums\EventStatus;
 use App\Http\Controllers\Admin\ActiveEventController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminNavbarController;
 use App\Http\Controllers\Admin\EoVerificationController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ReviewEventController;
@@ -20,11 +21,11 @@ use App\Http\Controllers\Crew\SettingsController;
 use App\Http\Controllers\Eo\ApplicantController;
 use App\Http\Controllers\Eo\BillingController;
 use App\Http\Controllers\Eo\CrewCoordinationController;
-use App\Http\Controllers\MidtransWebhookController;
 use App\Http\Controllers\Eo\EoDashboardController;
 use App\Http\Controllers\Eo\EventController;
 use App\Http\Controllers\Eo\EventPositionController;
 use App\Http\Controllers\Eo\OrganizerProfileController;
+use App\Http\Controllers\MidtransWebhookController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicEventController;
 use App\Models\Event;
@@ -63,48 +64,50 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     Route::get('/profile/edit', [CrewProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [CrewProfileController::class, 'update'])->name('profile.update');
 
-    // Settings
+    // SKILLS
+    Route::put('/profile/skills', [CrewProfileController::class, 'updateSkills'])->name('profile.update.skills');
+
+    Route::post('/profile/documents/upload', [CrewProfileController::class, 'uploadDocument'])->name('profile.documents.upload');
+    Route::delete('/profile/documents/{type}', [CrewProfileController::class, 'deleteDocument'])->name('profile.documents.delete');
+
+     // Settings
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-    Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.update.profile');
-    Route::put('/settings/preferences', [SettingsController::class, 'updatePreferences'])->name('settings.update.preferences');
+    Route::put('/settings/email', [SettingsController::class, 'updateEmail'])->name('settings.update.email');
+    Route::put('/settings/phone', [SettingsController::class, 'updatePhone'])->name('settings.update.phone');
+    Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.update.password');
 
     // Pencarian & Detail Event
     Route::get('/search', [SearchController::class, 'index'])->name('search.index');
-    Route::get('/events/{event}', [EventDetailController::class, 'show'])
-        ->whereNumber('event')
-        ->name('events.detail');
+    Route::get('/events/{event}', [EventDetailController::class, 'show'])->whereNumber('event')->name('events.detail');
 
     // Notifikasi API
-    Route::get('/api/notifications', [NotificationController::class, 'index']);
-    Route::post('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-    Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::get('/api/notifications', [NotificationController::class, 'index'])->name('api.notifications.index'); // ✅ Tambahkan ->name(...)
+    Route::post('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('api.notifications.mark-as-read');
+    Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('api.notifications.mark-all-as-read');
 
     // Lamaran Saya
     Route::get('/lamaran-saya', [ApplicationController::class, 'index'])->name('applications.index');
+
+    // Route untuk menyimpan lamaran baru
+    Route::post('/lamaran/ajukan', [ApplicationController::class, 'store'])->name('applications.store');
 
     // Download Bukti Penerimaan
     Route::get('/lamaran-saya/{id}/bukti-penerimaan', [ApplicationController::class, 'downloadAcceptanceLetter'])
         ->name('applications.download-acceptance');
 
     Route::get('/events/{event}', [EventDetailController::class, 'show'])
-    ->whereNumber('event')
-    ->name('events.detail');
+        ->whereNumber('event')
+        ->name('events.detail');
 
     // Event Saya
-    Route::get('/event-saya', [MyEventController::class, 'index'])
-        ->name('my-events.index');
+    Route::get('/event-saya', [MyEventController::class, 'index'])->name('my-events.index');
 
     // Riwayat Pengalaman
-    Route::get('/riwayat', [HistoryController::class, 'index'])
-        ->name('history.index');
+    Route::get('/riwayat', [HistoryController::class, 'index'])->name('history.index');
 
     // Download Sertifikat Individual
-    Route::get('/riwayat/sertifikat/{id}', [HistoryController::class, 'downloadCertificate'])
-        ->name('history.downloadCertificate');
+    Route::get('/riwayat/sertifikat/{id}', [HistoryController::class, 'downloadCertificate'])->name('history.downloadCertificate');
 
-    // Download Ringkasan Riwayat PDF
-    Route::get('/riwayat/download-pdf', [HistoryController::class, 'downloadPdf'])
-        ->name('history.downloadPdf');
 });
 
 // Public Event Detail
@@ -249,6 +252,12 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('/transactions/{payment}', [TransactionController::class, 'show'])->name('transactions.show');
         Route::get('/transactions/{payment}/download', [TransactionController::class, 'downloadInvoice'])->name('transactions.download-invoice');
         Route::get('/transactions-list', [TransactionController::class, 'index'])->name('transactions');
+
+        // API Navbar Admin (Global Search & Notifikasi Dinamis)
+        Route::get('/api/global-search', [AdminNavbarController::class, 'globalSearch'])->name('api.global-search');
+        Route::get('/api/notifications', [AdminNavbarController::class, 'getNotifications'])->name('api.notifications');
+        Route::post('/api/notifications/mark-all-read', [AdminNavbarController::class, 'markAllAsRead'])->name('api.notifications.mark-all-read');
+        Route::post('/api/notifications/{id}/read', [AdminNavbarController::class, 'markAsRead'])->name('api.notifications.read');
     });
 
 // Midtrans Webhook — no auth, no CSRF (excluded via bootstrap/app.php or VerifyCsrfToken)

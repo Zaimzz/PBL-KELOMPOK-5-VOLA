@@ -1,12 +1,28 @@
 ﻿<x-layouts.crew title="Cari Event - VOLA">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+<div x-data="{ isLoading: false }" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    
+    <div x-show="isLoading" 
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm"
+         style="display: none;">
+        <div class="flex flex-col items-center gap-4">
+            <svg class="animate-spin h-12 w-12 text-[#4F46E5]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-sm font-bold text-gray-700">Sedang memuat data...</p>
+        </div>
+    </div>
+
     <div class="mb-6">
         <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Temukan Event</h1>
         <p class="mt-1 text-sm text-gray-500">Cari event dan posisi volunteer yang sesuai dengan minat dan keahlianmu.</p>
     </div>
 
     <div class="bg-white border border-gray-200 rounded-2xl p-2 shadow-sm mb-6">
-        <form action="{{ route('search.index') }}" method="GET" class="flex gap-2">
+        <form action="{{ route('search.index') }}" method="GET" class="flex gap-2" @submit="isLoading = true">
             <div class="relative flex-1">
                 <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -52,14 +68,14 @@
                     </h3>
                     <a href="{{ route('search.index') }}" class="text-sm font-semibold text-[#4F46E5] hover:text-indigo-800 transition">Reset Filter</a>
                 </div>
-
-                <form action="{{ route('search.index') }}" method="GET" class="p-5" x-data="{ selectedCategory: '{{ $category ?: "Semua" }}' }">
+               
+                <form action="{{ route('search.index') }}" method="GET" class="p-5" x-data="{ selectedCategory: '{{ $category ?: "Semua" }}' }" @submit="isLoading = true">
                     <input type="hidden" name="q" value="{{ $query }}">
                     <input type="hidden" name="category" :value="selectedCategory">
                     @if(!empty($sort) && $sort !== 'terdekat')
                         <input type="hidden" name="sort" value="{{ $sort }}">
                     @endif
-
+ 
                     <div class="mb-6">
                         <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Kategori</p>
                         <div class="flex flex-wrap gap-2">
@@ -76,7 +92,7 @@
                             @endforeach
                         </div>
                     </div>
-
+                   
                     <div class="mb-6">
                         <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Lokasi</p>
                         <div class="relative">
@@ -94,7 +110,7 @@
                             </div>
                         </div>
                     </div>
-
+                  
                     <div class="mb-6">
                         <p class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Posisi Volunteer</p>
                         <div class="space-y-2.5">
@@ -111,6 +127,7 @@
                             @endforeach
                         </div>
                     </div>
+                    
                     <button type="submit" class="w-full py-3 bg-[#4F46E5] text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition shadow-sm">
                         Terapkan Filter
                     </button>
@@ -124,7 +141,8 @@
                     <h2 class="text-lg font-bold text-gray-900">{{ $totalEvents }} Event Ditemukan</h2>
                     <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">Aktif</span>
                 </div>
-                <form action="{{ route('search.index') }}" method="GET" class="flex items-center gap-2 text-sm">
+               
+                <form action="{{ route('search.index') }}" method="GET" class="flex items-center gap-2 text-sm" @submit="isLoading = true">
                     @if(!empty($query))
                         <input type="hidden" name="q" value="{{ $query }}">
                     @endif
@@ -153,7 +171,7 @@
                             <div class="relative h-40 w-full overflow-hidden bg-gray-100 shrink-0">
                                 <img src="{{ $event['image'] }}" alt="{{ $event['title'] }}"
                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                    onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';">
+                                    onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1511578314322-379afb476865?w=800';">
                                 <span class="absolute top-3 left-3 bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
                                     {{ $event['status_badge'] }}
                                 </span>

@@ -11,7 +11,7 @@
             <!-- Header Metrics: 3 Luxury Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:w-auto">
                 <!-- Menunggu Tindakan -->
-                <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center gap-3.5">
+                <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center gap-3.5 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
                     <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -24,7 +24,7 @@
                 </div>
 
                 <!-- Sedang Ditinjau -->
-                <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center gap-3.5">
+                <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center gap-3.5 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
                     <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -38,7 +38,7 @@
                 </div>
 
                 <!-- Laporan Selesai -->
-                <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center gap-3.5">
+                <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center gap-3.5 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
                     <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
@@ -69,7 +69,7 @@
                     <input type="text"
                            name="search"
                            value="{{ request('search') }}"
-                           placeholder="Cari ID tiket (#RPT-), nama pelapor, terlapor, atau alasan aduan..."
+                           placeholder="Cari nomor tiket #RPT, nama pelapor, terlapor, atau alasan laporan"
                            class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
                 </div>
 
@@ -109,11 +109,16 @@
                 </div>
 
                 @if(request('search') || ($statusFilter && $statusFilter !== 'all'))
-                    <a href="{{ route('admin.reports.index') }}" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-gray-500 hover:text-gray-800 transition-colors shrink-0">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{{ route('admin.reports.index') }}" 
+                       x-data="{ resetting: false }"
+                       @click="resetting = true"
+                       class="group inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all shrink-0">
+                        <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
+                             :class="{ 'animate-spin text-brand-600': resetting }"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
-                        Reset
+                        <span>Reset</span>
                     </a>
                 @endif
             </form>
@@ -182,7 +187,7 @@
                                     <div class="font-bold text-gray-900 text-xs">{{ $report->reporter->name ?? 'User' }}</div>
                                     <div class="text-[11px] text-gray-500 mt-0.5">{{ $report->reporter->email ?? '-' }}</div>
                                     <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600">
-                                        {{ ucfirst($report->reporter->role->value ?? 'volunteer') }}
+                                        {{ $report->reporter?->role === \App\Enums\UserRole::Eo ? 'EO' : 'Crew' }}
                                     </span>
                                 </td>
 
@@ -192,7 +197,7 @@
                                     <div class="text-[11px] text-gray-500 mt-0.5">{{ $report->reported->email ?? '-' }}</div>
                                     <div class="flex items-center gap-1.5 mt-1">
                                         <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $report->reported->role === \App\Enums\UserRole::Eo ? 'bg-indigo-50 text-brand-700' : 'bg-blue-50 text-blue-700' }}">
-                                            {{ $report->reported->role === \App\Enums\UserRole::Eo ? 'EO' : 'Volunteer' }}
+                                            {{ $report->reported->role === \App\Enums\UserRole::Eo ? 'EO' : 'Crew' }}
                                         </span>
                                         @if($report->reported->status === \App\Enums\UserStatus::Suspended)
                                             <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700">
@@ -268,131 +273,273 @@
                 </table>
             </div>
 
-            @if($reports->hasPages())
-                <div class="p-4 border-t border-gray-100">
-                    {{ $reports->links() }}
-                </div>
-            @endif
+            <!-- Pagination Bar -->
+            <div class="p-4 border-t border-gray-100">
+                {{ $reports->links() }}
+            </div>
         </x-card>
 
-        <!-- Modal Tindak Lanjuti / Resolusi Laporan (Alpine.js) -->
-        <div x-show="actionModalOpen"
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-xs flex items-center justify-center p-4"
-             style="display: none;"
-             @keydown.escape.window="actionModalOpen = false">
+        <!-- Modal Tindak Lanjuti / Resolusi Laporan (Alpine.js Landscape 2-Column - Compact Anti-Scroll) -->
+        <template x-teleport="body">
+            <div x-show="actionModalOpen"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 z-[9999] overflow-y-auto overscroll-y-contain"
+                 style="display: none;"
+                 @keydown.escape.window="actionModalOpen = false">
 
-            <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative border border-gray-100"
-                 @click.outside="actionModalOpen = false">
-                
-                <!-- Close Button -->
-                <button type="button" @click="actionModalOpen = false" class="absolute top-5 right-5 text-gray-400 hover:text-gray-600 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
+                <!-- Fullscreen Backdrop Dimmer: WAJIB menutupi 100% seluruh layar termasuk Top Navbar dan Sidebar kiri -->
+                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity z-[9999]"
+                     @click="actionModalOpen = false"></div>
 
-                <!-- Modal Header -->
-                <div class="pb-4 border-b border-gray-100">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full"
-                              x-text="'#' + (selectedReport ? selectedReport.ticket_number : '')"></span>
-                        <span class="text-xs text-gray-400" x-text="selectedReport ? selectedReport.created_at : ''"></span>
-                    </div>
-                    <h3 class="text-base font-extrabold text-gray-900 mt-1" x-text="selectedReport ? selectedReport.reason : 'Tindak Lanjuti Laporan'"></h3>
-                </div>
+                <!-- Centering Wrapper: Full viewport overlay dengan safe padding (p-6 sm:p-8 lg:pl-64) -->
+                <div class="fixed inset-0 z-[9999] lg:pl-64 flex items-center justify-center p-6 sm:p-8"
+                     @click.self="actionModalOpen = false">
+                    
+                    <!-- Modal Dialog Card (Landscape 2-Column Compact Proporsional) -->
+                    <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl relative border border-gray-100 flex flex-col max-h-[85vh] max-h-[85dvh] overflow-hidden my-auto"
+                         @click.stop
+                         @click.outside="actionModalOpen = false">
+                        
+                        <form :action="'/admin/reports/' + (selectedReport ? selectedReport.id : '') + '/action'"
+                              method="POST"
+                              @submit="isSubmitting = true"
+                              class="flex flex-col flex-1 min-h-0 overflow-hidden">
+                            @csrf
 
-                <!-- Modal Body: Detail Aduan -->
-                <div class="py-4 space-y-4 text-xs">
-                    <!-- Reporter & Reported Info Box -->
-                    <div class="grid grid-cols-2 gap-3 bg-gray-50 p-3.5 rounded-xl border border-gray-100">
-                        <div>
-                            <span class="text-gray-400 font-medium">Pelapor (Aduan Dari)</span>
-                            <p class="font-bold text-gray-800 text-xs mt-0.5" x-text="selectedReport && selectedReport.reporter ? selectedReport.reporter.name : '-'"></p>
-                            <span class="text-[10px] text-gray-500" x-text="selectedReport && selectedReport.reporter ? selectedReport.reporter.email : ''"></span>
-                        </div>
-                        <div>
-                            <span class="text-gray-400 font-medium">Pihak Terlapor</span>
-                            <p class="font-bold text-rose-700 text-xs mt-0.5" x-text="selectedReport && selectedReport.reported ? selectedReport.reported.name : '-'"></p>
-                            <span class="text-[10px] text-gray-500" x-text="selectedReport && selectedReport.reported ? selectedReport.reported.email : ''"></span>
-                        </div>
-                    </div>
+                            <!-- Modal Header: px-5 py-3.5 -->
+                            <div class="px-5 py-3.5 border-b border-gray-100 bg-white shrink-0 flex items-center justify-between gap-4">
+                                <div class="min-w-0">
+                                    <template x-if="loadingReport">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full">Tindak Lanjuti Laporan</span>
+                                            <h3 class="text-sm sm:text-base font-extrabold text-gray-900 truncate">Memuat Berkas Aduan...</h3>
+                                        </div>
+                                    </template>
 
-                    <!-- Description -->
-                    <div>
-                        <span class="text-gray-400 font-medium">Uraian / Kronologi Kejadian</span>
-                        <div class="mt-1 p-3 bg-gray-50 rounded-xl border border-gray-100 text-gray-700 leading-relaxed max-h-32 overflow-y-auto"
-                             x-text="selectedReport ? selectedReport.description : '-'"></div>
-                    </div>
+                                    <template x-if="!loadingReport && selectedReport">
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[11px] font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full"
+                                                      x-text="'#' + selectedReport.ticket_number"></span>
+                                                <span class="text-[11px] text-gray-400" x-text="selectedReport.created_at"></span>
+                                            </div>
+                                            <h3 class="text-sm sm:text-base font-extrabold text-gray-900 mt-0.5 truncate" x-text="selectedReport.reason"></h3>
+                                        </div>
+                                    </template>
 
-                    <!-- Action Form -->
-                    <form :action="'/admin/reports/' + (selectedReport ? selectedReport.id : '') + '/action'" method="POST" @submit="isSubmitting = true">
-                        @csrf
-
-                        <div class="space-y-3 pt-2">
-                            <label class="block text-xs font-bold text-gray-900">Pilih Keputusan / Tindakan Moderasi</label>
-                            
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <label class="flex items-center gap-2 p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 cursor-pointer transition-colors">
-                                    <input type="radio" name="action" value="in_review" x-model="selectedAction" required class="text-brand-600 focus:ring-brand-500">
-                                    <span class="text-xs font-semibold text-gray-800">Tandai Ditinjau</span>
-                                </label>
-
-                                <label class="flex items-center gap-2 p-2.5 bg-amber-50/60 hover:bg-amber-100/60 rounded-xl border border-amber-200 cursor-pointer transition-colors">
-                                    <input type="radio" name="action" value="warning" x-model="selectedAction" required class="text-amber-600 focus:ring-amber-500">
-                                    <span class="text-xs font-semibold text-amber-900">Beri Peringatan</span>
-                                </label>
-
-                                <label class="flex items-center gap-2 p-2.5 bg-rose-50/60 hover:bg-rose-100/60 rounded-xl border border-rose-200 cursor-pointer transition-colors">
-                                    <input type="radio" name="action" value="suspend" x-model="selectedAction" required class="text-rose-600 focus:ring-rose-500">
-                                    <span class="text-xs font-semibold text-rose-900">Suspend Terlapor</span>
-                                </label>
-
-                                <label class="flex items-center gap-2 p-2.5 bg-emerald-50/60 hover:bg-emerald-100/60 rounded-xl border border-emerald-200 cursor-pointer transition-colors">
-                                    <input type="radio" name="action" value="resolve" x-model="selectedAction" required class="text-emerald-600 focus:ring-emerald-500">
-                                    <span class="text-xs font-semibold text-emerald-900">Selesaikan Laporan</span>
-                                </label>
+                                    <template x-if="!loadingReport && reportError">
+                                        <div>
+                                            <h3 class="text-sm sm:text-base font-extrabold text-rose-600">Gagal Memuat Laporan</h3>
+                                            <p class="text-[11px] text-gray-400 mt-0.5">Silakan gunakan tombol coba lagi di bawah</p>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
 
-                            <label class="flex items-center gap-2 p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 cursor-pointer transition-colors">
-                                <input type="radio" name="action" value="reject" x-model="selectedAction" required class="text-gray-600 focus:ring-gray-500">
-                                <span class="text-xs font-semibold text-gray-700">Tolak Laporan (Aduan Tidak Terbukti / Gugur)</span>
-                            </label>
+                            <!-- Modal Body: p-5 with gap-3 or space-y-3 (Compact fit in 768px viewport) -->
+                            <div class="p-5 overflow-y-auto overscroll-y-contain flex-1 min-h-0 text-xs">
+                                <!-- Circular Spinner Loading State (Reference B) -->
+                                <template x-if="loadingReport">
+                                    <div class="py-12 text-center text-gray-400 my-auto">
+                                        <svg class="w-8 h-8 animate-spin mx-auto text-brand-600 mb-2.5" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                        </svg>
+                                        <p class="text-xs font-medium text-gray-600">Memuat berkas aduan & detail para pihak...</p>
+                                    </div>
+                                </template>
 
-                            <!-- Catatan Moderasi -->
-                            <div class="pt-2">
-                                <label class="block text-xs font-bold text-gray-900 mb-1">Catatan Moderasi / Uraian Keputusan</label>
-                                <textarea name="admin_notes" rows="3"
-                                          placeholder="Tuliskan catatan tindak lanjut atau alasan penolakan..."
-                                          class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors"></textarea>
+                                <!-- Error State with Retry Button -->
+                                <template x-if="!loadingReport && reportError">
+                                    <div class="py-10 px-6 text-center space-y-3.5 my-auto">
+                                        <div class="w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 mx-auto flex items-center justify-center">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-gray-900">Gagal Mengambil Detail Laporan</h4>
+                                            <p class="text-xs text-gray-500 mt-0.5 max-w-sm mx-auto" x-text="reportError"></p>
+                                        </div>
+                                        <div>
+                                            <button type="button" @click="openActionModal(currentReportId)"
+                                                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                                </svg>
+                                                Coba Lagi
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- Loaded Content -->
+                                <template x-if="!loadingReport && !reportError && selectedReport">
+                                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                                    
+                                    <!-- KOLOM KIRI: Informasi Pelapor, Terlapor, & Uraian Kejadian (lg:col-span-5) -->
+                                    <div class="lg:col-span-5 space-y-2.5">
+                                        <!-- Identitas Pelapor & Terlapor Card -->
+                                        <div class="bg-gray-50/80 rounded-xl p-2.5 border border-gray-100 space-y-2">
+                                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                                <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                                </svg>
+                                                Identitas Pihak Terkait
+                                            </div>
+                                            
+                                            <div class="space-y-1.5">
+                                                <!-- Pelapor -->
+                                                <div class="p-2 bg-white rounded-lg border border-gray-100 shadow-2xs">
+                                                    <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Pelapor (Aduan Dari)</span>
+                                                    <p class="font-bold text-gray-900 text-xs mt-0.5 truncate" x-text="selectedReport && selectedReport.reporter ? selectedReport.reporter.name : '-'"></p>
+                                                    <p class="text-[11px] text-gray-500 truncate" x-text="selectedReport && selectedReport.reporter ? selectedReport.reporter.email : ''"></p>
+                                                    <div class="mt-0.5">
+                                                        <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700 uppercase"
+                                                              x-text="selectedReport && selectedReport.reporter ? (selectedReport.reporter.role === 'eo' ? 'Event Organizer' : 'Crew') : '-'"></span>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Terlapor -->
+                                                <div class="p-2 bg-white rounded-lg border border-rose-100 shadow-2xs">
+                                                    <span class="text-[10px] font-semibold text-rose-500 uppercase tracking-wider">Pihak Terlapor</span>
+                                                    <p class="font-bold text-rose-700 text-xs mt-0.5 truncate" x-text="selectedReport && selectedReport.reported ? selectedReport.reported.name : '-'"></p>
+                                                    <p class="text-[11px] text-gray-500 truncate" x-text="selectedReport && selectedReport.reported ? selectedReport.reported.email : ''"></p>
+                                                    <div class="mt-0.5 flex items-center gap-1.5">
+                                                        <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 uppercase"
+                                                              x-text="selectedReport && selectedReport.reported ? (selectedReport.reported.role === 'eo' ? 'Event Organizer' : 'Crew') : '-'"></span>
+                                                        <template x-if="selectedReport && selectedReport.reported && selectedReport.reported.status === 'suspended'">
+                                                            <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-600 text-white">
+                                                                Ditangguhkan
+                                                            </span>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Uraian / Kronologi Kejadian -->
+                                        <div class="bg-gray-50/80 rounded-xl p-2.5 border border-gray-100 space-y-1.5">
+                                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                                <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                Uraian / Kronologi Kejadian
+                                            </span>
+                                            <div class="p-2.5 bg-white rounded-lg border border-gray-100 text-gray-700 leading-relaxed text-xs max-h-24 overflow-y-auto overscroll-y-contain shadow-2xs whitespace-pre-line"
+                                                 x-text="selectedReport ? selectedReport.description : '-'"></div>
+                                        </div>
+
+                                        <!-- Bukti Pendukung (jika ada) -->
+                                        <template x-if="selectedReport && selectedReport.evidence_url">
+                                            <div class="p-2 bg-indigo-50/60 rounded-xl border border-indigo-100 flex items-center justify-between">
+                                                <div class="flex items-center gap-1.5 text-brand-900 text-xs">
+                                                    <svg class="w-3.5 h-3.5 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                                                    </svg>
+                                                    <span class="font-semibold text-[11px]">Bukti Terlampir</span>
+                                                </div>
+                                                <a :href="selectedReport.evidence_url" target="_blank"
+                                                   class="px-2.5 py-1 bg-white hover:bg-brand-50 text-brand-700 font-bold text-[11px] rounded-lg border border-brand-200 transition-colors shadow-2xs inline-flex items-center gap-1">
+                                                    <span>Buka Berkas</span>
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                </a>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- KOLOM KANAN: Pilihan Keputusan & Catatan Moderasi (lg:col-span-7) -->
+                                    <div class="lg:col-span-7 space-y-2.5">
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-900 mb-1.5">Pilih Keputusan / Tindakan Moderasi</label>
+                                            
+                                            <!-- Grid Keputusan Compact 1 Baris Teks -->
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                                <label class="flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-all"
+                                                       :class="selectedAction === 'in_review' ? 'bg-blue-50/80 border-blue-400 ring-1 ring-blue-300' : 'bg-gray-50 hover:bg-gray-100/80 border-gray-200'">
+                                                    <input type="radio" name="action" value="in_review" x-model="selectedAction" required class="text-brand-600 focus:ring-brand-500">
+                                                    <span class="text-xs font-bold text-gray-900 truncate">Investigasi / Ditinjau</span>
+                                                </label>
+
+                                                <label class="flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-all"
+                                                       :class="selectedAction === 'warning' ? 'bg-amber-50/80 border-amber-400 ring-1 ring-amber-300' : 'bg-gray-50 hover:bg-gray-100/80 border-gray-200'">
+                                                    <input type="radio" name="action" value="warning" x-model="selectedAction" required class="text-amber-600 focus:ring-amber-500">
+                                                    <span class="text-xs font-bold text-amber-950 truncate">Beri Peringatan</span>
+                                                </label>
+
+                                                <label class="flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-all"
+                                                       :class="selectedAction === 'suspend' ? 'bg-rose-50/80 border-rose-400 ring-1 ring-rose-300' : 'bg-gray-50 hover:bg-gray-100/80 border-gray-200'">
+                                                    <input type="radio" name="action" value="suspend" x-model="selectedAction" required class="text-rose-600 focus:ring-rose-500">
+                                                    <span class="text-xs font-bold text-rose-950 truncate">Suspend Akun Terlapor</span>
+                                                </label>
+
+                                                <label class="flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-all"
+                                                       :class="selectedAction === 'resolve' ? 'bg-emerald-50/80 border-emerald-400 ring-1 ring-emerald-300' : 'bg-gray-50 hover:bg-gray-100/80 border-gray-200'">
+                                                    <input type="radio" name="action" value="resolve" x-model="selectedAction" required class="text-emerald-600 focus:ring-emerald-500">
+                                                    <span class="text-xs font-bold text-emerald-950 truncate">Selesaikan Laporan</span>
+                                                </label>
+                                            </div>
+
+                                            <label class="flex items-center gap-2 p-2 mt-1.5 rounded-xl border cursor-pointer transition-all"
+                                                   :class="selectedAction === 'reject' ? 'bg-slate-100 border-slate-400 ring-1 ring-slate-300' : 'bg-gray-50 hover:bg-gray-100/80 border-gray-200'">
+                                                <input type="radio" name="action" value="reject" x-model="selectedAction" required class="text-gray-600 focus:ring-gray-500">
+                                                <span class="text-xs font-bold text-gray-800 truncate">Tolak Laporan (Aduan Tidak Terbukti / Gugur)</span>
+                                            </label>
+                                        </div>
+
+                                        <!-- Dampak jika memilih Suspend (Compact Box) -->
+                                        <div x-show="selectedAction === 'suspend'" x-cloak class="p-2.5 bg-rose-50/90 border border-rose-200/80 rounded-xl text-left text-xs text-rose-900 space-y-1 leading-snug shadow-2xs">
+                                            <p class="font-bold flex items-center gap-1.5 text-rose-950 text-[11px]">
+                                                <svg class="w-3.5 h-3.5 shrink-0 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                                Peringatan Dampak Penangguhan Akun Terlapor:
+                                            </p>
+                                            <div class="space-y-0.5 text-[11px] text-rose-800 pl-4 list-disc">
+                                                <p>&bull; <strong>Auto-logout</strong> dan pemblokiran sesi seketika.</p>
+                                                <p>&bull; <strong>Crew:</strong> Pencabutan akses ke riwayat keikutsertaan & sertifikat.</p>
+                                                <p>&bull; <strong>EO:</strong> Pembekuan event operasional dan penguncian NIB.</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Catatan Moderasi: rows="2" -->
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-900 mb-1">Catatan Moderasi / Uraian Keputusan</label>
+                                            <textarea name="admin_notes" rows="2"
+                                                      placeholder="Tuliskan catatan tindak lanjut, instruksi klarifikasi, atau alasan penolakan..."
+                                                      class="w-full p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors leading-relaxed"></textarea>
+                                        </div>
+                                    </div>
+
+                                    </div>
+                                </template>
                             </div>
-                        </div>
 
-                        <!-- Footer Buttons -->
-                        <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end gap-2.5">
-                            <button type="button" @click="actionModalOpen = false" :disabled="isSubmitting"
-                                    class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors">
-                                Batal
-                            </button>
+                            <!-- Modal Footer: px-5 py-3 -->
+                            <div class="px-5 py-3 border-t border-gray-100 bg-gray-50/75 shrink-0 flex items-center justify-end gap-2.5 rounded-b-2xl">
+                                <button type="button" @click="actionModalOpen = false" :disabled="isSubmitting"
+                                        class="px-4 py-2 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors shadow-2xs">
+                                    Batal
+                                </button>
 
-                            <button type="submit" :disabled="isSubmitting"
-                                    class="inline-flex items-center justify-center gap-1.5 px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs">
-                                <svg x-show="isSubmitting" class="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                                </svg>
-                                <span x-text="isSubmitting ? 'Menyimpan...' : 'Terapkan Tindakan'"></span>
-                            </button>
-                        </div>
-                    </form>
+                                <button type="submit" :disabled="isSubmitting || loadingReport || reportError !== null"
+                                        class="inline-flex items-center justify-center gap-1.5 px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <svg x-show="isSubmitting" class="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                    </svg>
+                                    <span x-text="isSubmitting ? 'Menyimpan...' : 'Terapkan Tindakan'"></span>
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
+        </template>
 
     </div>
 
@@ -410,23 +557,44 @@
             return {
                 actionModalOpen: false,
                 isSubmitting: false,
+                loadingReport: false,
+                reportError: null,
+                currentReportId: null,
                 selectedReport: null,
                 selectedAction: 'in_review',
 
                 openActionModal(reportId) {
+                    this.currentReportId = reportId;
+                    this.loadingReport = true;
+                    this.reportError = null;
                     this.selectedReport = null;
                     this.actionModalOpen = true;
 
-                    fetch('/admin/reports/' + reportId)
-                        .then(res => res.json())
-                        .then(res => {
-                            if (res.success) {
-                                this.selectedReport = res.data;
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Failed to load report:', err);
-                        });
+                    fetch('/admin/reports/' + reportId, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Status HTTP ' + res.status);
+                        return res.json();
+                    })
+                    .then(res => {
+                        if (res.success && res.data) {
+                            this.selectedReport = res.data;
+                            this.selectedAction = 'in_review';
+                        } else {
+                            throw new Error(res.message || 'Data laporan tidak ditemukan.');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Failed to load report:', err);
+                        this.reportError = 'Gagal memuat detail laporan. Periksa koneksi Anda dan coba lagi.';
+                    })
+                    .finally(() => {
+                        this.loadingReport = false;
+                    });
                 }
             };
         }

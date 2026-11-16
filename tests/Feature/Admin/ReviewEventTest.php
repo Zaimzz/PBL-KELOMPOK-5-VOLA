@@ -157,8 +157,7 @@ class ReviewEventTest extends TestCase
         $response->assertSessionHas('success');
 
         $this->pendingEvent->refresh();
-        $this->assertEquals(EventStatus::Active, $this->pendingEvent->status);
-        $this->assertNotNull($this->pendingEvent->published_at);
+        $this->assertEquals(EventStatus::AwaitingPayment, $this->pendingEvent->status);
         $this->assertEquals($this->admin->id, $this->pendingEvent->reviewed_by);
         $this->assertNotNull($this->pendingEvent->reviewed_at);
 
