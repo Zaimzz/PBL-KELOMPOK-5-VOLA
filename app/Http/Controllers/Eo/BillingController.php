@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Payment;
 use App\Support\PublicationPackage;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -78,15 +79,8 @@ class BillingController extends Controller
                 $statusFilter = 'all';
             }
 
-            // Auto-expire: mark overdue pending payments as expired before querying
-            $eoEventIds = $events->pluck('id');
-            Payment::whereIn('event_id', $eoEventIds)
-                ->where('status', PaymentStatus::Pending)
-                ->whereNotNull('expired_at')
-                ->where('expired_at', '<', now())
-                ->update(['status' => PaymentStatus::Expired]);
-
             // Build query scoped to this EO's events only
+            $eoEventIds = $events->pluck('id');
             $operator = DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
 
             $query = Payment::with(['event'])
@@ -277,8 +271,7 @@ class BillingController extends Controller
     }
 
     /**
-     * Download / print-ready HTML invoice for a single payment.
-     * Uses the same printable template approach as the Admin TransactionController.
+     * Download the invoice as a real PDF file for a single payment.
      */
     public function downloadInvoice(Request $request, Payment $payment): Response
     {
@@ -287,9 +280,8 @@ class BillingController extends Controller
 
         $package = PublicationPackage::find($payment->package_name ?? '');
 
-        return response()->view('eo.billing.invoice-pdf', compact('payment', 'package'))
-            ->header('Content-Type', 'text/html')
-            ->header('Content-Disposition', 'inline; filename="Invoice-'.$payment->invoice_number.'.html"');
+        return Pdf::loadView('eo.billing.invoice-pdf', compact('payment', 'package'))
+            ->download('Invoice-'.$payment->invoice_number.'.pdf');
     }
 
     /**
