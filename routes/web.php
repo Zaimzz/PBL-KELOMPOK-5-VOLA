@@ -70,7 +70,7 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     Route::post('/profile/documents/upload', [CrewProfileController::class, 'uploadDocument'])->name('profile.documents.upload');
     Route::delete('/profile/documents/{type}', [CrewProfileController::class, 'deleteDocument'])->name('profile.documents.delete');
 
-     // Settings
+    // Settings
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings/email', [SettingsController::class, 'updateEmail'])->name('settings.update.email');
     Route::put('/settings/phone', [SettingsController::class, 'updatePhone'])->name('settings.update.phone');
@@ -138,6 +138,10 @@ Route::middleware(['auth', 'verified', 'role:eo'])
         Route::post('/events', [EventController::class, 'store'])
             ->name('events.store');
 
+        Route::get('/events/{event}', [EventController::class, 'show'])
+            ->whereNumber('event')
+            ->name('events.show');
+
         Route::get('/events/{event}/edit', [EventController::class, 'edit'])
             ->name('events.edit');
 
@@ -148,7 +152,14 @@ Route::middleware(['auth', 'verified', 'role:eo'])
             ->name('events.destroy');
 
         Route::post('/events/{event}/submit', [EventController::class, 'submit'])
+            ->middleware('eo.verified')
             ->name('events.submit');
+
+        Route::post('/events/{event}/close', [EventController::class, 'close'])
+            ->name('events.close');
+
+        Route::post('/events/{event}/finish', [EventController::class, 'finish'])
+            ->name('events.finish');
 
         Route::post('/events/{event}/positions', [EventPositionController::class, 'store'])
             ->name('events.positions.store');

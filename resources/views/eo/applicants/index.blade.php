@@ -410,18 +410,7 @@
                                                 </form>
 
                                             @elseif ($statusValue === 'rejected')
-                                                {{-- Reconsider: accept again --}}
-                                                <form method="POST"
-                                                      action="{{ route('eo.applicants.accept', $application) }}"
-                                                      x-data
-                                                      x-on:submit.prevent="if(confirm('Terima ulang pendaftaran {{ addslashes($user?->name ?? 'relawan ini') }}?')) $el.submit()">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit"
-                                                            class="px-3 py-1.5 bg-brand-50 text-brand-600 text-xs font-medium rounded-lg border border-brand-200 hover:bg-brand-100 transition-colors">
-                                                        Tinjau Ulang
-                                                    </button>
-                                                </form>
+                                                <span class="text-xs text-gray-400 italic">Keputusan final</span>
 
                                             @elseif ($statusValue === 'withdrawn')
                                                 <span class="text-xs text-gray-400 italic">Dicabut oleh relawan</span>
@@ -442,7 +431,7 @@
                                                          x-transition:enter-end="opacity-100 scale-100">
                                                         <h3 class="text-lg font-semibold text-gray-900 mb-1">Tolak Pendaftar</h3>
                                                         <p class="text-sm text-gray-500 mb-4">
-                                                            Anda akan menolak pendaftaran <strong>{{ $user?->name }}</strong>. Tindakan ini dapat dibatalkan kemudian.
+                                                            Anda akan menolak pendaftaran <strong>{{ $user?->name }}</strong>. Tindakan ini tidak dapat dibatalkan.
                                                         </p>
                                                         <form method="POST" action="{{ route('eo.applicants.reject', $application) }}">
                                                             @csrf

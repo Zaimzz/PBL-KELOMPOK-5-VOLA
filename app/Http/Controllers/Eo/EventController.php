@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Eo;
 
 use App\Enums\EventStatus;
-use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Eo\StoreEventRequest;
 use App\Http\Requests\Eo\UpdateEventRequest;
@@ -47,6 +46,18 @@ class EventController extends Controller
         $events = $query->orderByDesc('created_at')->paginate(12);
 
         return view('eo.events.index', compact('events', 'organizerProfile', 'statusFilter'));
+    }
+
+    /**
+     * Display a read-only detail page for the EO's event.
+     */
+    public function show(Request $request, Event $event): View
+    {
+        Gate::authorize('view', $event);
+
+        $event->load(['category', 'positions']);
+
+        return view('eo.events.show', compact('event'));
     }
 
     /**
@@ -208,26 +219,38 @@ class EventController extends Controller
     }
 
     /**
+     * Close event registration.
+     * Transitions: active → closed
+     */
+    public function close(Event $event): RedirectResponse
+    {
+        Gate::authorize('close', $event);
+
+        $event->update(['status' => EventStatus::Closed]);
+
+        return back()->with('success', 'Pendaftaran event berhasil ditutup.');
+    }
+
+    /**
+     * Mark the event as finished.
+     * Transitions: active|closed → finished
+     */
+    public function finish(Event $event): RedirectResponse
+    {
+        Gate::authorize('finish', $event);
+
+        $event->update(['status' => EventStatus::Finished]);
+
+        return back()->with('success', 'Event berhasil ditandai selesai.');
+    }
+
+    /**
      * Submit event for admin review.
      * Transitions: draft → pending_review
      */
     public function submit(Request $request, Event $event): RedirectResponse
     {
         Gate::authorize('submit', $event);
-
-        $user = $request->user();
-        $organizerProfile = $user->organizerProfile;
-
-        // Check EO verification status
-        if (
-            ! $organizerProfile ||
-            $organizerProfile->verification_status !== VerificationStatus::Verified
-        ) {
-            return back()->with(
-                'error',
-                'Akun Anda belum terverifikasi oleh admin. Anda tidak dapat mengirim event untuk direview.'
-            );
-        }
 
         // Validate event status
         if (! in_array($event->status, [EventStatus::Draft, EventStatus::Rejected], true)) {

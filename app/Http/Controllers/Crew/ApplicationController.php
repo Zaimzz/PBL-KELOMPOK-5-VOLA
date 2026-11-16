@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Crew;
 
 use App\Enums\ApplicationStatus;
+use App\Enums\EventStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Models\EventPosition;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -94,6 +96,17 @@ class ApplicationController extends Controller
 
         if (! $profile) {
             return response()->json(['success' => false, 'message' => 'Profil volunteer belum lengkap.'], 400);
+        }
+
+        $position = EventPosition::with('event')->findOrFail($validated['position_id']);
+        $event = $position->event;
+
+        if (! $event || $event->status !== EventStatus::Active) {
+            return response()->json(['success' => false, 'message' => 'Event ini sedang tidak menerima pendaftaran.'], 422);
+        }
+
+        if ($event->registration_deadline && $event->registration_deadline->lt(today())) {
+            return response()->json(['success' => false, 'message' => 'Batas pendaftaran event ini sudah lewat.'], 422);
         }
 
         $exists = Application::where('volunteer_profile_id', $profile->id)

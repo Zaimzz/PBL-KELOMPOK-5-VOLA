@@ -7,6 +7,7 @@ use App\Models\EventCategory;
 use App\Models\EventPosition;
 use App\Models\OrganizerProfile;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 // ============================================================
 // Event Positions CRUD
@@ -159,10 +160,24 @@ test('eo belum verified tidak bisa submit event', function () {
 
     $this->actingAs($eo)
         ->post(route('eo.events.submit', $event))
-        ->assertRedirect();
+        ->assertRedirect(route('eo.dashboard'))
+        ->assertSessionHas('error');
 
     // Status harus tetap draft
     expect($event->fresh()->status)->toBe(EventStatus::Draft);
+});
+
+test('event policy menolak submit untuk EO belum terverifikasi', function () {
+    $eo = User::factory()->eo()->create();
+    $profile = OrganizerProfile::factory()->create([
+        'user_id' => $eo->id,
+        'verification_status' => VerificationStatus::Pending,
+    ]);
+    $event = Event::factory()->for($profile, 'organizer')->create([
+        'status' => EventStatus::Draft,
+    ]);
+
+    expect(Gate::forUser($eo)->allows('submit', $event))->toBeFalse();
 });
 
 test('tidak bisa submit event tanpa posisi', function () {

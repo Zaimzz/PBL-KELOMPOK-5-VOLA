@@ -28,7 +28,7 @@
             @endif
         </div>
 
-        @if (in_array($event->status->value, ['draft', 'rejected']))
+        @can('submit', $event)
             <form action="{{ route('eo.events.submit', $event) }}" method="POST">
                 @csrf
                 <button type="submit"
@@ -40,7 +40,7 @@
                     {{ $event->status->value === 'rejected' ? 'Submit Ulang untuk Review' : 'Kirim untuk Review' }}
                 </button>
             </form>
-        @endif
+        @endcan
     </div>
 
     @php $isLocked = ! in_array($event->status->value, ['draft', 'rejected']); @endphp
@@ -423,7 +423,7 @@
             </x-card>
 
             {{-- Danger Zone (delete) --}}
-            @if (in_array($event->status->value, ['draft', 'rejected']))
+            @can('delete', $event)
                 <x-card>
                     <h3 class="text-sm font-semibold text-red-700 mb-2">Zona Berbahaya</h3>
                     <p class="text-xs text-gray-500 mb-3">Menghapus event ini bersifat permanen dan tidak dapat dibatalkan.</p>
@@ -437,7 +437,7 @@
                         </button>
                     </form>
                 </x-card>
-            @endif
+            @endcan
         </div>
     </div>
 
