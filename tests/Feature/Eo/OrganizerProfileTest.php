@@ -1,5 +1,4 @@
 <?php
-
 use App\Enums\EventStatus;
 use App\Enums\VerificationStatus;
 use App\Models\Event;
