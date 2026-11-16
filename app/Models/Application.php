@@ -12,8 +12,17 @@ class Application extends Model
     use HasFactory;
 
     protected $fillable = [
-        'volunteer_profile_id', 'position_id', 'status', 'cover_letter',
-        'applied_at', 'decided_at', 'decision_note',
+        'volunteer_profile_id',
+        'event_id',
+        'position_id',
+        'motivation',
+        'experience',
+        'availability',
+        'cover_letter',
+        'status',
+        'applied_at',
+        'decided_at',
+        'decision_note',
     ];
 
     protected function casts(): array
@@ -33,5 +42,10 @@ class Application extends Model
     public function position(): BelongsTo
     {
         return $this->belongsTo(EventPosition::class, 'position_id');
+    }
+
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(Event::class);
     }
 }

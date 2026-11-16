@@ -131,6 +131,7 @@
                     <span x-show="activeTab === 'ongoing'">Tidak Ada Event Berlangsung</span>
                     <span x-show="activeTab === 'completed'">Belum Ada Riwayat Event</span>
                 </h3>
+
             </div>
         </template>
     </div>

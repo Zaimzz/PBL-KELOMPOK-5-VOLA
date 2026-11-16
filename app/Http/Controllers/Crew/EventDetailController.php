@@ -5,27 +5,28 @@ namespace App\Http\Controllers\Crew;
 use App\Enums\EventStatus;
 use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Event;
 use App\Models\Application;
+use App\Models\Event;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class EventDetailController extends Controller
 {
     private const CATEGORY_IMAGES = [
-        'festival'  => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800',
-        'seminar'   => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
-        'musik'     => 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800',
-        'olahraga'  => 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
-        'sosial'    => 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800',
-        'kampus'    => 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800',
+        'festival' => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800',
+        'seminar' => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
+        'musik' => 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800',
+        'olahraga' => 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
+        'sosial' => 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800',
+        'kampus' => 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800',
         'komunitas' => 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800',
-        'umum'      => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800',
+        'umum' => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800',
     ];
 
     private function getImageByCategory(?string $category): string
     {
         $key = strtolower(trim($category ?? 'umum'));
+
         return self::CATEGORY_IMAGES[$key] ?? self::CATEGORY_IMAGES['umum'];
     }
 
@@ -37,7 +38,7 @@ class EventDetailController extends Controller
             ->where('status', EventStatus::Active)
             ->find($eventNum);
 
-        if (!$dbEvent) {
+        if (! $dbEvent) {
             abort(404, 'Event tidak ditemukan');
         }
 
@@ -77,6 +78,7 @@ class EventDetailController extends Controller
             'id' => $dbEvent->id, 'title' => $dbEvent->title, 'category' => $categoryName, 'filter_category' => $categoryName,
             'organizer' => $orgName, 'organizer_abbr' => $orgAbbr ?: 'ORG', 'organizer_type' => $organizer?->organization_type ?? 'Penyelenggara Event',
             'organizer_desc' => $organizer?->description ?? 'Penyelenggara event di Indonesia.', 'organizer_verified' => $isVerified,
+            'organizer_user_id' => $organizer?->user_id,
             'status' => 'Open Volunteer', 'status_badge' => 'Open Volunteer', 'status_badge_type' => 'success',
             'days_left' => $daysLeft, 'date' => $dateFormatted, 'date_duration' => $dateDuration, 'shift_time' => $shiftTime,
             'shift_note' => 'Termasuk Rotasi Istirahat', 'location' => $location, 'location_city' => $locationCity,

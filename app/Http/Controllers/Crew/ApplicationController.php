@@ -2,129 +2,220 @@
 
 namespace App\Http\Controllers\Crew;
 
+use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Application;
+use App\Models\EventPosition;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class ApplicationController extends Controller
 {
-    private function getDummyApplications(): array
-    {
-        return [
-            [
-                'id' => 1, 'event_id' => 1, 'event_title' => 'Indonesia Comic & Pop Culture Con 2025',
-                'event_organizer' => 'PT Pop Media Nusantara', 'event_category' => 'Festival',
-                'position' => 'Liaison Officer (LO) Bintang Tamu', 'location' => 'JCC Senayan, Jakarta',
-                'status' => 'accepted', 'status_label' => 'Diterima', 'applied_at' => '24 April 2025',
-                'message' => 'Selamat! Kamu lolos seleksi berkas & wawancara.', 'message_type' => 'success', 'can_cancel' => false,
-            ],
-            [
-                'id' => 2, 'event_id' => 16, 'event_title' => 'Bandung Creative Tech Summit 2025',
-                'event_organizer' => 'Bandung Digital Hub', 'event_category' => 'Seminar',
-                'position' => 'Usher & Registrasi Tamu VIP', 'location' => 'Sabuga ITB, Bandung',
-                'status' => 'pending', 'status_label' => 'Menunggu Seleksi', 'applied_at' => '26 April 2025',
-                'message' => 'Berkas telah terkirim dan sedang menunggu kurasi awal panitia.', 'message_type' => 'warning', 'can_cancel' => true,
-            ],
-        ];
-    }
-
     public function index(): View
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $profile = $user?->volunteerProfile;
 
+        $applications = [];
+
         if ($profile) {
-            $dbApplications = Application::with(['position.event.category', 'position.event.organizer'])
+            $rawApplications = Application::query()
                 ->where('volunteer_profile_id', $profile->id)
-                ->orderByDesc('applied_at')
+                ->with(['position.event.organizer', 'position.event.category', 'event.organizer', 'event.category'])
+                ->latest('applied_at')
+                ->latest('id')
                 ->get();
 
-            if ($dbApplications->isNotEmpty()) {
-                $applications = $dbApplications->map(function ($app) {
-                    $event = $app->position?->event;
-                    $statusLabels = [
-                        'pending' => ['label' => 'Menunggu Seleksi', 'type' => 'warning', 'msg' => 'Berkas sedang ditinjau oleh panitia.'],
-                        'processing' => ['label' => 'Sedang Diproses', 'type' => 'info', 'msg' => 'Berkas sedang dalam tahap wawancara/verifikasi.'],
-                        'accepted' => ['label' => 'Diterima', 'type' => 'success', 'msg' => 'Selamat! Kamu lolos seleksi. Silakan cek detail di menu Event Saya.'],
-                        'rejected' => ['label' => 'Tidak Lolos', 'type' => 'error', 'msg' => 'Maaf, kamu belum lolos seleksi untuk posisi ini.'],
-                        'cancelled' => ['label' => 'Dibatalkan', 'type' => 'error', 'msg' => 'Lamaran telah dibatalkan.'],
-                    ];
-                    $st = $statusLabels[$app->status->value] ?? $statusLabels['pending'];
+            $applications = $rawApplications->map(function (Application $app) {
+                $position = $app->position;
+                $event = $app->event ?? $position?->event;
+                $organizer = $event?->organizer;
+                $category = $event?->category;
 
-                    return [
-                        'id' => $app->id,
-                        'event_id' => $event?->id,
-                        'event_title' => $event?->title ?? 'Event Tidak Ditemukan',
-                        'event_organizer' => $event?->organizer?->organization_name ?? '-',
-                        'event_category' => $event?->category?->name ?? 'Umum',
-                        'position' => $app->position?->name ?? '-',
-                        'location' => $event?->location ?? '-',
-                        'status' => $app->status->value,
-                        'status_label' => $st['label'],
-                        'applied_at' => $app->applied_at?->translatedFormat('d F Y') ?? '-',
-                        'message' => $st['msg'],
-                        'message_type' => $st['type'],
-                        'can_cancel' => in_array($app->status->value, ['pending', 'processing']),
-                    ];
-                })->toArray();
-            } else {
-                $applications = $this->getDummyApplications();
-            }
-        } else {
-            $applications = $this->getDummyApplications();
+                $statusVal = $app->status instanceof ApplicationStatus
+                    ? $app->status->value
+                    : (string) $app->status;
+
+                $statusLabel = match ($statusVal) {
+                    'accepted' => 'Diterima',
+                    'rejected' => 'Tidak Lolos',
+                    'processing' => 'Sedang Diproses',
+                    'withdrawn' => 'Dibatalkan',
+                    default => 'Menunggu Seleksi',
+                };
+
+                $messageType = match ($statusVal) {
+                    'accepted' => 'success',
+                    'rejected', 'withdrawn' => 'error',
+                    'processing' => 'info',
+                    default => 'warning',
+                };
+
+                if (! empty($app->decision_note)) {
+                    $message = $app->decision_note;
+                } else {
+                    $message = match ($statusVal) {
+                        'accepted' => 'Selamat! Kamu lolos seleksi berkas & pendaftaran volunteer. Silakan cek detail di menu Event Saya.',
+                        'rejected' => 'Kuota telah terpenuhi atau kriteria belum sesuai. Terima kasih atas partisipasi dan antusiasme kamu.',
+                        'processing' => 'Lamaran kamu sedang dalam tahap kurasi/seleksi lanjutan panitia.',
+                        'withdrawn' => 'Lamaran telah dibatalkan.',
+                        default => 'Berkas telah terkirim dan sedang menunggu kurasi awal panitia.',
+                    };
+                }
+
+                $appliedAt = $app->applied_at ?? $app->created_at;
+                $appliedAtFormatted = $appliedAt ? $appliedAt->translatedFormat('d F Y') : '-';
+
+                $locationParts = array_filter([$event?->location, $event?->city]);
+                $location = ! empty($locationParts) ? implode(', ', $locationParts) : 'Lokasi belum ditentukan';
+
+                return [
+                    'id' => $app->id,
+                    'event_id' => $event?->id,
+                    'event_title' => $event?->title ?? 'Event Tidak Ditemukan',
+                    'event_organizer' => $organizer?->organization_name ?? 'Penyelenggara Event',
+                    'event_category' => $category?->name ?? 'Kategori Umum',
+                    'position' => $position?->name ?? 'Posisi Relawan',
+                    'location' => $location,
+                    'status' => $statusVal,
+                    'status_label' => $statusLabel,
+                    'applied_at' => $appliedAtFormatted,
+                    'message' => $message,
+                    'message_type' => $messageType,
+                ];
+            })->toArray();
         }
 
         return view('crew.applications', compact('applications'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse|RedirectResponse
     {
-        $validated = $request->validate([
-            'position_id' => 'required|integer|exists:event_positions,id',
-            'motivation' => 'required|string|min:10',
-            'experience' => 'nullable|string',
-        ]);
-
-        $user = auth()->user();
+        $user = Auth::user();
         $profile = $user?->volunteerProfile;
 
-        if (!$profile) {
-            return response()->json(['success' => false, 'message' => 'Profil volunteer belum lengkap.'], 400);
+        if (! $profile) {
+            $msg = 'Anda harus melengkapi profil volunteer terlebih dahulu.';
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $msg,
+                ], 422);
+            }
+
+            return back()->withErrors(['profile' => $msg]);
         }
 
-        $exists = Application::where('volunteer_profile_id', $profile->id)
-            ->where('position_id', $validated['position_id'])
-            ->whereIn('status', ['pending', 'processing', 'accepted'])
-            ->exists();
+        $request->validate([
+            'position_id' => 'required|exists:event_positions,id',
+            'motivation' => 'required|string|min:20',
+            'experience' => 'nullable|string',
+            'availability' => 'nullable|string',
+        ]);
 
-        if ($exists) {
-            return response()->json(['success' => false, 'message' => 'Anda sudah melamar untuk posisi ini.'], 409);
+        $position = EventPosition::with('event')->findOrFail($request->position_id);
+
+        $existing = Application::where('volunteer_profile_id', $profile->id)
+            ->where('position_id', $position->id)
+            ->first();
+
+        if ($existing) {
+            $msg = 'Anda sudah mengajukan lamaran untuk posisi ini.';
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $msg,
+                ], 422);
+            }
+
+            return back()->withErrors(['position_id' => $msg]);
         }
 
-        $application = Application::create([
+        Application::create([
             'volunteer_profile_id' => $profile->id,
-            'position_id' => $validated['position_id'],
-            'cover_letter' => $validated['motivation'],
-            'status' => 'pending',
+            'event_id' => $position->event_id,
+            'position_id' => $position->id,
+            'status' => ApplicationStatus::Pending,
+            'motivation' => $request->motivation,
+            'experience' => $request->experience,
+            'availability' => $request->availability,
+            'cover_letter' => $request->motivation,
             'applied_at' => now(),
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Lamaran berhasil diajukan! Silakan pantau status di menu "Lamaran Saya".',
-            'application_id' => $application->id,
+        $successMsg = 'Lamaran berhasil diajukan! Menunggu review dari EO.';
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $successMsg,
+            ]);
+        }
+
+        return redirect()->route('applications.index')->with('success', $successMsg);
+    }
+
+    public function downloadAcceptanceLetter(int $id)
+    {
+        $user = Auth::user();
+        $profile = $user?->volunteerProfile;
+
+        if (! $profile) {
+            abort(403);
+        }
+
+        $application = Application::where('volunteer_profile_id', $profile->id)
+            ->where('id', $id)
+            ->with(['position.event.organizer', 'position.event.category', 'event.organizer', 'event.category'])
+            ->firstOrFail();
+
+        $statusVal = $application->status instanceof ApplicationStatus
+            ? $application->status->value
+            : (string) $application->status;
+
+        if ($statusVal !== 'accepted') {
+            return back()->withErrors(['error' => 'Bukti penerimaan hanya tersedia untuk lamaran yang diterima.']);
+        }
+
+        $position = $application->position;
+        $event = $application->event ?? $position?->event;
+        $organizer = $event?->organizer;
+        $category = $event?->category;
+
+        $appliedAt = $application->applied_at ?? $application->created_at;
+        $appliedAtFormatted = $appliedAt ? $appliedAt->translatedFormat('d F Y') : '-';
+
+        $locationParts = array_filter([$event?->location, $event?->city]);
+        $location = ! empty($locationParts) ? implode(', ', $locationParts) : 'Lokasi belum ditentukan';
+
+        $applicationData = [
+            'id' => $application->id,
+            'event_title' => $event?->title ?? 'Event',
+            'event_organizer' => $organizer?->organization_name ?? 'Panitia Event',
+            'position' => $position?->name ?? 'Volunteer',
+            'event_category' => $category?->name ?? 'Umum',
+            'location' => $location,
+            'applied_at' => $appliedAtFormatted,
+        ];
+
+        $displayName = $user->name ?? 'Volunteer';
+
+        $pdf = Pdf::loadView('crew.bukti-penerimaan', [
+            'application' => $applicationData,
+            'displayName' => $displayName,
         ]);
+        $pdf->setPaper('A4', 'landscape');
+
+        $filename = 'Bukti-Penerimaan-'.str_replace(' ', '-', $event?->title ?? 'Event').'-'.str_replace(' ', '-', $displayName).'.pdf';
+
+        return $pdf->download($filename);
     }
 
-    public function downloadAcceptanceLetter($id)
+    public function downloadCertificate(int $id): RedirectResponse
     {
-        abort(404, 'Fitur dalam pengembangan');
-    }
-
-    public function downloadCertificate($id)
-    {
-        abort(404, 'Fitur dalam pengembangan');
+        return redirect()->route('history.downloadCertificate', ['id' => $id]);
     }
 }

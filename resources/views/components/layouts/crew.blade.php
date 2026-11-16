@@ -137,7 +137,7 @@
                         },
 
                         async fetchNotifications() {
-                            this.isLoading = true; // Mulai loading
+                            this.isLoading = true; 
                             try {
                                 const res = await fetch('{{ route("api.notifications.index") }}');
                                 if (res.ok) {
@@ -146,7 +146,7 @@
                             } catch (err) {
                                 console.error('Gagal memuat notifikasi:', err);
                             } finally {
-                                this.isLoading = false; // Selesai loading (baik sukses atau gagal)
+                                this.isLoading = false; 
                             }
                         },
 
