@@ -9,6 +9,7 @@ use App\Http\Requests\Eo\StoreEventRequest;
 use App\Http\Requests\Eo\UpdateEventRequest;
 use App\Models\Event;
 use App\Models\EventCategory;
+use App\Models\PositionType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -130,7 +131,24 @@ class EventController extends Controller
         $categories = EventCategory::orderBy('name')->get();
         $event->load('positions');
 
-        return view('eo.events.edit', compact('event', 'categories'));
+        $positionCatalog = PositionType::active()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->groupBy('category')
+            ->map(fn ($types, $category): array => [
+                'name' => $category,
+                'positions' => $types->map(fn (PositionType $type): array => [
+                    'id' => $type->id,
+                    'name' => $type->name,
+                    'description' => (string) $type->default_description,
+                    'requirements' => (string) $type->default_requirements,
+                ])->values()->all(),
+            ])
+            ->values()
+            ->all();
+
+        return view('eo.events.edit', compact('event', 'categories', 'positionCatalog'));
     }
 
     /**
