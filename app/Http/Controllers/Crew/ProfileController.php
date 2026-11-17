@@ -15,11 +15,11 @@ class ProfileController extends Controller
         $user = Auth::user();
         $profile = $user->volunteerProfile;
         $skills = is_array($profile?->skills) ? $profile->skills : [];
-        
+
         $availableSkills = [
             'Liaison Officer (LO)', 'Dokumentasi & Media', 'Registrasi & Ticketing',
             'Stage Crew', 'Keamanan / Security', 'Konsumsi & Logistik',
-            'MC / Host', 'Desain Grafis', 'Videografer', 'First Aid / Medis'
+            'MC / Host', 'Desain Grafis', 'Videografer', 'First Aid / Medis',
         ];
 
         return view('crew.profile', compact('user', 'profile', 'skills', 'availableSkills'));
@@ -31,12 +31,12 @@ class ProfileController extends Controller
         $profile = $user->volunteerProfile;
 
         $cities = [
-            'Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Semarang', 
+            'Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Semarang',
             'Makassar', 'Palembang', 'Tangerang', 'Depok', 'Yogyakarta',
             'Malang', 'Bekasi', 'Batam', 'Pekanbaru', 'Denpasar',
             'Samarinda', 'Balikpapan', 'Pontianak', 'Manado', 'Padang',
             'Lampung', 'Jambi', 'Banjarmasin', 'Mataram', 'Kupang',
-            'Jayapura', 'Ambon', 'Sorong', 'Ternate', 'Banda Aceh'
+            'Jayapura', 'Ambon', 'Sorong', 'Ternate', 'Banda Aceh',
         ];
 
         return view('crew.profile-edit', compact('user', 'profile', 'cities'));
@@ -92,7 +92,7 @@ class ProfileController extends Controller
         $selectedSkills = $request->input('skills', []);
         $customSkill = trim($request->input('custom_skill'));
 
-        if (!empty($customSkill)) {
+        if (! empty($customSkill)) {
             $selectedSkills[] = $customSkill;
         }
 
@@ -110,7 +110,7 @@ class ProfileController extends Controller
     {
         $request->validate([
             'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'type' => 'required|in:cv_path,portfolio_path'
+            'type' => 'required|in:cv_path,portfolio_path',
         ]);
 
         $user = Auth::user();
@@ -130,15 +130,15 @@ class ProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'url' => asset('storage/' . $path),
+            'url' => Storage::disk('public')->url($path),
             'filename' => $originalName,
-            'message' => 'File berhasil diunggah!'
+            'message' => 'File berhasil diunggah!',
         ]);
     }
 
     public function deleteDocument(string $type)
     {
-        if (!in_array($type, ['cv_path', 'portfolio_path'])) {
+        if (! in_array($type, ['cv_path', 'portfolio_path'])) {
             abort(400, 'Tipe dokumen tidak valid.');
         }
 

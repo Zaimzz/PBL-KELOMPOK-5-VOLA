@@ -27,8 +27,8 @@
     }
 
     $displayAvatar = null;
-    if ($profile && $profile->photo_path) {
-        $displayAvatar = \Illuminate\Support\Facades\Storage::disk('public')->url($profile->photo_path);
+    if ($profile && $profile->photo_url) {
+        $displayAvatar = $profile->photo_url;
     } elseif ($authUser?->avatar_path) {
         $displayAvatar = filter_var($authUser->avatar_path, FILTER_VALIDATE_URL)
             ? $authUser->avatar_path
