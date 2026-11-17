@@ -16,118 +16,195 @@
 </head>
 <body class="vola-landing">
 
-    <header class="vola-navbar">
-        <div class="vola-container vola-nav-inner">           
-            <a href="{{ route('home') }}#beranda"
-            class="vola-brand"
-            aria-label="VOLA - Beranda">
-                VOLA<span>.</span>
-            </a>
+<header class="vola-navbar">
+    <div class="vola-container vola-nav-inner">
 
-            <nav class="vola-nav-links" id="volaNavLinks">
-                <a href="#beranda" class="is-active">Beranda</a>
-                <a href="#event">Cari Event</a>
-                <a href="#tentang">Tentang Kami</a>
-            </nav>
+        <a href="{{ route('home') }}#beranda"
+           class="vola-brand"
+           aria-label="VOLA - Beranda">
+            VOLA<span>.</span>
+        </a>
 
-            <div class="vola-nav-actions">
-                @auth
-                    <a href="{{ route('profile.edit') }}"
-                       class="vola-btn vola-btn-primary vola-btn-small">
-                        Profil Saya
-                    </a>
-                @else
-                    <a href="{{ route('login') }}" class="vola-login-link">
-                        Masuk
-                    </a>
-                    <a href="{{ route('register') }}"
-                       class="vola-btn vola-btn-primary vola-btn-small">
-                        Daftar
-                    </a>
-                @endauth
-            </div>
 
-            <button type="button"
-                    class="vola-menu-toggle"
-                    id="volaMenuToggle"
-                    aria-label="Buka menu"
-                    aria-expanded="false"
-                    aria-controls="volaNavLinks">
-                ☰
-            </button>
+        <nav class="vola-nav-links" id="volaNavLinks">
+            <a href="#beranda" class="is-active">Beranda</a>
+            <a href="#tentang">Tentang Kami</a>
+            <a href="#event">Cari Event</a>
+            <a href="#cerita">Kisah</a>
+        </nav>
+
+        <div class="vola-nav-actions">
+            @auth
+                <a href="{{ match(auth()->user()->role) {
+                    \App\Enums\UserRole::Admin => route('admin.dashboard'),
+                    \App\Enums\UserRole::Eo => route('eo.dashboard'),
+                    default => route('profile.edit')
+                } }}"
+                   class="vola-btn vola-btn-primary vola-btn-small">
+                    {{ auth()->user()->role === \App\Enums\UserRole::Volunteer
+                        ? 'Profil Saya'
+                        : 'Dashboard' }}
+                </a>
+            @else
+                <a href="{{ route('login') }}" class="vola-login-link">
+                    Masuk
+                </a>
+
+                <a href="{{ route('register') }}"
+                   class="vola-btn vola-btn-primary vola-btn-small">
+                    Daftar
+                </a>
+            @endauth
         </div>
-    </header>
 
-    <main>
-        <section class="vola-hero" id="beranda">
-            <div class="vola-container vola-hero-grid">
+        <button type="button"
+                class="vola-menu-toggle"
+                id="volaMenuToggle"
+                aria-label="Buka menu"
+                aria-expanded="false"
+                aria-controls="volaNavLinks">
+            ☰
+        </button>
+    </div>
+</header>
 
-                <div class="vola-hero-content">
-                    <span class="vola-eyebrow">
-                        <span aria-hidden="true">✦</span>
-                        Find. Join. Contribute.
-                    </span>
+<main>
+    <section class="vola-hero" id="beranda">
+        <div class="vola-container vola-hero-grid">
 
-                    <h1>
-                        Temukan Event,<br>
-                        Bangun <span>Pengalamanmu.</span>
-                    </h1>
+            <!-- HERO CONTENT -->
+            <div class="vola-hero-content">
+                <span class="vola-eyebrow">
+                    <span aria-hidden="true">✦</span>
+                    Find. Join. Contribute.
+                </span>
 
-                    <p class="vola-hero-description">
-                        Platform yang menghubungkan mahasiswa dengan peluang
-                        volunteer event, serta membantu Event Organizer
-                        menemukan kru lapangan terbaik.
-                    </p>
+                <h1>
+                    Temukan Event,<br>
+                    Bangun <span>Pengalamanmu.</span>
+                </h1>
 
-                    <div class="vola-hero-actions">
-                        <a href="#event"
-                           class="vola-btn vola-btn-primary">
-                            Cari Event Sekarang <span>→</span>
-                        </a>
+                <p class="vola-hero-description">
+                    Platform yang menghubungkan mahasiswa dengan peluang
+                    volunteer event, serta membantu Event Organizer
+                    menemukan kru lapangan terbaik.
+                </p>
 
-                        <a href="{{ route('register') }}"
-                           class="vola-btn vola-btn-outline">
-                            <span>⊕</span> Buat Event (Untuk EO)
-                        </a>
-                    </div>
+                <div class="vola-hero-actions">
+                    <a href="#event" class="vola-btn vola-btn-primary">
+                        Cari Event Sekarang <span>→</span>
+                    </a>
 
-                    <div class="vola-stats">
-                        <div class="vola-stat">
-                            <strong>50+ Event</strong>
-                            <span>Kampus</span>
-                        </div>
-
-                        <div class="vola-stat">
-                            <strong>350+ Relawan</strong>
-                            <span>Aktif</span>
-                        </div>
-
-                        <div class="vola-stat">
-                            <strong>100% Gratis</strong>
-                            <span>Mahasiswa</span>
-                        </div>
-                    </div>
+                    <a href="{{ route('register') }}" class="vola-btn vola-btn-outline">
+                        <span>⊕</span> Buat Event (Untuk EO)
+                    </a>
                 </div>
 
-                <div class="vola-hero-visual">
-                    <img
-                        src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1100&q=85"
-                        alt="Sekelompok anak muda dalam kegiatan bersama"
-                        fetchpriority="high"
-                    >
+                <!-- STATISTICS -->
+                <div class="vola-stats">
+                    <div class="vola-stat">
+                        <strong data-counter="{{ $totalEvents }}">
+                            {{ number_format($totalEvents) }}+
+                        </strong>
+                        <span>Event Terbuka</span>
+                    </div>
 
-                    <div class="vola-photo-caption">
-                        <span>
-                            <span class="vola-status-dot">●</span>
-                            Komunitas &amp; Relawan Lapangan
-                        </span>
-                        <span class="vola-verified">VOLA Community</span>
+                    <div class="vola-stat">
+                        <strong data-counter="{{ $totalVolunteers }}">
+                            {{ number_format($totalVolunteers) }}+
+                        </strong>
+                        <span>Relawan Aktif</span>
+                    </div>
+
+                    <div class="vola-stat">
+                        <strong data-counter="{{ $totalOrganizers }}">
+                            {{ number_format($totalOrganizers) }}+
+                        </strong>
+                        <span>EO Terverifikasi</span>
                     </div>
                 </div>
-
             </div>
-        </section>
+            <!-- HERO CONTENT SELESAI -->
 
+            <!-- HERO IMAGE -->
+            <div class="vola-hero-visual">
+
+                <div class="vola-hero-verified">
+                    <span>✦</span>
+                    100% Terverifikasi
+                </div>
+
+                <span class="vola-hero-decoration vola-decoration-yellow"></span>
+                <span class="vola-hero-decoration vola-decoration-blue">✦</span>
+
+                <img
+                    src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1100&q=85"
+                    alt="Sekelompok anak muda dalam kegiatan bersama"
+                    fetchpriority="high"
+                >
+
+                <div class="vola-hero-floating-card">
+                    <div class="vola-floating-icon">♧</div>
+
+                    <div class="vola-floating-info">
+                        <strong>{{ number_format($totalVolunteers) }}+ Relawan Aktif</strong>
+                        <span>Siap ikut berkontribusi</span>
+                    </div>
+
+                    <span class="vola-live-badge">
+                        ● LIVE
+                    </span>
+                </div>
+            </div>
+            <!-- HERO IMAGE SELESAI -->
+
+               </div>
+    </section>
+
+
+<!-- PARTNER & COLLABORATION -->
+<section class="vola-partners">
+    <div class="vola-container">
+
+        <p class="vola-partners-heading">
+            DIRANCANG SEBAGAI ALAT BANTU PENUH UNTUK:
+        </p>
+
+        <div class="vola-partners-list">
+
+            <div class="vola-partner-item partner-blue">
+                <span>♧</span>
+                Promotor Musik
+            </div>
+
+            <div class="vola-partner-item partner-yellow">
+                <span>✦</span>
+                Festival Organizer
+            </div>
+
+            <div class="vola-partner-item partner-sky">
+                <span>▣</span>
+                Tech Conference
+            </div>
+
+            <div class="vola-partner-item partner-green">
+                <span>♧</span>
+                Komunitas Sosial
+            </div>
+
+            <div class="vola-partner-item partner-pink">
+                <span>⚑</span>
+                Event Kampus
+            </div>
+
+            <div class="vola-partner-item partner-purple">
+                <span>♡</span>
+                Komunitas Relawan
+            </div>
+
+        </div>
+    </div>
+</section>
         
 <!-- HOW VOLA WORKS -->
 <section class="vola-how" id="tentang">
@@ -340,10 +417,205 @@
                 </p>
             </div>
         @endforelse
-
         </div>
     </div>
 </section>
+
+
+<!-- PUSAT WAWASAN KRU EVENT -->
+<section class="vola-insights" id="cerita">
+    <div class="vola-container">
+
+        <div class="vola-insights-heading">
+            <span class="vola-insights-label">
+                PUSAT EDUKASI
+            </span>
+
+            <h2>Pusat Wawasan Kru Event</h2>
+
+            <p>
+                Tips, panduan, dan kisah sukses dari industri event
+                organizer terkemuka.
+            </p>
+        </div>
+
+        <div class="vola-insights-grid">
+
+            <!-- ARTIKEL 1 -->
+            <article class="vola-insight-card">
+                <div class="vola-insight-image">
+                    <img
+                        src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=900&q=85"
+                        alt="Tim produksi mengelola peralatan panggung event"
+                        loading="lazy"
+                    >
+                </div>
+
+                <div class="vola-insight-content">
+                    <span class="vola-insight-category">
+                        Tips Kru
+                    </span>
+
+                    <h3>
+                        Cara Bikin CV Kru Lapangan yang Langsung Dilirik Promotor
+                    </h3>
+
+                    <p>
+                        Ketahui tips penting untuk menyusun CV dan
+                        menampilkan pengalaman event agar lebih menarik
+                        bagi penyelenggara.
+                    </p>
+
+                    <div class="vola-insight-meta">
+                        <span>Tips Karier</span>
+                        <a href="#cerita">Baca selengkapnya →</a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ARTIKEL 2 -->
+            <article class="vola-insight-card">
+                <div class="vola-insight-image">
+                    <img
+                        src="https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=900&q=85"
+                        alt="Suasana festival dan kru event di lapangan"
+                        loading="lazy"
+                    >
+                </div>
+
+                <div class="vola-insight-content">
+                    <span class="vola-insight-category">
+                        Kisah Sukses
+                    </span>
+
+                    <h3>
+                        Dari Relawan ke Koordinator Lapangan: Kisah Sukses Kru
+                    </h3>
+
+                    <p>
+                        Perjalanan mengembangkan pengalaman dari posisi
+                        relawan hingga memiliki tanggung jawab lebih besar
+                        dalam penyelenggaraan event.
+                    </p>
+
+                    <div class="vola-insight-meta">
+                        <span>Inspirasi</span>
+                        <a href="#cerita">Baca selengkapnya →</a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ARTIKEL 3 -->
+            <article class="vola-insight-card">
+                <div class="vola-insight-image">
+                    <img
+                        src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=900&q=85"
+                        alt="Panggung konser dengan pencahayaan dan penonton"
+                        loading="lazy"
+                    >
+                </div>
+
+                <div class="vola-insight-content">
+                    <span class="vola-insight-category">
+                        Info EO
+                    </span>
+
+                    <h3>
+                        Persiapan Hari-H Festival Berlangsung Aman & Tertib
+                    </h3>
+
+                    <p>
+                        Panduan singkat mengenai persiapan teknis,
+                        koordinasi kru, dan komunikasi agar acara berjalan
+                        lancar.
+                    </p>
+
+                    <div class="vola-insight-meta">
+                        <span>Manajemen Event</span>
+                        <a href="#cerita">Baca selengkapnya →</a>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+
+    </div>
+</section>
+
+<!-- FEEDBACK KOMUNITAS -->
+<section class="vola-testimonials">
+    <div class="vola-container">
+
+        <div class="vola-testimonials-heading">
+            <span class="vola-testimonials-label">
+                FEEDBACK KOMUNITAS
+            </span>
+
+            <h2>Kesan Penguji Beta Kami</h2>
+
+            <p>
+                Masukan dari pengguna membantu VOLA terus berkembang
+                menjadi platform relawan yang lebih baik.
+            </p>
+        </div>
+
+        <div class="vola-testimonials-grid">
+
+            <!-- TESTIMONI CONTOH 1 -->
+            <article class="vola-testimonial-card">
+                <div class="vola-testimonial-stars"
+                     aria-label="Contoh tampilan penilaian">
+                    ★★★★★
+                </div>
+
+                <blockquote>
+                    “Platform ini diharapkan dapat mempermudah pencarian
+                    informasi event dan membantu relawan menemukan
+                    kesempatan sesuai minat.”
+                </blockquote>
+
+                <div class="vola-testimonial-user">
+                    <div class="vola-testimonial-avatar is-purple">
+                        V
+                    </div>
+
+                    <div>
+                        <strong>Contoh Pengguna</strong>
+                        <span>Volunteer</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- TESTIMONI CONTOH 2 -->
+            <article class="vola-testimonial-card">
+                <div class="vola-testimonial-stars"
+                     aria-label="Contoh tampilan penilaian">
+                    ★★★★★
+                </div>
+
+                <blockquote>
+                    “Informasi kebutuhan kru dalam satu platform dapat
+                    membantu penyelenggara mengelola proses rekrutmen
+                    dengan lebih terarah.”
+                </blockquote>
+
+                <div class="vola-testimonial-user">
+                    <div class="vola-testimonial-avatar is-yellow">
+                        E
+                    </div>
+
+                    <div>
+                        <strong>Contoh Pengguna</strong>
+                        <span>Event Organizer</span>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+
+    </div>
+</section>
+
 
 <!-- CTA PENYELENGGARA -->
 <section class="vola-cta-section">
@@ -374,18 +646,65 @@
     </div>
 </section>
 
+
 <!-- FOOTER -->
 <footer class="vola-footer">
-    © {{ date('Y') }} VOLA Platform Relawan Indonesia.
-    All rights reserved.
+    <div class="vola-container">
+
+        <div class="vola-footer-main">
+
+            <!-- BRAND -->
+            <div class="vola-footer-brand">
+                <a href="{{ route('home') }}#beranda"
+                   class="vola-footer-logo">
+                    VOLA<span>.</span>
+                </a>
+
+                <p>
+                    Sentralisasi informasi dan rekrutmen event
+                    untuk memudahkan relawan menemukan peluang
+                    serta membantu penyelenggara acara.
+                </p>
+            </div>
+
+            <!-- FOOTER LINKS -->
+            <div class="vola-footer-column">
+                <h4>UNTUK CREW</h4>
+                <a href="#event">Cari Event</a>
+                <a href="{{ route('login') }}">Panduan Pelamar</a>
+                <a href="#cerita">Wawasan</a>
+            </div>
+
+            <div class="vola-footer-column">
+                <h4>UNTUK PENYELENGGARA</h4>
+                <a href="{{ route('register') }}">Daftarkan Event</a>
+                <a href="{{ route('login') }}">Fitur Manajemen</a>
+                <a href="{{ route('register') }}">Harga Layanan</a>
+            </div>
+
+            <div class="vola-footer-column">
+                <h4>PERUSAHAAN</h4>
+                <a href="#tentang">Tentang VOLA</a>
+                <a href="#cerita">Hubungi Kami</a>
+                <a href="#tentang">Syarat &amp; Ketentuan</a>
+            </div>
+
+        </div>
+
+        <!-- FOOTER BOTTOM -->
+         <div class="vola-footer-bottom">
+            <span>© {{ date('Y') }} VOLA. All rights reserved.</span>
+        </div>
+    </div>
 </footer>
 
     </main>
+<script>
+    // MOBILE MENU
+    const menuToggle = document.getElementById('volaMenuToggle');
+    const navLinks = document.getElementById('volaNavLinks');
 
-    <script>
-        const menuToggle = document.getElementById('volaMenuToggle');
-        const navLinks = document.getElementById('volaNavLinks');
-
+    if (menuToggle && navLinks) {
         menuToggle.addEventListener('click', function () {
             const isOpen = navLinks.classList.toggle('is-open');
 
@@ -405,7 +724,102 @@
                 menuToggle.textContent = '☰';
             });
         });
-    </script>
+    }
+
+    // ACTIVE NAVIGATION SAAT SCROLL
+    const navMenuItems = document.querySelectorAll('.vola-nav-links a');
+
+    const sectionIds = [
+        'beranda',
+        'tentang',
+        'event',
+        'cerita'
+    ];
+
+    function updateActiveMenu() {
+        let activeSection = 'beranda';
+        const scrollPoint = window.scrollY + 180;
+
+        sectionIds.forEach(function (id) {
+            const section = document.getElementById(id);
+
+            if (section && section.offsetTop <= scrollPoint) {
+                activeSection = id;
+            }
+        });
+
+        navMenuItems.forEach(function (link) {
+            link.classList.toggle(
+                'is-active',
+                link.getAttribute('href') === '#' + activeSection
+            );
+        });
+    }
+
+    window.addEventListener('scroll', updateActiveMenu, {
+        passive: true
+    });
+
+    window.addEventListener('load', updateActiveMenu);
+    updateActiveMenu();
+
+    // ANIMATED STATISTICS COUNTER
+    const counters = document.querySelectorAll('[data-counter]');
+
+    function startCounter(counter) {
+        const target = Number(counter.dataset.counter);
+
+        if (!Number.isFinite(target)) return;
+
+        const duration = 1500;
+        const startTime = performance.now();
+
+        function animate(currentTime) {
+            const progress = Math.min(
+                (currentTime - startTime) / duration,
+                1
+            );
+
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+            const currentValue = Math.floor(target * easedProgress);
+
+            counter.textContent =
+                currentValue.toLocaleString('id-ID') + '+';
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                counter.textContent =
+                    target.toLocaleString('id-ID') + '+';
+            }
+        }
+
+        counter.textContent = '0+';
+        requestAnimationFrame(animate);
+    }
+
+    if ('IntersectionObserver' in window) {
+        const counterObserver = new IntersectionObserver(
+            function (entries, observer) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) return;
+
+                    startCounter(entry.target);
+                    observer.unobserve(entry.target);
+                });
+            },
+            {
+                threshold: 0.2
+            }
+        );
+
+        counters.forEach(function (counter) {
+            counterObserver.observe(counter);
+        });
+    } else {
+        counters.forEach(startCounter);
+    }
+</script>
 
 </body>
 </html>

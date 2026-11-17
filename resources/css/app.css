@@ -21,20 +21,121 @@ input::-webkit-credentials-auto-fill-button {
 }
 
 /* =========================================
-   VOLA LANDING PAGE: NAVBAR & HERO
+   VOLA AUTH UI: ANIMATIONS & MICRO-INTERACTIONS
+   ========================================= */
+
+@keyframes authFadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes authAmbientPulse1 {
+    0%, 100% {
+        transform: translate3d(0, 0, 0) scale(1);
+        opacity: 0.45;
+    }
+    50% {
+        transform: translate3d(24px, -20px, 0) scale(1.08);
+        opacity: 0.65;
+    }
+}
+
+@keyframes authAmbientPulse2 {
+    0%, 100% {
+        transform: translate3d(0, 0, 0) scale(1);
+        opacity: 0.55;
+    }
+    50% {
+        transform: translate3d(-20px, 20px, 0) scale(1.1);
+        opacity: 0.75;
+    }
+}
+
+.animate-auth-card {
+    animation: authFadeInUp 650ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-stagger-item {
+    animation: authFadeInUp 550ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.delay-50  { animation-delay: 50ms; }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-250 { animation-delay: 250ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-350 { animation-delay: 350ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-450 { animation-delay: 450ms; }
+.delay-500 { animation-delay: 500ms; }
+
+.animate-ambient-1 {
+    animation: authAmbientPulse1 12s ease-in-out infinite;
+}
+
+.animate-ambient-2 {
+    animation: authAmbientPulse2 15s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-auth-card,
+    .animate-stagger-item,
+    .animate-ambient-1,
+    .animate-ambient-2,
+    .animate-aurora-1,
+    .animate-aurora-2,
+    .animate-aurora-3,
+    .animate-float-slow,
+    .animate-float-reverse,
+    .animate-float-drift,
+    .animate-card-entry {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+
+/* Custom scrollbar for Glassmorphism Auth Cards */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.25);
+    border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.5);
+}
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+}
+
+/* =========================================
+   VOLA LANDING PAGE: NAVBAR & HERO REDESIGN
    ========================================= */
 
 .vola-landing {
-    --vola-purple: #5145ed;
-    --vola-purple-dark: #4035d4;
-    --vola-purple-light: #ecebff;
-    --vola-ink: #171d32;
-    --vola-muted: #686b80;
-    --vola-border: #e7e5ff;
+    --vola-purple: #6257f5;
+    --vola-purple-dark: #5145e5;
+    --vola-purple-light: #eeedff;
+    --vola-ink: #172033;
+    --vola-muted: #68738a;
+    --vola-border: #e9edf5;
 
     margin: 0;
     color: var(--vola-ink);
-    background: #faf8ff;
+    background: #ffffff;
     font-family: 'Plus Jakarta Sans', sans-serif;
     line-height: 1.6;
 }
@@ -65,29 +166,44 @@ input::-webkit-credentials-auto-fill-button {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(250, 248, 255, .96);
-    border-bottom: 1px solid var(--vola-border);
+    background: rgba(255, 255, 255, .97);
+    border-bottom: 1px solid #edf0f6;
     backdrop-filter: blur(14px);
 }
 
 .vola-nav-inner {
-    min-height: 70px;
+    min-height: 76px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
+    gap: 30px;
+}
+
+.vola-navbar .vola-brand {
+    flex-shrink: 0;
+    color: #172033;
+    font-size: 27px;
+    font-weight: 900;
+    letter-spacing: -1.7px;
+    line-height: 1;
+}
+
+.vola-navbar .vola-brand span {
+    color: var(--vola-purple);
 }
 
 .vola-nav-links {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 34px;
 }
 
 .vola-nav-links a,
 .vola-login-link {
-    color: #626478;
-    font-size: 13px;
+    position: relative;
+    color: #566075;
+    font-size: 12px;
     font-weight: 600;
     transition: color .2s;
 }
@@ -98,10 +214,21 @@ input::-webkit-credentials-auto-fill-button {
     color: var(--vola-purple);
 }
 
+.vola-nav-links a.is-active::after {
+    position: absolute;
+    right: 0;
+    bottom: -9px;
+    left: 0;
+    height: 2px;
+    border-radius: 5px;
+    background: var(--vola-purple);
+    content: "";
+}
+
 .vola-nav-actions {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 12px;
 }
 
 .vola-btn {
@@ -113,10 +240,10 @@ input::-webkit-credentials-auto-fill-button {
     padding: 0 21px;
     border: 1px solid transparent;
     border-radius: 12px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     cursor: pointer;
-    transition: transform .2s, background .2s;
+    transition: transform .2s, background .2s, border-color .2s;
 }
 
 .vola-btn:hover {
@@ -126,7 +253,7 @@ input::-webkit-credentials-auto-fill-button {
 .vola-btn-primary {
     color: white !important;
     background: var(--vola-purple);
-    box-shadow: 0 5px 12px rgba(81, 69, 237, .14);
+    box-shadow: 0 6px 14px rgba(98, 87, 245, .20);
 }
 
 .vola-btn-primary:hover {
@@ -135,8 +262,8 @@ input::-webkit-credentials-auto-fill-button {
 
 .vola-btn-outline {
     color: var(--vola-ink) !important;
-    background: white;
-    border-color: #e5e2f5;
+    background: #ffffff;
+    border-color: #e2e6ef;
 }
 
 .vola-btn-outline:hover {
@@ -147,6 +274,8 @@ input::-webkit-credentials-auto-fill-button {
 .vola-btn-small {
     min-height: 40px;
     padding-inline: 19px;
+    border-radius: 10px;
+    font-size: 11px;
 }
 
 .vola-menu-toggle {
@@ -162,45 +291,62 @@ input::-webkit-credentials-auto-fill-button {
 /* HERO */
 
 .vola-hero {
-    padding: 76px 0 82px;
-    border-bottom: 1px solid var(--vola-border);
+    position: relative;
+    overflow: hidden;
+    padding: 72px 0 76px;
+    background:
+        radial-gradient(ellipse at 22% 72%, rgba(255, 238, 153, .23), transparent 29%),
+        radial-gradient(ellipse at 83% 85%, rgba(119, 105, 255, .13), transparent 34%),
+        linear-gradient(115deg, #ffffff 0%, #fbfaff 54%, #f2efff 100%);
+    border-bottom: 1px solid #f0edff;
 }
 
 .vola-hero-grid {
+    position: relative;
     display: grid;
-    grid-template-columns: 1.05fr .95fr;
+    grid-template-columns: 1.04fr .96fr;
     align-items: center;
-    gap: 54px;
+    gap: 55px;
+}
+
+.vola-hero-content {
+    position: relative;
+    z-index: 2;
 }
 
 .vola-eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    padding: 7px 13px;
-    margin-bottom: 20px;
-    border: 1px solid #d9d6ff;
+    padding: 7px 14px;
+    margin-bottom: 19px;
+    border: 1px solid #f6e68d;
     border-radius: 99px;
-    background: var(--vola-purple-light);
-    color: var(--vola-purple);
-    font-size: 11px;
+    background: #fff5b7;
+    color: #6e5b00;
+    font-size: 10px;
     font-weight: 800;
 }
 
 .vola-hero-content h1 {
-    max-width: 650px;
+    max-width: 670px;
     margin: 0;
-    font-size: clamp(38px, 4.2vw, 58px);
+    color: #172033;
+    font-size: clamp(39px, 4.3vw, 59px);
     line-height: 1.12;
-    letter-spacing: -2.2px;
-    font-weight: 800;
+    letter-spacing: -2.7px;
+    font-weight: 900;
+}
+
+.vola-hero-content h1 span {
+    color: var(--vola-purple);
 }
 
 .vola-hero-description {
-    max-width: 550px;
-    margin: 20px 0 0;
-    color: var(--vola-muted);
-    font-size: 14px;
+    max-width: 510px;
+    margin: 19px 0 0;
+    color: #647087;
+    font-size: 13px;
     line-height: 1.85;
 }
 
@@ -208,91 +354,106 @@ input::-webkit-credentials-auto-fill-button {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 27px;
+    margin-top: 25px;
+}
+
+.vola-hero-actions .vola-btn {
+    min-height: 47px;
+    border-radius: 11px;
+    font-size: 11px;
 }
 
 .vola-stats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    max-width: 530px;
-    margin-top: 30px;
-    padding: 15px 5px;
-    background: white;
-    border: 1px solid var(--vola-border);
-    border-radius: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-width: 580px;
+    margin-top: 24px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
 }
 
 .vola-stat {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 2px;
-    padding: 0 7px;
-    text-align: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, .92);
+    border: 1px solid #e8e9f2;
+    border-radius: 99px;
+    text-align: left;
 }
 
 .vola-stat + .vola-stat {
-    border-left: 1px solid #efedff;
+    border-left: 1px solid #e8e9f2;
 }
 
 .vola-stat strong {
-    font-size: clamp(12px, 1.3vw, 17px);
+    color: var(--vola-ink);
+    font-size: 10px;
     font-weight: 800;
     white-space: nowrap;
 }
 
 .vola-stat:nth-child(2) strong {
-    color: var(--vola-purple);
-}
-
-.vola-stat:nth-child(3) strong {
     color: #07845c;
 }
 
-.vola-stat span {
-    color: var(--vola-muted);
-    font-size: 10px;
+.vola-stat:nth-child(3) strong {
+    color: var(--vola-purple);
 }
 
-/* GAMBAR HERO */
+.vola-stat span {
+    color: #68738a;
+    font-size: 9px;
+    white-space: nowrap;
+}
+
+/* HERO IMAGE */
 
 .vola-hero-visual {
     position: relative;
     padding: 8px;
-    border: 1px solid var(--vola-border);
-    border-radius: 23px;
-    background: white;
-    box-shadow: 0 16px 35px rgba(37, 31, 92, .12);
+    border: 1px solid rgba(255, 255, 255, .9);
+    border-radius: 24px;
+    background: #ffffff;
+    box-shadow: 0 22px 42px rgba(58, 49, 150, .16);
 }
 
 .vola-hero-visual > img {
     display: block;
     width: 100%;
-    height: 360px;
+    height: 405px;
     object-fit: cover;
-    border-radius: 16px;
+    object-position: center;
+    border-radius: 17px;
 }
 
 .vola-photo-caption {
     position: absolute;
-    right: 19px;
-    bottom: 19px;
-    left: 19px;
+    right: 17px;
+    bottom: 17px;
+    left: 17px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 12px;
-    border-radius: 11px;
+    padding: 13px 15px;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 12px;
     color: white;
-    background: rgba(21, 28, 47, .88);
+    background: rgba(22, 31, 54, .88);
     font-size: 10px;
-    font-weight: 600;
+    font-weight: 700;
+    backdrop-filter: blur(8px);
 }
 
 .vola-status-dot {
     margin-right: 5px;
-    color: #6ef0ba;
+    color: #63e6b3;
 }
 
 .vola-verified {
@@ -300,6 +461,142 @@ input::-webkit-credentials-auto-fill-button {
     white-space: nowrap;
     font-size: 9px;
 }
+
+
+/* HERO FLOATING ELEMENTS */
+
+.vola-hero-verified {
+    position: absolute;
+    z-index: 3;
+    top: -17px;
+    left: -16px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 15px;
+    border: 1px solid #edf0f6;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #263148;
+    font-size: 10px;
+    font-weight: 800;
+    box-shadow: 0 8px 22px rgba(35, 42, 75, .10);
+}
+
+.vola-hero-verified span {
+    color: var(--vola-purple);
+}
+
+.vola-hero-floating-card {
+    position: absolute;
+    z-index: 3;
+    right: 22px;
+    bottom: -19px;
+    left: 22px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 13px 15px;
+    border: 1px solid #e9eaf5;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 10px 28px rgba(35, 42, 75, .13);
+}
+
+.vola-floating-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    background: #eeedff;
+    color: var(--vola-purple);
+    font-size: 20px;
+}
+
+.vola-floating-info {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.vola-floating-info strong {
+    color: var(--vola-ink);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.vola-floating-info span {
+    color: var(--vola-muted);
+    font-size: 9px;
+}
+
+.vola-live-badge {
+    padding: 5px 9px;
+    border-radius: 99px;
+    background: #dff9ed;
+    color: #07845c;
+    font-size: 9px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.vola-hero-decoration {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+}
+
+.vola-decoration-yellow {
+    top: 43%;
+    left: -30px;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #f5d85b;
+    background: #fff4a8;
+}
+
+.vola-decoration-blue {
+    right: -20px;
+    bottom: 18px;
+    width: 34px;
+    height: 34px;
+    background: #9de3ff;
+    color: #1766a5;
+    font-size: 16px;
+    box-shadow: 0 5px 15px rgba(35, 139, 207, .15);
+}
+
+@media (max-width: 700px) {
+    .vola-hero-verified {
+        top: -12px;
+        left: 8px;
+        padding: 8px 11px;
+        font-size: 9px;
+    }
+
+    .vola-hero-floating-card {
+        right: 14px;
+        bottom: -15px;
+        left: 14px;
+        padding: 10px;
+    }
+
+    .vola-floating-icon {
+        width: 33px;
+        height: 33px;
+    }
+
+    .vola-decoration-blue {
+        right: -8px;
+    }
+}
+
 
 /* RESPONSIVE */
 
@@ -327,7 +624,7 @@ input::-webkit-credentials-auto-fill-button {
     }
 
     .vola-hero-visual > img {
-        height: 330px;
+        height: 350px;
     }
 }
 
@@ -346,11 +643,14 @@ input::-webkit-credentials-auto-fill-button {
 
     .vola-nav-actions {
         margin-left: auto;
-        gap: 12px;
+        gap: 10px;
     }
 
     .vola-login-link {
-        display: none;
+        display: inline-flex;
+        align-items: center;
+        font-size: 11px;
+        white-space: nowrap;
     }
 
     .vola-nav-links {
@@ -367,13 +667,21 @@ input::-webkit-credentials-auto-fill-button {
         display: flex;
     }
 
+    .vola-nav-links a.is-active::after {
+        display: none;
+    }
+
+    .vola-hero {
+        padding: 45px 0 50px;
+    }
+
     .vola-hero-content h1 {
         font-size: clamp(34px, 8vw, 45px);
-        letter-spacing: -1.5px;
+        letter-spacing: -1.7px;
     }
 
     .vola-hero-description {
-        font-size: 13px;
+        font-size: 12px;
     }
 
     .vola-hero-actions {
@@ -385,38 +693,42 @@ input::-webkit-credentials-auto-fill-button {
     }
 
     .vola-hero-visual > img {
-        height: 260px;
+        height: 270px;
     }
 
     .vola-photo-caption {
         right: 15px;
-        bottom: 16px;
+        bottom: 15px;
         left: 15px;
         padding: 9px;
         font-size: 9px;
     }
 
+    .vola-stats {
+        gap: 7px;
+    }
+
     .vola-stat {
-        padding-inline: 3px;
+        padding: 7px 9px;
     }
 
     .vola-stat strong {
-        font-size: clamp(10px, 2.8vw, 14px);
+        font-size: 9px;
     }
 
     .vola-stat span {
-        font-size: 9px;
+        font-size: 8px;
     }
 }
 
 /* =========================================
-   VOLA LANDING PAGE: HOW IT WORKS
+   VOLA LANDING PAGE: HOW IT WORKS REDESIGN
    ========================================= */
 
 .vola-how {
     padding: 68px 0 72px;
-    background: #f4f3ff;
-    border-bottom: 1px solid var(--vola-border);
+    background: #f7f9fc;
+    border-bottom: 1px solid #edf0f5;
 }
 
 .vola-section-heading {
@@ -430,27 +742,31 @@ input::-webkit-credentials-auto-fill-button {
     margin-bottom: 13px;
     padding: 6px 12px;
     border-radius: 99px;
-    background: #e7e6ff;
-    color: var(--vola-purple);
-    font-size: 10px;
+    background: #e9eaff;
+    color: #6257f5;
+    font-size: 9px;
     font-weight: 800;
-    letter-spacing: .4px;
+    letter-spacing: .3px;
 }
 
 .vola-section-heading h2 {
     margin: 0;
-    font-size: clamp(26px, 3vw, 34px);
+    color: #172033;
+    font-size: clamp(25px, 3vw, 32px);
     line-height: 1.3;
     letter-spacing: -1px;
-    font-weight: 800;
+    font-weight: 900;
 }
 
 .vola-section-heading p {
-    margin: 12px 0 0;
-    color: var(--vola-muted);
-    font-size: 13px;
+    max-width: 570px;
+    margin: 10px auto 0;
+    color: #748096;
+    font-size: 11px;
     line-height: 1.8;
 }
+
+/* CARD GRID */
 
 .vola-steps-grid {
     display: grid;
@@ -459,53 +775,67 @@ input::-webkit-credentials-auto-fill-button {
 }
 
 .vola-steps-card {
-    padding: 27px;
-    background: white;
-    border: 1px solid var(--vola-border);
-    border-radius: 22px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 26px;
+    background: #ffffff;
+    border: 1px solid #e8edf5;
+    border-radius: 19px;
+    box-shadow: 0 3px 10px rgba(35, 49, 75, .025);
+    transition: transform .2s ease, box-shadow .2s ease;
 }
+
+.vola-steps-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(35, 49, 75, .06);
+}
+
+/* CARD HEADER */
 
 .vola-steps-header {
     display: flex;
     align-items: center;
-    gap: 13px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #eeecff;
+    gap: 12px;
+    padding-bottom: 17px;
+    border-bottom: 1px solid #edf0f6;
 }
 
 .vola-role-icon {
     display: grid;
     place-items: center;
     flex-shrink: 0;
-    width: 46px;
-    height: 46px;
-    border-radius: 14px;
-    background: #eeecff;
-    color: var(--vola-purple);
-    font-size: 23px;
+    width: 43px;
+    height: 43px;
+    border-radius: 12px;
+    background: #e7f3ff;
+    color: #2696e8;
+    font-size: 20px;
 }
 
 .vola-role-icon.is-green {
-    background: #e5f4ef;
-    color: #07845c;
+    background: #fff1d6;
+    color: #e99a26;
 }
 
 .vola-role-kicker {
     display: block;
     margin-bottom: 3px;
-    color: var(--vola-purple);
-    font-size: 10px;
-    font-weight: 800;
+    color: #2696e8;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .35px;
 }
 
 .vola-role-kicker.is-green {
-    color: #07845c;
+    color: #e99a26;
 }
 
 .vola-steps-header h3 {
     margin: 0;
-    font-size: 17px;
-    font-weight: 800;
+    color: #172033;
+    font-size: 15px;
+    font-weight: 900;
     line-height: 1.4;
 }
 
@@ -513,76 +843,99 @@ input::-webkit-credentials-auto-fill-button {
     margin-left: auto;
     padding: 5px 9px;
     border-radius: 99px;
-    background: #eeecff;
-    color: var(--vola-purple);
-    font-size: 10px;
-    font-weight: 700;
+    background: #edf3ff;
+    color: #5268b4;
+    font-size: 9px;
+    font-weight: 800;
     white-space: nowrap;
 }
 
 .vola-role-badge.is-green {
-    background: #e2f3ed;
-    color: #07845c;
+    background: #fff3df;
+    color: #bd781b;
 }
+
+/* STEP LIST */
 
 .vola-step-list {
     display: grid;
-    gap: 23px;
-    padding: 23px 0;
+    gap: 21px;
+    padding: 21px 0;
 }
 
 .vola-step-item {
     display: flex;
     align-items: flex-start;
-    gap: 13px;
+    gap: 12px;
 }
 
 .vola-step-number {
     display: grid;
     place-items: center;
     flex-shrink: 0;
-    width: 29px;
-    height: 29px;
+    width: 27px;
+    height: 27px;
     border-radius: 50%;
-    background: #eceaff;
-    color: var(--vola-purple);
-    font-size: 11px;
-    font-weight: 800;
+    background: #e5f2ff;
+    color: #2995e5;
+    font-size: 10px;
+    font-weight: 900;
 }
 
 .vola-steps-card:nth-child(2) .vola-step-number {
-    background: #e3f3ed;
-    color: #07845c;
+    background: #fff0d1;
+    color: #db9225;
+}
+
+.vola-step-item > div {
+    flex: 1;
+    min-width: 0;
 }
 
 .vola-step-item h4 {
-    margin: 0 0 5px;
-    font-size: 12px;
-    font-weight: 800;
+    margin: 0 0 4px;
+    color: #253047;
+    font-size: 11px;
+    font-weight: 900;
 }
 
 .vola-step-item p {
     margin: 0;
-    color: var(--vola-muted);
-    font-size: 11px;
-    line-height: 1.8;
+    color: #788397;
+    font-size: 10px;
+    line-height: 1.75;
 }
+
+/* CARD FOOTER LINK */
 
 .vola-steps-link {
     display: block;
-    padding-top: 19px;
-    border-top: 1px solid #eeecff;
-    color: var(--vola-purple) !important;
-    font-size: 11px;
+    margin-top: auto;
+    padding-top: 17px;
+    border-top: 1px solid #edf0f6;
+    color: #2995e5 !important;
+    font-size: 10px;
     font-weight: 800;
 }
 
 .vola-steps-link.is-green {
-    color: #07845c !important;
+    color: #dc9228 !important;
 }
 
 .vola-steps-link:hover {
     text-decoration: underline;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+    .vola-steps-grid {
+        gap: 17px;
+    }
+
+    .vola-steps-card {
+        padding: 21px;
+    }
 }
 
 @media (max-width: 700px) {
@@ -591,36 +944,36 @@ input::-webkit-credentials-auto-fill-button {
     }
 
     .vola-section-heading {
-        margin-bottom: 27px;
+        margin-bottom: 28px;
     }
 
     .vola-steps-grid {
         grid-template-columns: 1fr;
-        gap: 18px;
+        gap: 17px;
     }
 
     .vola-steps-card {
         padding: 21px;
-        border-radius: 18px;
+        border-radius: 16px;
     }
 
     .vola-steps-header h3 {
-        font-size: 15px;
+        font-size: 14px;
     }
 
-    .vola-role-badge {
-        padding: 4px 7px;
-        font-size: 9px;
+    .vola-step-list {
+        gap: 19px;
     }
 }
 
+
 /* =========================================
-   VOLA LANDING PAGE: EVENTS, CTA, FOOTER
+   VOLA LANDING PAGE: EVENTS REDESIGN
    ========================================= */
 
 .vola-events {
-    padding: 70px 0 86px;
-    background: #faf8ff;
+    padding: 66px 0 76px;
+    background: #ffffff;
 }
 
 .vola-events-heading {
@@ -628,129 +981,191 @@ input::-webkit-credentials-auto-fill-button {
     align-items: flex-end;
     justify-content: space-between;
     gap: 24px;
-    margin-bottom: 30px;
+    margin-bottom: 27px;
 }
 
 .vola-events-heading .vola-section-label {
-    margin-bottom: 11px;
+    margin-bottom: 10px;
 }
 
 .vola-events-heading h2 {
     margin: 0;
-    font-size: clamp(25px, 3vw, 32px);
+    color: #172033;
+    font-size: clamp(25px, 3vw, 31px);
     line-height: 1.3;
     letter-spacing: -1px;
-    font-weight: 800;
+    font-weight: 900;
 }
 
 .vola-events-heading p {
-    margin: 9px 0 0;
-    color: var(--vola-muted);
-    font-size: 13px;
+    margin: 8px 0 0;
+    color: #748096;
+    font-size: 11px;
     line-height: 1.8;
 }
+
+.vola-events-heading > a {
+    flex-shrink: 0;
+    min-height: 39px;
+    padding-inline: 15px;
+    border-radius: 9px;
+    font-size: 10px;
+}
+
+/* EVENT GRID */
 
 .vola-event-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px;
+    align-items: stretch;
+    gap: 17px;
 }
 
 .vola-event-card {
     display: flex;
     flex-direction: column;
-    padding: 21px;
-    background: white;
-    border: 1px solid var(--vola-border);
-    border-radius: 18px;
-    transition: transform .2s, box-shadow .2s;
+    min-width: 0;
+    padding: 17px;
+    background: #ffffff;
+    border: 1px solid #e8edf5;
+    border-radius: 16px;
+    transition: transform .2s ease, box-shadow .2s ease;
 }
 
 .vola-event-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 26px rgba(46, 38, 122, .08);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(46, 55, 85, .07);
 }
+
+/* EVENT TAGS */
 
 .vola-event-tags {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 15px;
+    gap: 7px;
+    margin-bottom: 13px;
 }
 
 .vola-event-category,
 .vola-open-tag {
+    display: inline-flex;
+    align-items: center;
     padding: 5px 8px;
     border-radius: 99px;
-    font-size: 9px;
-    font-weight: 700;
+    font-size: 8px;
+    font-weight: 800;
 }
 
 .vola-event-category {
-    color: #5f6280;
-    background: #efefff;
+    color: #5d6480;
+    background: #f0f1ff;
 }
 
 .vola-open-tag {
     color: #087a55;
-    background: #d9fbed;
+    background: #dcf9ec;
 }
 
+/* EVENT TITLE */
+
 .vola-event-card h3 {
-    margin: 0 0 9px;
-    font-size: 16px;
-    line-height: 1.55;
-    font-weight: 800;
+    margin: 0 0 7px;
+    color: #202b41;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 900;
 }
 
 .vola-event-organizer {
-    min-height: 36px;
+    min-height: 29px;
     margin: 0;
-    padding-bottom: 14px;
-    border-bottom: 1px solid #efedff;
-    color: var(--vola-muted);
-    font-size: 10px;
+    padding-bottom: 11px;
+    border-bottom: 1px solid #edf0f6;
+    color: #778196;
+    font-size: 9px;
     font-weight: 600;
+    line-height: 1.6;
 }
+
+/* EVENT INFORMATION */
 
 .vola-event-info {
     display: grid;
-    gap: 9px;
-    padding: 16px 0;
+    gap: 7px;
+    padding: 13px 0;
 }
 
 .vola-event-info p {
     margin: 0;
-    color: var(--vola-muted);
-    font-size: 10px;
+    color: #748096;
+    font-size: 9px;
     line-height: 1.6;
 }
 
+/* EVENT BENEFIT */
+
 .vola-event-benefit {
-    margin-bottom: 17px;
-    padding: 10px;
-    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    min-height: 35px;
+    margin-bottom: 12px;
+    padding: 8px 10px;
+    border-radius: 8px;
     background: #f0f0ff;
-    color: #464a6c;
-    font-size: 10px;
+    color: #505778;
+    font-size: 9px;
     font-weight: 700;
+    line-height: 1.5;
 }
+
+/* DETAIL BUTTON */
 
 .vola-event-button {
     width: 100%;
-    min-height: 41px;
+    min-height: 37px;
     margin-top: auto;
-    border-radius: 10px;
-    background: #ecebff;
-    color: var(--vola-purple) !important;
-    font-size: 11px;
+    border: 0;
+    border-radius: 8px;
+    background: #eceeff;
+    color: #6257f5 !important;
+    font-size: 10px;
+    font-weight: 800;
 }
 
 .vola-event-button:hover {
-    background: var(--vola-purple);
-    color: white !important;
+    background: #6257f5;
+    color: #ffffff !important;
+}
+
+/* RESPONSIVE EVENTS */
+
+@media (max-width: 900px) {
+    .vola-event-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .vola-events {
+        padding: 48px 0 55px;
+    }
+
+    .vola-events-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .vola-event-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .vola-event-card {
+        padding: 17px;
+    }
 }
 
 /* CTA */
@@ -1785,4 +2200,734 @@ button.vd-select-position {
     border: 1px solid #fecaca;
     background: #fef2f2;
     color: #b91c1c;
+}
+
+
+/* =========================================
+   VOLA LANDING PAGE: PARTNERS REDESIGN
+   ========================================= */
+
+.vola-partners {
+    padding: 30px 0 34px;
+    background: #ffffff;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.vola-partners-heading {
+    margin: 0 0 20px;
+    color: #8992a5;
+    text-align: center;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .7px;
+}
+
+.vola-partners-list {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.vola-partner-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 39px;
+    padding: 0 15px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.vola-partner-item span {
+    font-size: 13px;
+}
+
+/* Variasi warna kategori */
+
+.partner-blue {
+    color: #53638f;
+    background: #f0f2ff;
+    border-color: #e6e9ff;
+}
+
+.partner-yellow {
+    color: #946a21;
+    background: #fff8e9;
+    border-color: #f9ebc9;
+}
+
+.partner-sky {
+    color: #386b91;
+    background: #eef7ff;
+    border-color: #e1f0ff;
+}
+
+.partner-green {
+    color: #287653;
+    background: #ecfaf2;
+    border-color: #ddf3e6;
+}
+
+.partner-pink {
+    color: #89516d;
+    background: #fff0f5;
+    border-color: #f9e2eb;
+}
+
+.partner-purple {
+    color: #65558c;
+    background: #f3efff;
+    border-color: #eae3ff;
+}
+
+/* RESPONSIVE PARTNERS */
+
+@media (max-width: 1000px) {
+    .vola-partners-list {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 600px) {
+    .vola-partners {
+        padding: 25px 0;
+    }
+
+    .vola-partners-heading {
+        font-size: 8px;
+    }
+
+    .vola-partners-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .vola-partner-item {
+        width: 100%;
+        padding: 0 7px;
+        font-size: 9px;
+    }
+}
+
+/* =========================================
+   VOLA LANDING PAGE: INSIGHTS REDESIGN
+   ========================================= */
+
+.vola-insights {
+    padding: 68px 0 76px;
+    background: #fffdec;
+}
+
+.vola-insights-heading {
+    max-width: 650px;
+    margin: 0 auto 35px;
+    text-align: center;
+}
+
+.vola-insights-label {
+    display: inline-block;
+    margin-bottom: 11px;
+    padding: 6px 12px;
+    border-radius: 99px;
+    background: #fff0b5;
+    color: #9b741c;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.vola-insights-heading h2 {
+    margin: 0;
+    color: #172033;
+    font-size: clamp(25px, 3vw, 32px);
+    line-height: 1.3;
+    letter-spacing: -1px;
+    font-weight: 900;
+}
+
+.vola-insights-heading p {
+    margin: 9px 0 0;
+    color: #788096;
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+/* GRID */
+
+.vola-insights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    align-items: stretch;
+}
+
+/* CARD */
+
+.vola-insight-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #f0e9d1;
+    border-radius: 16px;
+    background: #ffffff;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.vola-insight-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(93, 76, 30, .08);
+}
+
+/* IMAGE */
+
+.vola-insight-image {
+    width: 100%;
+    height: 190px;
+    overflow: hidden;
+    background: #f5f0df;
+}
+
+.vola-insight-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .35s ease;
+}
+
+.vola-insight-card:hover .vola-insight-image img {
+    transform: scale(1.04);
+}
+
+/* CONTENT */
+
+.vola-insight-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 16px;
+}
+
+.vola-insight-category {
+    align-self: flex-start;
+    margin-bottom: 9px;
+    padding: 5px 9px;
+    border-radius: 99px;
+    background: #eff0ff;
+    color: #6257e8;
+    font-size: 8px;
+    font-weight: 800;
+}
+
+.vola-insight-content h3 {
+    margin: 0 0 8px;
+    color: #202a40;
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.5;
+}
+
+.vola-insight-content p {
+    margin: 0 0 15px;
+    color: #788196;
+    font-size: 10px;
+    line-height: 1.75;
+}
+
+/* META */
+
+.vola-insight-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid #f0f1f5;
+    color: #9299a9;
+    font-size: 8px;
+}
+
+.vola-insight-meta a {
+    color: #6257e8;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.vola-insight-meta a:hover {
+    text-decoration: underline;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+    .vola-insights-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .vola-insights {
+        padding: 50px 0;
+    }
+
+    .vola-insights-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .vola-insight-image {
+        height: 210px;
+    }
+}
+
+
+/* =========================================
+   VOLA LANDING PAGE: COMMUNITY FEEDBACK
+   ========================================= */
+
+.vola-testimonials {
+    padding: 66px 0 76px;
+    background: #ffffff;
+}
+
+.vola-testimonials-heading {
+    max-width: 650px;
+    margin: 0 auto 34px;
+    text-align: center;
+}
+
+.vola-testimonials-label {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 6px 12px;
+    border-radius: 99px;
+    background: #eeecff;
+    color: #6257e8;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.vola-testimonials-heading h2 {
+    margin: 0;
+    color: #172033;
+    font-size: clamp(25px, 3vw, 32px);
+    line-height: 1.3;
+    letter-spacing: -1px;
+    font-weight: 900;
+}
+
+.vola-testimonials-heading p {
+    margin: 9px 0 0;
+    color: #788096;
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+/* TESTIMONIAL CARDS */
+
+.vola-testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    max-width: 850px;
+    margin-inline: auto;
+}
+
+.vola-testimonial-card {
+    padding: 22px;
+    border: 1px solid #e8edf5;
+    border-radius: 16px;
+    background: #ffffff;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.vola-testimonial-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(46, 55, 85, .06);
+}
+
+.vola-testimonial-stars {
+    margin-bottom: 12px;
+    color: #f5ae22;
+    font-size: 15px;
+    letter-spacing: 2px;
+}
+
+.vola-testimonial-card blockquote {
+    min-height: 66px;
+    margin: 0;
+    padding-bottom: 17px;
+    border-bottom: 1px solid #edf0f6;
+    color: #59647a;
+    font-size: 11px;
+    font-style: italic;
+    line-height: 1.8;
+}
+
+/* USER IDENTITY */
+
+.vola-testimonial-user {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding-top: 15px;
+}
+
+.vola-testimonial-avatar {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.vola-testimonial-avatar.is-purple {
+    background: #eeecff;
+    color: #6257e8;
+}
+
+.vola-testimonial-avatar.is-yellow {
+    background: #fff2c9;
+    color: #b67a13;
+}
+
+.vola-testimonial-user strong,
+.vola-testimonial-user span {
+    display: block;
+}
+
+.vola-testimonial-user strong {
+    color: #202a40;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.vola-testimonial-user span {
+    margin-top: 3px;
+    color: #9299a9;
+    font-size: 9px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 700px) {
+    .vola-testimonials {
+        padding: 48px 0 55px;
+    }
+
+    .vola-testimonials-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .vola-testimonial-card {
+        padding: 19px;
+    }
+}
+
+
+/* =========================================
+   VOLA LANDING PAGE: FINAL CTA REFINEMENT
+   ========================================= */
+
+.vola-cta-section {
+    padding: 0 0 30px;
+    background: #faf8ff;
+}
+
+.vola-cta-box {
+    min-height: 155px;
+    padding: 36px 40px;
+    border-radius: 20px;
+    background: linear-gradient(115deg, #5145ed, #6255ed);
+    box-shadow: 0 10px 25px rgba(67, 55, 205, .16);
+}
+
+.vola-cta-content {
+    max-width: 680px;
+}
+
+.vola-cta-content h2 {
+    color: #ffffff;
+    font-size: clamp(22px, 2.7vw, 29px);
+    line-height: 1.35;
+}
+
+.vola-cta-content p {
+    color: #e9e7ff;
+    font-size: 11px;
+}
+
+.vola-cta-button {
+    min-height: 43px;
+    padding: 0 20px;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #5145ed !important;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.vola-cta-button:hover {
+    background: #f0eeff;
+    transform: translateY(-2px);
+}
+
+/* FOOTER */
+
+.vola-footer {
+    padding: 17px 16px;
+    border-top: 1px solid #eceaf5;
+    background: #ffffff;
+    color: #9298aa;
+    font-size: 9px;
+    line-height: 1.7;
+    text-align: center;
+}
+
+/* RESPONSIVE CTA */
+
+@media (max-width: 700px) {
+    .vola-cta-section {
+        padding-bottom: 22px;
+    }
+
+    .vola-cta-box {
+        min-height: auto;
+        padding: 27px 22px;
+        gap: 20px;
+        border-radius: 17px;
+    }
+
+    .vola-cta-content h2 {
+        font-size: 22px;
+    }
+
+    .vola-cta-button {
+        width: 100%;
+        white-space: normal;
+    }
+}
+
+/* FIX: TAMPILKAN TOMBOL MASUK DI MOBILE */
+
+@media (max-width: 700px) {
+    .vola-navbar .vola-nav-actions .vola-login-link {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: #171d32 !important;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .vola-navbar .vola-nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+}
+
+
+/* =========================================
+   NAVBAR: STYLE LOGIN & REGISTER BUTTON
+   ========================================= */
+
+.vola-navbar .vola-nav-actions .vola-login-link,
+.vola-navbar .vola-nav-actions .vola-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 0 21px;
+    border: 1px solid #e5e2f5;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #171d32 !important;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: none;
+    transition: background .2s, border-color .2s, transform .2s;
+}
+
+.vola-navbar .vola-nav-actions .vola-login-link:hover,
+.vola-navbar .vola-nav-actions .vola-btn-primary:hover {
+    background: #f8f7ff;
+    border-color: #5145ed;
+    color: #5145ed !important;
+    transform: translateY(-2px);
+}
+
+/* RESPONSIVE MOBILE */
+
+@media (max-width: 700px) {
+    .vola-navbar .vola-nav-actions .vola-login-link,
+    .vola-navbar .vola-nav-actions .vola-btn-primary {
+        min-height: 40px;
+        padding: 0 12px;
+        border-radius: 10px;
+        font-size: 11px;
+    }
+
+    .vola-navbar .vola-nav-actions {
+        gap: 8px;
+    }
+}
+
+
+/* =========================================
+   VOLA LANDING PAGE: FULL FOOTER
+   ========================================= */
+
+.vola-footer {
+    padding: 48px 0 0;
+    background: #ffffff;
+    border-top: 1px solid #eceaf5;
+    color: var(--vola-ink);
+    text-align: left;
+    font-size: 12px;
+}
+
+.vola-footer-main {
+    display: grid;
+    grid-template-columns: 1.7fr 1fr 1.15fr 1fr;
+    gap: 38px;
+    padding-bottom: 38px;
+}
+
+.vola-footer-logo {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: #171d32 !important;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+}
+
+.vola-footer-logo span {
+    color: #5145ed;
+}
+
+.vola-footer-brand p {
+    max-width: 270px;
+    margin: 0;
+    color: #858ba0;
+    font-size: 11px;
+    line-height: 1.9;
+}
+
+.vola-footer-socials {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 17px;
+}
+
+.vola-footer-socials a {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid #e9eaf2;
+    border-radius: 9px;
+    background: #f8f9fc;
+    color: #626b80;
+    font-size: 13px;
+    font-weight: 700;
+    transition: .2s ease;
+}
+
+.vola-footer-socials a:hover {
+    border-color: var(--vola-purple);
+    background: var(--vola-purple-light);
+    color: var(--vola-purple);
+}
+
+.vola-footer-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 11px;
+}
+
+.vola-footer-column h4 {
+    margin: 5px 0 5px;
+    color: #252c40;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .3px;
+}
+
+.vola-footer-column a {
+    color: #858ba0;
+    font-size: 10px;
+    transition: color .2s;
+}
+
+.vola-footer-column a:hover {
+    color: var(--vola-purple);
+}
+
+.vola-footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 17px 0;
+    border-top: 1px solid #eff0f5;
+    color: #a0a4b3;
+    font-size: 9px;
+}
+
+.vola-footer-heart {
+    color: #ed6476;
+}
+
+/* RESPONSIVE FOOTER */
+
+@media (max-width: 900px) {
+    .vola-footer-main {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 30px;
+    }
+}
+
+@media (max-width: 700px) {
+    .vola-footer {
+        padding-top: 35px;
+    }
+
+    .vola-footer-main {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 30px 20px;
+        padding-bottom: 28px;
+    }
+
+    .vola-footer-brand {
+        grid-column: 1 / -1;
+    }
+
+    .vola-footer-brand p {
+        max-width: 100%;
+    }
+
+    .vola-footer-bottom {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+    }
 }

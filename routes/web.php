@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\EventStatus;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\EoVerificationController;
 use App\Http\Controllers\Eo\EoDashboardController;
@@ -28,7 +29,27 @@ Route::get('/', function () {
         ->take(3)
         ->get();
 
-    return view('welcome', compact('events'));
+    $totalEvents = Event::query()
+        ->where('status', EventStatus::Active)
+        ->whereNotNull('published_at')
+        ->whereDate('registration_deadline', '>=', now()->toDateString())
+        ->count();
+
+    $totalVolunteers = \App\Models\User::query()
+        ->where('role', \App\Enums\UserRole::Volunteer)
+        ->where('status', \App\Enums\UserStatus::Active)
+        ->count();
+
+    $totalOrganizers = \App\Models\OrganizerProfile::query()
+        ->where('verification_status', \App\Enums\VerificationStatus::Verified)
+        ->count();
+
+    return view('welcome', compact(
+        'events',
+        'totalEvents',
+        'totalVolunteers',
+        'totalOrganizers'
+    ));
 })->name('home');
 
 // Public event detail
@@ -154,5 +175,4 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::post('/eo-verifications/{organizer}/reject', [EoVerificationController::class, 'reject'])
             ->name('eo-verifications.reject');
     });
-
 require __DIR__.'/auth.php';
