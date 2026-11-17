@@ -119,7 +119,6 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
 
     Route::get('/lamaran-saya/{id}/bukti-penerimaan', [ApplicationController::class, 'downloadAcceptanceLetter'])
         ->name('applications.download-acceptance');
-
     // Event Saya
     Route::get('/event-saya', [MyEventController::class, 'index'])
         ->name('my-events.index');
@@ -172,6 +171,10 @@ Route::middleware(['auth', 'verified', 'role:eo'])
         Route::post('/events', [EventController::class, 'store'])
             ->name('events.store');
 
+        Route::get('/events/{event}', [EventController::class, 'show'])
+            ->whereNumber('event')
+            ->name('events.show');
+
         Route::get('/events/{event}/edit', [EventController::class, 'edit'])
             ->name('events.edit');
 
@@ -182,10 +185,23 @@ Route::middleware(['auth', 'verified', 'role:eo'])
             ->name('events.destroy');
 
         Route::post('/events/{event}/submit', [EventController::class, 'submit'])
+            ->middleware('eo.verified')
             ->name('events.submit');
+
+        Route::post('/events/{event}/close', [EventController::class, 'close'])
+            ->name('events.close');
+
+        Route::post('/events/{event}/finish', [EventController::class, 'finish'])
+            ->name('events.finish');
 
         Route::post('/events/{event}/positions', [EventPositionController::class, 'store'])
             ->name('events.positions.store');
+
+        Route::post('/events/{event}/positions/bulk', [EventPositionController::class, 'storeMany'])
+            ->name('events.positions.store-many');
+
+        Route::get('/position-recommendation', [EventPositionController::class, 'recommendation'])
+            ->name('positions.recommendation');
 
         Route::put('/events/{event}/positions/{position}', [EventPositionController::class, 'update'])
             ->name('events.positions.update');

@@ -32,13 +32,17 @@ class EoDashboardController extends Controller
                 ->take(5)
                 ->get();
 
-            $allEvents = Event::where('organizer_id', $organizerProfile->id)->get();
+            $statusCounts = Event::query()
+                ->where('organizer_id', $organizerProfile->id)
+                ->selectRaw('status, COUNT(*) as total')
+                ->groupBy('status')
+                ->pluck('total', 'status');
 
-            $totalEvents = $allEvents->count();
-            $draftCount = $allEvents->where('status', EventStatus::Draft)->count();
-            $pendingReviewCount = $allEvents->where('status', EventStatus::PendingReview)->count();
-            $awaitingPaymentCount = $allEvents->where('status', EventStatus::AwaitingPayment)->count();
-            $rejectedCount = $allEvents->where('status', EventStatus::Rejected)->count();
+            $totalEvents = (int) $statusCounts->sum();
+            $draftCount = (int) ($statusCounts[EventStatus::Draft->value] ?? 0);
+            $pendingReviewCount = (int) ($statusCounts[EventStatus::PendingReview->value] ?? 0);
+            $awaitingPaymentCount = (int) ($statusCounts[EventStatus::AwaitingPayment->value] ?? 0);
+            $rejectedCount = (int) ($statusCounts[EventStatus::Rejected->value] ?? 0);
         }
 
         return view('eo.dashboard', compact(

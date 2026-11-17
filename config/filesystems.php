@@ -49,6 +49,11 @@ return [
             'use_path_style_endpoint' => true,
             'throw' => true,
             'report' => false,
+            // Nonaktifkan SSL verify di local dev (Windows cURL tidak punya CA bundle lengkap).
+            // Di production (APP_ENV=production) SSL tetap diverifikasi.
+            'http' => [
+                'verify' => env('APP_ENV') !== 'local',
+            ],
         ] : [
             'driver' => 'local',
             'root' => storage_path('app/public'),

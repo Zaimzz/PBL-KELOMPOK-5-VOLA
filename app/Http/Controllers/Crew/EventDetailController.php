@@ -125,9 +125,11 @@ class EventDetailController extends Controller
 
             $requirements = [];
             if ($pos->requirements) {
-                $requirements = array_values(array_filter(
-                    array_map('trim', preg_split('/[\n,]+/', (string) $pos->requirements))
-                ));
+                $text = (string) $pos->requirements;
+                $parts = str_contains($text, "\n")
+                    ? preg_split('/\R+/', $text)
+                    : preg_split('/[\n,]+/', $text);
+                $requirements = array_values(array_filter(array_map('trim', $parts)));
             }
 
             return [

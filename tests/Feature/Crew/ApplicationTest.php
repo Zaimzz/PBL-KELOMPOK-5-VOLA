@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ApplicationStatus;
+use App\Enums\EventStatus;
 use App\Models\Application;
 use App\Models\Event;
 use App\Models\EventPosition;
@@ -109,6 +110,45 @@ test('penolakan pengajuan ulang setelah lamaran berstatus withdrawn tanpa SQL un
         ]);
 
     expect(Application::where('volunteer_profile_id', $volProfile->id)->where('position_id', $position->id)->count())->toBe(1);
+});
+
+test('volunteer tidak dapat melamar event yang sudah ditutup', function () {
+    [$volunteer, , $position, $event] = setupVolunteerWithEvent();
+    $event->update(['status' => EventStatus::Closed]);
+
+    $response = $this->actingAs($volunteer)->postJson(route('applications.store'), [
+        'position_id' => $position->id,
+        'motivation' => 'Saya ingin tetap melamar walau pendaftaran sudah ditutup.',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJson([
+            'success' => false,
+            'message' => 'Event ini sedang tidak menerima pendaftaran.',
+        ]);
+
+    expect(Application::count())->toBe(0);
+});
+
+test('volunteer tidak dapat melamar setelah batas pendaftaran lewat', function () {
+    [$volunteer, , $position, $event] = setupVolunteerWithEvent();
+    $event->update([
+        'status' => EventStatus::Active,
+        'registration_deadline' => now()->subDay()->toDateString(),
+    ]);
+
+    $response = $this->actingAs($volunteer)->postJson(route('applications.store'), [
+        'position_id' => $position->id,
+        'motivation' => 'Saya ingin melamar setelah deadline yang sudah lewat.',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJson([
+            'success' => false,
+            'message' => 'Batas pendaftaran event ini sudah lewat.',
+        ]);
+
+    expect(Application::count())->toBe(0);
 });
 
 test('volunteer dapat melihat halaman lamaran saya dengan status resmi', function () {

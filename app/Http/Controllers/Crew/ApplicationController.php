@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Crew;
 
 use App\Enums\ApplicationStatus;
+use App\Enums\EventStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\EventPosition;
@@ -110,14 +111,33 @@ class ApplicationController extends Controller
             return back()->withErrors(['profile' => $msg]);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'position_id' => 'required|exists:event_positions,id',
             'motivation' => 'required|string|min:20',
             'experience' => 'nullable|string',
             'availability' => 'nullable|string',
         ]);
 
-        $position = EventPosition::with('event')->findOrFail($request->position_id);
+        $position = EventPosition::with('event')->findOrFail($validated['position_id']);
+        $event = $position->event;
+
+        if (! $event || $event->status !== EventStatus::Active) {
+            $msg = 'Event ini sedang tidak menerima pendaftaran.';
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 422);
+            }
+
+            return back()->withErrors(['event' => $msg]);
+        }
+
+        if ($event->registration_deadline && $event->registration_deadline->lt(today())) {
+            $msg = 'Batas pendaftaran event ini sudah lewat.';
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 422);
+            }
+
+            return back()->withErrors(['event' => $msg]);
+        }
 
         $existing = Application::where('volunteer_profile_id', $profile->id)
             ->where('position_id', $position->id)

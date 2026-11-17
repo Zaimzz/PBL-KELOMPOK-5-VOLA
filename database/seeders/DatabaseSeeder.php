@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             EventCategorySeeder::class,
+            PositionTypeSeeder::class,
             AdminUserSeeder::class,
             VolaSampleDataSeeder::class,
         ]);

@@ -6,9 +6,11 @@ use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Event;
+use App\Models\EventPosition;
 use App\Notifications\ApplicationDecided;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ApplicantController extends Controller
@@ -114,23 +116,52 @@ class ApplicantController extends Controller
     /**
      * Accept a volunteer application.
      * Only the EO who owns the event may accept.
+     * The position row is locked so concurrent accepts cannot exceed its quota.
      */
     public function accept(Request $request, Application $application): RedirectResponse
     {
         $this->authorizeApplication($request, $application);
 
-        if (! in_array($application->status, [ApplicationStatus::Pending, ApplicationStatus::Rejected], true)) {
-            return back()->with('error', 'Hanya pendaftar berstatus menunggu atau ditolak yang dapat diterima.');
+        $result = DB::transaction(function () use ($application): string {
+            $position = EventPosition::query()
+                ->whereKey($application->position_id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $application->refresh();
+
+            if ($application->status !== ApplicationStatus::Pending) {
+                return 'invalid_status';
+            }
+
+            $acceptedCount = Application::query()
+                ->where('position_id', $position->id)
+                ->where('status', ApplicationStatus::Accepted)
+                ->count();
+
+            if ($acceptedCount >= $position->quota) {
+                return 'quota_full';
+            }
+
+            $application->update([
+                'status' => ApplicationStatus::Accepted,
+                'decided_at' => now(),
+                'decision_note' => null,
+            ]);
+
+            return 'accepted';
+        });
+
+        if ($result === 'invalid_status') {
+            return back()->with('error', 'Hanya pendaftar berstatus menunggu yang dapat diterima.');
         }
 
-        $application->update([
-            'status' => ApplicationStatus::Accepted,
-            'decided_at' => now(),
-            'decision_note' => null,
-        ]);
+        if ($result === 'quota_full') {
+            return back()->with('error', 'Kuota posisi '.$application->position?->name.' sudah penuh. Pendaftar tidak dapat diterima.');
+        }
 
         // Notify volunteer via Laravel notification system
-        $volunteer = $application->volunteerProfile?->user;
+        $volunteer = $application->fresh()->volunteerProfile?->user;
         if ($volunteer) {
             $volunteer->notify(new ApplicationDecided($application, 'accepted'));
         }
@@ -188,4 +219,3 @@ class ApplicantController extends Controller
         }
     }
 }
-

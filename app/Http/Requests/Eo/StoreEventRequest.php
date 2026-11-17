@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Eo;
 
+use App\Rules\EmailOrPhone;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -33,7 +34,7 @@ class StoreEventRequest extends FormRequest
             'start_time' => ['nullable', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i'],
             'registration_deadline' => ['nullable', 'date'],
-            'contact_info' => ['nullable', 'string', 'max:255'],
+            'contact_info' => ['nullable', 'string', 'max:255', new EmailOrPhone],
             'coordination_link' => ['nullable', 'url', 'max:500'],
             'pic_name' => ['nullable', 'string', 'max:255'],
             'pic_phone' => ['nullable', 'string', 'max:20'],

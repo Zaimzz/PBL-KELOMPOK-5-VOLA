@@ -6,17 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::table('volunteer_profiles', function (Blueprint $table) {
-            $table->string('photo_path')->nullable()->after('bio');
+            if (! Schema::hasColumn('volunteer_profiles', 'photo_path')) {
+                $table->string('photo_path')->nullable()->after('portfolio_path');
+            }
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('volunteer_profiles', function (Blueprint $table) {
-            $table->dropColumn('photo_path');
+            if (Schema::hasColumn('volunteer_profiles', 'photo_path')) {
+                $table->dropColumn('photo_path');
+            }
         });
     }
 };
