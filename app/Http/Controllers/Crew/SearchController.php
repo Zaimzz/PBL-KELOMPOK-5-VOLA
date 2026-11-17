@@ -38,11 +38,11 @@ class SearchController extends Controller
         if ($query !== '') {
             $dbQuery->where(function ($q) use ($query, $operator) {
                 $q->where('title', $operator, '%'.$query.'%')
-                  ->orWhere('location', $operator, '%'.$query.'%')
-                  ->orWhere('city', $operator, '%'.$query.'%')
-                  ->orWhereHas('category', fn ($cq) => $cq->where('name', $operator, '%'.$query.'%'))
-                  ->orWhereHas('organizer', fn ($oq) => $oq->where('organization_name', $operator, '%'.$query.'%'))
-                  ->orWhereHas('positions', fn ($pq) => $pq->where('name', $operator, '%'.$query.'%'));
+                    ->orWhere('location', $operator, '%'.$query.'%')
+                    ->orWhere('city', $operator, '%'.$query.'%')
+                    ->orWhereHas('category', fn ($cq) => $cq->where('name', $operator, '%'.$query.'%'))
+                    ->orWhereHas('organizer', fn ($oq) => $oq->where('organization_name', $operator, '%'.$query.'%'))
+                    ->orWhereHas('positions', fn ($pq) => $pq->where('name', $operator, '%'.$query.'%'));
             });
         }
 
@@ -53,7 +53,7 @@ class SearchController extends Controller
         if ($location !== '' && $location !== 'Semua Lokasi') {
             $dbQuery->where(function ($q) use ($location, $operator) {
                 $q->where('city', $operator, '%'.$location.'%')
-                  ->orWhere('location', $operator, '%'.$location.'%');
+                    ->orWhere('location', $operator, '%'.$location.'%');
             });
         }
 

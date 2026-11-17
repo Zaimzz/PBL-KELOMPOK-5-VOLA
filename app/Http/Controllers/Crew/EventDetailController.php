@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Crew;
 use App\Enums\EventStatus;
 use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Application;
 use App\Models\Event;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -81,6 +82,7 @@ class EventDetailController extends Controller
             'organizer_type' => $organizer?->organization_type ?? 'Penyelenggara Event',
             'organizer_desc' => $organizer?->description ?? 'Penyelenggara event di Indonesia.',
             'organizer_verified' => $isVerified,
+            'organizer_user_id' => $organizer?->user_id,
             'status' => 'Open Volunteer',
             'status_badge' => 'Open Volunteer',
             'status_badge_type' => 'success',
@@ -105,7 +107,22 @@ class EventDetailController extends Controller
             'description' => $model->description ?? '',
         ];
 
-        $positions = $model->positions->map(function ($pos) {
+        $user = auth()->user();
+        $volunteerProfile = $user?->volunteerProfile;
+        $appliedPositionIds = $volunteerProfile
+            ? Application::where('volunteer_profile_id', $volunteerProfile->id)
+                ->pluck('position_id')
+                ->all()
+            : [];
+
+        $positions = $model->positions->map(function ($pos) use ($appliedPositionIds) {
+            $quota = (int) ($pos->quota ?? 0);
+            $filled = Application::where('position_id', $pos->id)
+                ->whereIn('status', ['pending', 'processing', 'accepted'])
+                ->count();
+            $sisaKursi = max(0, $quota - $filled);
+            $pct = $quota > 0 ? min(100, (int) round(($filled / $quota) * 100)) : 0;
+
             $requirements = [];
             if ($pos->requirements) {
                 $text = (string) $pos->requirements;
@@ -119,15 +136,16 @@ class EventDetailController extends Controller
                 'id' => $pos->id,
                 'title' => $pos->name,
                 'badge' => null,
-                'sisa_kursi' => $pos->quota,
+                'sisa_kursi' => $sisaKursi,
                 'description' => $pos->description ?? 'Deskripsi posisi belum tersedia.',
-                'quota' => $pos->quota,
+                'quota' => $quota,
                 'date' => null,
                 'requirements' => $requirements,
                 'is_selected' => false,
-                'capacity' => $pos->quota,
-                'filled' => 0,
-                'percentage' => 0,
+                'is_applied' => in_array($pos->id, $appliedPositionIds, true),
+                'capacity' => $quota,
+                'filled' => $filled,
+                'percentage' => $pct,
             ];
         })->values()->all();
 

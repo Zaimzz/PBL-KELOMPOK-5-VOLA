@@ -28,6 +28,7 @@ class EnsureValidSession
                 $request->session()->regenerateToken();
 
                 return redirect()->route('login')->withErrors([
+                    'auth' => 'Akun Anda telah ditangguhkan karena melanggar ketentuan. Silakan hubungi administrator.',
                     'email' => 'Akun ini ditangguhkan.',
                 ]);
             }
