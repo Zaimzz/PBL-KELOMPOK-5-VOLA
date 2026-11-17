@@ -137,12 +137,8 @@ class ApplicationController extends Controller
 
         Application::create([
             'volunteer_profile_id' => $profile->id,
-            'event_id' => $position->event_id,
             'position_id' => $position->id,
             'status' => ApplicationStatus::Pending,
-            'motivation' => $request->motivation,
-            'experience' => $request->experience,
-            'availability' => $request->availability,
             'cover_letter' => $request->motivation,
             'applied_at' => now(),
         ]);

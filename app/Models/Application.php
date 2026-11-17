@@ -15,13 +15,10 @@ class Application extends Model
 
     protected $fillable = [
         'volunteer_profile_id',
-        'event_id',
         'position_id',
-        'motivation',
-        'experience',
-        'availability',
-        'cover_letter',
         'status',
+        'cover_letter',
+        'motivation',
         'applied_at',
         'decided_at',
         'decision_note',
