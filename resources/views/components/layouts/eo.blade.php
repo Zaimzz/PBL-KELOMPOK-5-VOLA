@@ -75,6 +75,7 @@
                 </div>
 
                 <!-- KEUANGAN -->
+                @if (Route::has('eo.billing.index'))
                 <div class="mb-2">
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2 mt-4">Keuangan</p>
 
@@ -87,6 +88,7 @@
                         Pembayaran & Tagihan
                     </a>
                 </div>
+                @endif
 
                 <!-- AKUN -->
                 <div class="mb-2">

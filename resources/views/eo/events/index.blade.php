@@ -139,7 +139,7 @@
                             <div class="flex items-center gap-2 flex-wrap mt-4">
                                 @php $status = $event->status->value; @endphp
 
-                                @if ($status === 'awaiting_payment')
+                                @if ($status === 'awaiting_payment' && Route::has('eo.billing.index'))
                                     <a href="{{ route('eo.billing.index', ['event_id' => $event->id]) }}"
                                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -35,7 +35,7 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap shrink-0">
-            @if ($event->status->value === 'awaiting_payment')
+            @if ($event->status->value === 'awaiting_payment' && Route::has('eo.billing.index'))
                 <a href="{{ route('eo.billing.index', ['event_id' => $event->id]) }}"
                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors">
                     Bayar Sekarang
