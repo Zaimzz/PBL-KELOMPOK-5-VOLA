@@ -124,12 +124,12 @@ class ApplicationController extends Controller
             ->first();
 
         if ($existing) {
-            $msg = 'Anda sudah mengajukan lamaran untuk posisi ini.';
+            $msg = 'Anda sudah melamar untuk posisi ini.';
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => $msg,
-                ], 422);
+                ], 409);
             }
 
             return back()->withErrors(['position_id' => $msg]);
@@ -147,7 +147,7 @@ class ApplicationController extends Controller
             'applied_at' => now(),
         ]);
 
-        $successMsg = 'Lamaran berhasil diajukan! Menunggu review dari EO.';
+        $successMsg = 'Lamaran berhasil diajukan! Silakan pantau status di menu "Lamaran Saya".';
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,

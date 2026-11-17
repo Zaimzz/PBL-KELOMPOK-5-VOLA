@@ -19,11 +19,10 @@ class EventCategorySeeder extends Seeder
         ];
 
         foreach ($categories as $name) {
-            EventCategory::create([
-                'name' => $name,
-                'slug' => Str::slug($name),
-            ]);
+            EventCategory::firstOrCreate(
+                ['slug' => Str::slug($name)],
+                ['name' => $name]
+            );
         }
-
     }
 }

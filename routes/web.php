@@ -3,6 +3,7 @@
 use App\Enums\EventStatus;
 use App\Http\Controllers\Admin\ActiveEventController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminNavbarController;
 use App\Http\Controllers\Admin\EoVerificationController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ReviewEventController;
@@ -291,6 +292,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
             ->name('reports');
 
         // Transactions
+        // Transactions
         Route::get('/transactions', [TransactionController::class, 'index'])
             ->name('transactions.index');
 
@@ -311,6 +313,16 @@ Route::middleware(['auth', 'verified', 'role:admin'])
 
         Route::get('/transactions-list', [TransactionController::class, 'index'])
             ->name('transactions');
+
+        // API Navbar Admin (Global Search & Notifikasi Dinamis)
+        Route::get('/api/global-search', [AdminNavbarController::class, 'globalSearch'])
+            ->name('api.global-search');
+        Route::get('/api/notifications', [AdminNavbarController::class, 'getNotifications'])
+            ->name('api.notifications');
+        Route::post('/api/notifications/mark-all-read', [AdminNavbarController::class, 'markAllAsRead'])
+            ->name('api.notifications.mark-all-read');
+        Route::post('/api/notifications/{id}/read', [AdminNavbarController::class, 'markAsRead'])
+            ->name('api.notifications.read');
     });
 
 require __DIR__.'/auth.php';

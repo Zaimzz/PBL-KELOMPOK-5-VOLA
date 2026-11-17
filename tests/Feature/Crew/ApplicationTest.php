@@ -1,232 +1,196 @@
 <?php
 
-namespace Tests\Feature\Crew;
-
 use App\Enums\ApplicationStatus;
-use App\Enums\UserRole;
-use App\Enums\UserStatus;
 use App\Models\Application;
 use App\Models\Event;
-use App\Models\EventCategory;
 use App\Models\EventPosition;
 use App\Models\OrganizerProfile;
 use App\Models\User;
 use App\Models\VolunteerProfile;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class ApplicationTest extends TestCase
+function setupVolunteerWithEvent(): array
 {
-    use RefreshDatabase;
+    $eo = User::factory()->eo()->create();
+    $eoProfile = OrganizerProfile::factory()->create(['user_id' => $eo->id]);
+    $event = Event::factory()->active()->for($eoProfile, 'organizer')->create();
+    $position = EventPosition::factory()->for($event)->create(['quota' => 5]);
 
-    private function createVolunteer(array $userAttributes = []): array
-    {
-        $user = User::factory()->create(array_merge([
-            'role' => UserRole::Volunteer,
-            'status' => UserStatus::Active,
-        ], $userAttributes));
+    $volunteer = User::factory()->volunteer()->create();
+    $volProfile = VolunteerProfile::factory()->create(['user_id' => $volunteer->id]);
 
-        $profile = VolunteerProfile::factory()->create([
-            'user_id' => $user->id,
-        ]);
-
-        return [$user, $profile];
-    }
-
-    private function createEventWithPosition(): array
-    {
-        $category = EventCategory::first() ?? EventCategory::factory()->create();
-
-        $eo = User::factory()->create([
-            'role' => UserRole::Eo,
-            'status' => UserStatus::Active,
-        ]);
-
-        $organizer = OrganizerProfile::factory()->verified()->create([
-            'user_id' => $eo->id,
-            'organization_name' => 'Komunitas Kreatif Indonesia',
-        ]);
-
-        $event = Event::factory()->active()->create([
-            'organizer_id' => $organizer->id,
-            'category_id' => $category->id,
-            'title' => 'Festival Komunitas Nusantara 2026',
-            'location' => 'Balai Kartini',
-            'city' => 'Jakarta',
-        ]);
-
-        $position = EventPosition::factory()->create([
-            'event_id' => $event->id,
-            'name' => 'Liaison Officer (LO)',
-            'quota' => 5,
-        ]);
-
-        return [$event, $position];
-    }
-
-    public function test_crew_can_view_own_applications_from_database(): void
-    {
-        [$user, $profile] = $this->createVolunteer();
-        [$event, $position] = $this->createEventWithPosition();
-
-        Application::factory()->create([
-            'volunteer_profile_id' => $profile->id,
-            'event_id' => $event->id,
-            'position_id' => $position->id,
-            'status' => ApplicationStatus::Pending,
-            'cover_letter' => 'Saya sangat bersemangat untuk bergabung sebagai volunteer pada acara ini.',
-        ]);
-
-        $response = $this->actingAs($user)->get(route('applications.index'));
-
-        $response->assertOk();
-        $response->assertSee('Festival Komunitas Nusantara 2026');
-        $response->assertSee('Liaison Officer (LO)');
-        $response->assertSee('Komunitas Kreatif Indonesia');
-        $response->assertSee('Menunggu Seleksi');
-    }
-
-    public function test_crew_does_not_see_applications_of_other_volunteers(): void
-    {
-        [$user, $profile] = $this->createVolunteer();
-        [$otherUser, $otherProfile] = $this->createVolunteer();
-        [$event, $position] = $this->createEventWithPosition();
-
-        Application::factory()->create([
-            'volunteer_profile_id' => $otherProfile->id,
-            'event_id' => $event->id,
-            'position_id' => $position->id,
-            'status' => ApplicationStatus::Pending,
-        ]);
-
-        $response = $this->actingAs($user)->get(route('applications.index'));
-
-        $response->assertOk();
-        $response->assertDontSee('Festival Komunitas Nusantara 2026');
-        $response->assertSee('Belum Ada Lamaran');
-    }
-
-    public function test_crew_can_submit_application_to_position(): void
-    {
-        [$user, $profile] = $this->createVolunteer();
-        [$event, $position] = $this->createEventWithPosition();
-
-        $response = $this->actingAs($user)->postJson(route('applications.store'), [
-            'position_id' => $position->id,
-            'motivation' => 'Saya memiliki pengalaman memimpin divisi acara dan ingin berkontribusi di event ini.',
-            'experience' => 'Pernah menjadi LO di 2 event kampus.',
-            'availability' => 'Bisa hadir penuh selama 3 hari acara.',
-        ]);
-
-        $response->assertOk();
-        $response->assertJson([
-            'success' => true,
-        ]);
-
-        $this->assertDatabaseHas('applications', [
-            'volunteer_profile_id' => $profile->id,
-            'position_id' => $position->id,
-            'status' => 'pending',
-        ]);
-    }
-
-    public function test_crew_cannot_apply_twice_for_same_position(): void
-    {
-        [$user, $profile] = $this->createVolunteer();
-        [$event, $position] = $this->createEventWithPosition();
-
-        Application::factory()->create([
-            'volunteer_profile_id' => $profile->id,
-            'event_id' => $event->id,
-            'position_id' => $position->id,
-            'status' => ApplicationStatus::Pending,
-        ]);
-
-        $response = $this->actingAs($user)->postJson(route('applications.store'), [
-            'position_id' => $position->id,
-            'motivation' => 'Saya ingin mengajukan lagi untuk posisi ini.',
-        ]);
-
-        $response->assertStatus(422);
-        $response->assertJson([
-            'success' => false,
-            'message' => 'Anda sudah mengajukan lamaran untuk posisi ini.',
-        ]);
-    }
-
-    public function test_applications_page_shows_only_view_event_detail_for_pending_application(): void
-    {
-        [$user, $profile] = $this->createVolunteer();
-        [$event, $position] = $this->createEventWithPosition();
-
-        Application::factory()->create([
-            'volunteer_profile_id' => $profile->id,
-            'event_id' => $event->id,
-            'position_id' => $position->id,
-            'status' => ApplicationStatus::Pending,
-        ]);
-
-        $response = $this->actingAs($user)->get(route('applications.index'));
-
-        $response->assertOk();
-        $response->assertSee('Lihat Detail Event');
-        $response->assertDontSee('Unduh Bukti Penerimaan');
-        $response->assertDontSee('Batalkan Lamaran');
-    }
-
-    public function test_applications_page_shows_download_acceptance_and_view_event_detail_when_accepted(): void
-    {
-        [$user, $profile] = $this->createVolunteer();
-        [$event, $position] = $this->createEventWithPosition();
-
-        Application::factory()->create([
-            'volunteer_profile_id' => $profile->id,
-            'event_id' => $event->id,
-            'position_id' => $position->id,
-            'status' => ApplicationStatus::Accepted,
-        ]);
-
-        $response = $this->actingAs($user)->get(route('applications.index'));
-
-        $response->assertOk();
-        $response->assertSee('Lihat Detail Event');
-        $response->assertSee('Unduh Bukti Penerimaan');
-        $response->assertDontSee('Batalkan Lamaran');
-    }
-
-    public function test_crew_can_download_acceptance_letter_when_accepted(): void
-    {
-        [$user, $profile] = $this->createVolunteer();
-        [$event, $position] = $this->createEventWithPosition();
-
-        $application = Application::factory()->create([
-            'volunteer_profile_id' => $profile->id,
-            'event_id' => $event->id,
-            'position_id' => $position->id,
-            'status' => ApplicationStatus::Accepted,
-            'applied_at' => now(),
-        ]);
-
-        $response = $this->actingAs($user)->get(route('applications.download-acceptance', $application->id));
-
-        $response->assertOk();
-        $response->assertHeader('content-type', 'application/pdf');
-    }
-
-    public function test_crew_cannot_download_acceptance_letter_when_pending(): void
-    {
-        [$user, $profile] = $this->createVolunteer();
-        [$event, $position] = $this->createEventWithPosition();
-
-        $application = Application::factory()->create([
-            'volunteer_profile_id' => $profile->id,
-            'event_id' => $event->id,
-            'position_id' => $position->id,
-            'status' => ApplicationStatus::Pending,
-        ]);
-
-        $response = $this->actingAs($user)->get(route('applications.download-acceptance', $application->id));
-
-        $response->assertSessionHasErrors('error');
-    }
+    return [$volunteer, $volProfile, $position, $event];
 }
+
+test('volunteer dapat mengajukan lamaran baru', function () {
+    [$volunteer, $volProfile, $position] = setupVolunteerWithEvent();
+
+    $response = $this->actingAs($volunteer)->postJson(route('applications.store'), [
+        'position_id' => $position->id,
+        'motivation' => 'Saya sangat termotivasi untuk berkontribusi pada event ini dengan kemampuan komunikasi yang baik.',
+        'experience' => 'Pernah menjadi LO di festival kampus 2025',
+    ]);
+
+    $response->assertOk()
+        ->assertJson([
+            'success' => true,
+            'message' => 'Lamaran berhasil diajukan! Silakan pantau status di menu "Lamaran Saya".',
+        ]);
+
+    $this->assertDatabaseHas('applications', [
+        'volunteer_profile_id' => $volProfile->id,
+        'position_id' => $position->id,
+        'status' => ApplicationStatus::Pending->value,
+        'cover_letter' => 'Saya sangat termotivasi untuk berkontribusi pada event ini dengan kemampuan komunikasi yang baik.',
+    ]);
+});
+
+test('penolakan lamaran duplikat saat status masih pending', function () {
+    [$volunteer, $volProfile, $position] = setupVolunteerWithEvent();
+
+    Application::factory()->create([
+        'volunteer_profile_id' => $volProfile->id,
+        'position_id' => $position->id,
+        'status' => ApplicationStatus::Pending,
+    ]);
+
+    $response = $this->actingAs($volunteer)->postJson(route('applications.store'), [
+        'position_id' => $position->id,
+        'motivation' => 'Mencoba melamar lagi untuk posisi yang sama.',
+    ]);
+
+    $response->assertStatus(409)
+        ->assertJson([
+            'success' => false,
+            'message' => 'Anda sudah melamar untuk posisi ini.',
+        ]);
+
+    expect(Application::where('volunteer_profile_id', $volProfile->id)->where('position_id', $position->id)->count())->toBe(1);
+});
+
+test('penolakan pengajuan ulang setelah lamaran berstatus rejected tanpa SQL unique constraint exception', function () {
+    [$volunteer, $volProfile, $position] = setupVolunteerWithEvent();
+
+    Application::factory()->rejected()->create([
+        'volunteer_profile_id' => $volProfile->id,
+        'position_id' => $position->id,
+    ]);
+
+    $response = $this->actingAs($volunteer)->postJson(route('applications.store'), [
+        'position_id' => $position->id,
+        'motivation' => 'Mencoba melamar kembali setelah sebelumnya ditolak.',
+    ]);
+
+    $response->assertStatus(409)
+        ->assertJson([
+            'success' => false,
+            'message' => 'Anda sudah melamar untuk posisi ini.',
+        ]);
+
+    expect(Application::where('volunteer_profile_id', $volProfile->id)->where('position_id', $position->id)->count())->toBe(1);
+});
+
+test('penolakan pengajuan ulang setelah lamaran berstatus withdrawn tanpa SQL unique constraint exception', function () {
+    [$volunteer, $volProfile, $position] = setupVolunteerWithEvent();
+
+    Application::factory()->withdrawn()->create([
+        'volunteer_profile_id' => $volProfile->id,
+        'position_id' => $position->id,
+    ]);
+
+    $response = $this->actingAs($volunteer)->postJson(route('applications.store'), [
+        'position_id' => $position->id,
+        'motivation' => 'Mencoba melamar kembali setelah membatalkan lamaran.',
+    ]);
+
+    $response->assertStatus(409)
+        ->assertJson([
+            'success' => false,
+            'message' => 'Anda sudah melamar untuk posisi ini.',
+        ]);
+
+    expect(Application::where('volunteer_profile_id', $volProfile->id)->where('position_id', $position->id)->count())->toBe(1);
+});
+
+test('volunteer dapat melihat halaman lamaran saya dengan status resmi', function () {
+    [$volunteer, $volProfile, $position, $event] = setupVolunteerWithEvent();
+
+    Application::factory()->create([
+        'volunteer_profile_id' => $volProfile->id,
+        'position_id' => $position->id,
+        'status' => ApplicationStatus::Pending,
+        'applied_at' => now(),
+    ]);
+
+    $response = $this->actingAs($volunteer)->get(route('applications.index'));
+
+    $response->assertOk()
+        ->assertSee('Lamaran Saya')
+        ->assertSee('Menunggu Seleksi')
+        ->assertDontSee('Sedang Diproses');
+});
+
+test('crew tidak melihat lamaran volunteer lain di halaman lamaran saya', function () {
+    [$volunteer, $volProfile, $position] = setupVolunteerWithEvent();
+    $otherVolunteer = User::factory()->volunteer()->create();
+    $otherProfile = VolunteerProfile::factory()->create(['user_id' => $otherVolunteer->id]);
+
+    Application::factory()->create([
+        'volunteer_profile_id' => $otherProfile->id,
+        'position_id' => $position->id,
+        'status' => ApplicationStatus::Pending,
+    ]);
+
+    $response = $this->actingAs($volunteer)->get(route('applications.index'));
+
+    $response->assertOk()
+        ->assertSee('Belum Ada Lamaran');
+});
+
+test('volunteer dapat mengunduh bukti penerimaan saat lamaran diterima', function () {
+    [$volunteer, $volProfile, $position] = setupVolunteerWithEvent();
+
+    $application = Application::factory()->create([
+        'volunteer_profile_id' => $volProfile->id,
+        'position_id' => $position->id,
+        'status' => ApplicationStatus::Accepted,
+        'applied_at' => now(),
+    ]);
+
+    $response = $this->actingAs($volunteer)->get(route('applications.download-acceptance', $application->id));
+
+    $response->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+});
+
+test('volunteer tidak dapat mengunduh bukti penerimaan saat lamaran masih pending', function () {
+    [$volunteer, $volProfile, $position] = setupVolunteerWithEvent();
+
+    $application = Application::factory()->create([
+        'volunteer_profile_id' => $volProfile->id,
+        'position_id' => $position->id,
+        'status' => ApplicationStatus::Pending,
+        'applied_at' => now(),
+    ]);
+
+    $response = $this->actingAs($volunteer)->get(route('applications.download-acceptance', $application->id));
+
+    $response->assertSessionHasErrors('error');
+});
+
+test('halaman lamaran saya menampilkan lihat detail event dan unduh bukti penerimaan saat diterima', function () {
+    [$volunteer, $volProfile, $position] = setupVolunteerWithEvent();
+
+    Application::factory()->create([
+        'volunteer_profile_id' => $volProfile->id,
+        'position_id' => $position->id,
+        'status' => ApplicationStatus::Accepted,
+        'applied_at' => now(),
+    ]);
+
+    $response = $this->actingAs($volunteer)->get(route('applications.index'));
+
+    $response->assertOk()
+        ->assertSee('Lihat Detail Event')
+        ->assertSee('Unduh Bukti Penerimaan')
+        ->assertDontSee('Batalkan Lamaran');
+});

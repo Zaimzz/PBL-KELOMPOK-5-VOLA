@@ -38,17 +38,20 @@ class ReportController extends Controller
 
         // Filter Pencarian
         if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('ticket_number', 'like', "%{$search}%")
-                    ->orWhere('reason', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhereHas('reporter', function ($rq) use ($search) {
-                        $rq->where('name', 'like', "%{$search}%")
-                            ->orWhere('email', 'like', "%{$search}%");
+            $cleanSearch = ltrim($search, '#');
+            $query->where(function ($q) use ($search, $cleanSearch) {
+                $operator = $q->getConnection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
+                $q->where('ticket_number', $operator, "%{$cleanSearch}%")
+                    ->orWhere('ticket_number', $operator, "%{$search}%")
+                    ->orWhere('reason', $operator, "%{$search}%")
+                    ->orWhere('description', $operator, "%{$search}%")
+                    ->orWhereHas('reporter', function ($rq) use ($search, $operator) {
+                        $rq->where('name', $operator, "%{$search}%")
+                            ->orWhere('email', $operator, "%{$search}%");
                     })
-                    ->orWhereHas('reported', function ($tq) use ($search) {
-                        $tq->where('name', 'like', "%{$search}%")
-                            ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhereHas('reported', function ($tq) use ($search, $operator) {
+                        $tq->where('name', $operator, "%{$search}%")
+                            ->orWhere('email', $operator, "%{$search}%");
                     });
             });
         }
