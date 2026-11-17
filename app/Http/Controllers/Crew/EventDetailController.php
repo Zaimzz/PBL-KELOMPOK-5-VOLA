@@ -107,7 +107,15 @@ class EventDetailController extends Controller
             'description' => $model->description ?? '',
         ];
 
-        $positions = $model->positions->map(function ($pos) {
+        $user = auth()->user();
+        $volunteerProfile = $user?->volunteerProfile;
+        $appliedPositionIds = $volunteerProfile
+            ? Application::where('volunteer_profile_id', $volunteerProfile->id)
+                ->pluck('position_id')
+                ->all()
+            : [];
+
+        $positions = $model->positions->map(function ($pos) use ($appliedPositionIds) {
             $quota = (int) ($pos->quota ?? 0);
             $filled = Application::where('position_id', $pos->id)
                 ->whereIn('status', ['pending', 'processing', 'accepted'])
@@ -132,6 +140,7 @@ class EventDetailController extends Controller
                 'date' => null,
                 'requirements' => $requirements,
                 'is_selected' => false,
+                'is_applied' => in_array($pos->id, $appliedPositionIds, true),
                 'capacity' => $quota,
                 'filled' => $filled,
                 'percentage' => $pct,

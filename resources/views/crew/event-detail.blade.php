@@ -28,6 +28,11 @@
                 alert('Silakan pilih posisi terlebih dahulu!');
                 return;
             }
+            if (this.selectedPosition && this.selectedPosition.is_applied) {
+                this.modalMessage = 'Anda sudah melamar untuk posisi ini. Silakan pilih posisi lain jika ingin mendaftar di event ini.';
+                this.showErrorModal = true;
+                return;
+            }
             this.showApplicationForm = true;
             this.$nextTick(() => {
                 document.getElementById('application-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -63,6 +68,11 @@
                 if (body.success) {
                     this.modalMessage = body.message;
                     this.showSuccessModal = true;
+
+                    const pos = this.positions.find(p => p.id === this.selectedPositionId);
+                    if (pos) {
+                        pos.is_applied = true;
+                    }
                     
                     this.showApplicationForm = false;
                     this.selectedPositionId = null;
@@ -291,6 +301,14 @@
                                 @if(!empty($position['badge']))
                                     <span class="px-3 py-1 bg-[#4F46E5] text-white text-xs font-bold rounded-full">{{ $position['badge'] }}</span>
                                 @endif
+                                <template x-if="positions.find(p => p.id === {{ $position['id'] }})?.is_applied">
+                                    <span class="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200 flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        Sudah Dilamar
+                                    </span>
+                                </template>
                                 <span class="px-3 py-1 bg-orange-50 text-orange-600 text-xs font-bold rounded-full border border-orange-100">
                                     Sisa {{ $position['sisa_kursi'] }} Kursi
                                 </span>
@@ -300,7 +318,7 @@
                             <button @click.stop="selectPosition({{ $position['id'] }})" 
                                     class="ml-4 px-4 py-2 text-sm font-bold rounded-xl transition whitespace-nowrap flex items-center gap-1"
                                     :class="selectedPositionId === {{ $position['id'] }} ? 'bg-[#4F46E5] text-white hover:bg-indigo-700' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'">
-                                Pilih Posisi
+                                <span x-text="positions.find(p => p.id === {{ $position['id'] }})?.is_applied ? 'Lihat Pilihan' : 'Pilih Posisi'"></span>
                                 <svg x-show="selectedPositionId === {{ $position['id'] }}" 
                                      class="w-4 h-4" 
                                      fill="none" 
@@ -526,14 +544,41 @@
                     </template>
                 </div>
 
-                <button @click="openApplicationForm()" 
-                        class="w-full py-3 bg-[#4F46E5] text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-200">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    Ajukan Lamaran Volunteer
-                </button>
-                <p class="text-[10px] text-gray-400 text-center mt-3">Pendaftaran gratis tanpa dipungut biaya apapun.</p>
+                <template x-if="selectedPosition && selectedPosition.is_applied">
+                    <div class="space-y-3">
+                        <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+                            <div class="flex items-center gap-2 text-emerald-800 text-xs font-bold mb-1">
+                                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span>Anda sudah melamar posisi ini</span>
+                            </div>
+                            <p class="text-[11px] text-emerald-700 leading-relaxed">
+                                Anda tidak dapat melamar posisi yang sama dua kali. Namun, Anda tetap bisa memilih & melamar <strong class="font-bold">posisi lain</strong> di event ini.
+                            </p>
+                        </div>
+                        <a href="{{ route('applications.index') }}" 
+                           class="w-full py-3 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-200">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                            </svg>
+                            Pantau di Lamaran Saya
+                        </a>
+                    </div>
+                </template>
+
+                <template x-if="!selectedPosition || !selectedPosition.is_applied">
+                    <div>
+                        <button @click="openApplicationForm()" 
+                                class="w-full py-3 bg-[#4F46E5] text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-200">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Ajukan Lamaran Volunteer
+                        </button>
+                        <p class="text-[10px] text-gray-400 text-center mt-3">Pendaftaran gratis tanpa dipungut biaya apapun.</p>
+                    </div>
+                </template>
             </div>
 
             <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">

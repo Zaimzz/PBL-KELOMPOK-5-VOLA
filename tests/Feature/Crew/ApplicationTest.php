@@ -194,3 +194,48 @@ test('halaman lamaran saya menampilkan lihat detail event dan unduh bukti peneri
         ->assertSee('Unduh Bukti Penerimaan')
         ->assertDontSee('Batalkan Lamaran');
 });
+
+test('volunteer dapat mendaftar posisi berbeda dalam satu event yang sama', function () {
+    [$volunteer, $volProfile, $position1, $event] = setupVolunteerWithEvent();
+    $position2 = EventPosition::factory()->for($event)->create(['name' => 'Koordinator Lapangan', 'quota' => 3]);
+
+    // Lamar posisi 1
+    $response1 = $this->actingAs($volunteer)->postJson(route('applications.store'), [
+        'position_id' => $position1->id,
+        'motivation' => 'Motivasi yang cukup panjang untuk posisi pertama.',
+    ]);
+    $response1->assertOk()->assertJson(['success' => true]);
+
+    // Lamar posisi 2 di event yang sama
+    $response2 = $this->actingAs($volunteer)->postJson(route('applications.store'), [
+        'position_id' => $position2->id,
+        'motivation' => 'Motivasi yang cukup panjang untuk posisi kedua di event yang sama.',
+    ]);
+    $response2->assertOk()->assertJson(['success' => true]);
+
+    // Coba lamar posisi 1 lagi (harus ditolak 409)
+    $response3 = $this->actingAs($volunteer)->postJson(route('applications.store'), [
+        'position_id' => $position1->id,
+        'motivation' => 'Mencoba melamar lagi posisi pertama yang sama.',
+    ]);
+    $response3->assertStatus(409)->assertJson(['success' => false]);
+
+    expect(Application::where('volunteer_profile_id', $volProfile->id)->count())->toBe(2);
+});
+
+test('halaman detail event menandai posisi yang sudah dilamar', function () {
+    [$volunteer, $volProfile, $position, $event] = setupVolunteerWithEvent();
+
+    Application::factory()->create([
+        'volunteer_profile_id' => $volProfile->id,
+        'position_id' => $position->id,
+        'status' => ApplicationStatus::Pending,
+        'applied_at' => now(),
+    ]);
+
+    $response = $this->actingAs($volunteer)->get(route('events.detail', $event->id));
+
+    $response->assertOk()
+        ->assertSee('Sudah Dilamar')
+        ->assertSee('Anda sudah melamar posisi ini');
+});
