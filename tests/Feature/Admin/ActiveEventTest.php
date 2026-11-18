@@ -234,4 +234,80 @@ class ActiveEventTest extends TestCase
         $responseDraft = $this->actingAs($this->admin)->get(route('admin.active-events.show', $draft));
         $responseDraft->assertStatus(404);
     }
+
+    public function test_filter_active_events_by_ditutup_status(): void
+    {
+        // Event 1: Closed with future end_date (should appear under 'ditutup')
+        $closedEvent = Event::factory()->create([
+            'organizer_id' => $this->organizer->id,
+            'title' => 'Workshop UI/UX Terpadu',
+            'status' => EventStatus::Closed,
+            'end_date' => now()->addDays(2),
+        ]);
+
+        // Event 2: Active event (should not appear under 'ditutup')
+        $activeEvent = Event::factory()->create([
+            'organizer_id' => $this->organizer->id,
+            'title' => 'Festival Musik Tahunan',
+            'status' => EventStatus::Active,
+            'end_date' => now()->addDays(5),
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.active-events.index', [
+            'status' => 'ditutup',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertSee('Workshop UI/UX Terpadu');
+        $response->assertDontSee('Festival Musik Tahunan');
+    }
+
+    public function test_show_endpoint_returns_has_poster_and_poster_url(): void
+    {
+        $eventWithPoster = Event::factory()->create([
+            'organizer_id' => $this->organizer->id,
+            'title' => 'Konser Amal Peduli',
+            'status' => EventStatus::Active,
+            'poster_path' => 'events/posters/sample-poster.jpg',
+        ]);
+
+        $response = $this->actingAs($this->admin)->getJson(route('admin.active-events.show', $eventWithPoster));
+        $response->assertStatus(200);
+        $response->assertJson([
+            'id' => $eventWithPoster->id,
+            'has_poster' => true,
+        ]);
+        $this->assertNotNull($response->json('poster_url'));
+
+        $eventWithoutPoster = Event::factory()->create([
+            'organizer_id' => $this->organizer->id,
+            'title' => 'Seminar Tanpa Poster',
+            'status' => EventStatus::Active,
+            'poster_path' => null,
+        ]);
+
+        $responseEmpty = $this->actingAs($this->admin)->getJson(route('admin.active-events.show', $eventWithoutPoster));
+        $responseEmpty->assertStatus(200);
+        $responseEmpty->assertJson([
+            'id' => $eventWithoutPoster->id,
+            'has_poster' => false,
+            'poster_url' => null,
+        ]);
+    }
+
+    public function test_table_and_modal_contain_poster_preview_lightbox_triggers(): void
+    {
+        $event = Event::factory()->create([
+            'organizer_id' => $this->organizer->id,
+            'title' => 'Pameran Fotografi Nasional',
+            'status' => EventStatus::Active,
+            'poster_path' => 'events/posters/foto-expo.png',
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.active-events.index'));
+        $response->assertStatus(200);
+        $response->assertSee('openAdminLightbox');
+        $response->assertSee('Lihat Poster Event');
+        $response->assertSee('Poster Event');
+    }
 }

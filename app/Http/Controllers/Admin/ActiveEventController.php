@@ -10,7 +10,6 @@ use App\Models\Event;
 use App\Models\EventCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 
 class ActiveEventController extends Controller
 {
@@ -22,7 +21,7 @@ class ActiveEventController extends Controller
         $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
             'category' => ['nullable', 'string', 'max:50'],
-            'status' => ['nullable', 'string', 'in:all,buka_rekrutmen,sedang_berjalan,selesai,active,closed,finished'],
+            'status' => ['nullable', 'string', 'in:all,buka_rekrutmen,sedang_berjalan,selesai,ditutup,active,closed,finished'],
         ]);
 
         $allowedStatuses = [
@@ -85,6 +84,12 @@ class ActiveEventController extends Controller
                             ->orWhereDate('end_date', '>=', $today);
                     })
                     ->whereDate('registration_deadline', '<', $today);
+            } elseif ($status === 'ditutup') {
+                $query->where('status', EventStatus::Closed)
+                    ->where(function ($q) use ($today) {
+                        $q->whereNull('end_date')
+                            ->orWhereDate('end_date', '>=', $today);
+                    });
             } elseif ($status === 'selesai' || $status === 'finished') {
                 $query->where(function ($q) use ($today) {
                     $q->where('status', EventStatus::Finished)
@@ -168,6 +173,8 @@ class ActiveEventController extends Controller
             $statusBadge = 'Selesai';
         } elseif ($isRegistrationOpen) {
             $statusBadge = 'Buka Rekrutmen';
+        } elseif ($event->status === EventStatus::Closed) {
+            $statusBadge = 'Ditutup';
         }
 
         $data = [
@@ -193,7 +200,9 @@ class ActiveEventController extends Controller
             'total_quota' => $totalQuota,
             'accepted_count' => $acceptedCount,
             'progress_percent' => $progressPercent,
-            'poster_url' => $event->poster_path ? Storage::url($event->poster_path) : null,
+            'poster_path' => $event->poster_path,
+            'has_poster' => ! empty($event->poster_path),
+            'poster_url' => ! empty($event->poster_path) ? $event->poster_url : null,
             'benefits' => is_array($event->benefits) ? $event->benefits : ($event->benefits ? [$event->benefits] : []),
             'positions' => $event->positions->map(fn ($p) => [
                 'name' => $p->name,
