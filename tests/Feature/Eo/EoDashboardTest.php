@@ -59,6 +59,31 @@ test('eo dashboard tidak menampilkan event milik EO lain', function () {
         ->assertDontSee('Event Orang Lain');
 });
 
+test('eo dashboard menghitung status event dengan benar dari database', function () {
+    $eo = User::factory()->eo()->create();
+    $profile = OrganizerProfile::factory()->verified()->create(['user_id' => $eo->id]);
+
+    Event::factory()->for($profile, 'organizer')->create(['status' => 'draft']);
+    Event::factory()->for($profile, 'organizer')->create(['status' => 'draft']);
+    Event::factory()->pendingReview()->for($profile, 'organizer')->create();
+    Event::factory()->active()->for($profile, 'organizer')->create();
+    Event::factory()->rejected()->for($profile, 'organizer')->create();
+
+    // Events owned by another EO must not be counted
+    $otherEo = User::factory()->eo()->create();
+    $otherProfile = OrganizerProfile::factory()->verified()->create(['user_id' => $otherEo->id]);
+    Event::factory()->for($otherProfile, 'organizer')->create(['status' => 'draft']);
+
+    $this->actingAs($eo)
+        ->get(route('eo.dashboard'))
+        ->assertOk()
+        ->assertViewHas('totalEvents', 5)
+        ->assertViewHas('draftCount', 2)
+        ->assertViewHas('pendingReviewCount', 1)
+        ->assertViewHas('awaitingPaymentCount', 0)
+        ->assertViewHas('rejectedCount', 1);
+});
+
 test('eo diarahkan ke eo.dashboard setelah login', function () {
     $eo = User::factory()->eo()->create(['password' => bcrypt('password')]);
 

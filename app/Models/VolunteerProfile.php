@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class VolunteerProfile extends Model
 {
@@ -66,6 +67,39 @@ class VolunteerProfile extends Model
         return [
             'skills' => 'array',
         ];
+    }
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (! $this->photo_path) {
+            return null;
+        }
+
+        return filter_var($this->photo_path, FILTER_VALIDATE_URL)
+            ? $this->photo_path
+            : Storage::disk('public')->url($this->photo_path);
+    }
+
+    public function getCvUrlAttribute(): ?string
+    {
+        if (! $this->cv_path) {
+            return null;
+        }
+
+        return filter_var($this->cv_path, FILTER_VALIDATE_URL)
+            ? $this->cv_path
+            : Storage::disk('public')->url($this->cv_path);
+    }
+
+    public function getPortfolioUrlAttribute(): ?string
+    {
+        if (! $this->portfolio_path) {
+            return null;
+        }
+
+        return filter_var($this->portfolio_path, FILTER_VALIDATE_URL)
+            ? $this->portfolio_path
+            : Storage::disk('public')->url($this->portfolio_path);
     }
 
     public function user(): BelongsTo

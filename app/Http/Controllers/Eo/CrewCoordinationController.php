@@ -129,12 +129,7 @@ class CrewCoordinationController extends Controller
             ->first();
 
         if (! $event) {
-            // Fallback to first owned event
-            $event = Event::where('organizer_id', $organizerProfile->id)->first();
-        }
-
-        if (! $event) {
-            return redirect()->route('eo.crew.index')->with('error', 'Event tidak ditemukan.');
+            abort(403, 'Anda tidak memiliki akses ke event ini.');
         }
 
         $filterPositionId = $request->query('position_id');

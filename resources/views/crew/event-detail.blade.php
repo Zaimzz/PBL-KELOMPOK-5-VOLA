@@ -1,5 +1,171 @@
 <x-layouts.crew title="{{ $eventData['title'] }} - VOLA">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6"
+     x-data="{ 
+        selectedPositionId: null, 
+        activeTab: 'positions', 
+        showApplicationForm: false,
+        isSubmitting: false,
+        showSuccessModal: false,
+        showErrorModal: false,
+        modalMessage: '',
+        positions: {{ Js::from($positions) }},
+        applicationData: {
+            motivation: '',
+            experience: '',
+            availability: '',
+            agree: false
+        },
+        get selectedPosition() {
+            if (this.selectedPositionId === null) return null;
+            return this.positions.find(p => p.id === this.selectedPositionId) || null;
+        },
+        selectPosition(positionId) {
+            this.selectedPositionId = positionId;
+            this.showApplicationForm = false;
+        },
+        openApplicationForm() {
+            if (this.selectedPositionId === null) {
+                alert('Silakan pilih posisi terlebih dahulu!');
+                return;
+            }
+            if (this.selectedPosition && this.selectedPosition.is_applied) {
+                this.modalMessage = 'Anda sudah melamar untuk posisi ini. Silakan pilih posisi lain jika ingin mendaftar di event ini.';
+                this.showErrorModal = true;
+                return;
+            }
+            this.showApplicationForm = true;
+            this.$nextTick(() => {
+                document.getElementById('application-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        },
+        submitApplication() {
+            if (!this.applicationData.agree) {
+                this.modalMessage = 'Anda harus menyetujui syarat dan ketentuan!';
+                this.showErrorModal = true;
+                return;
+            }
+            
+            this.isSubmitting = true;
+            
+            const formData = new FormData();
+            formData.append('position_id', this.selectedPositionId);
+            formData.append('motivation', this.applicationData.motivation);
+            formData.append('experience', this.applicationData.experience);
+            formData.append('availability', this.applicationData.availability);
+            formData.append('agree', this.applicationData.agree ? '1' : '0');
+            formData.append('_token', '{{ csrf_token() }}');
+
+            fetch('{{ route('applications.store') }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                if (body.success) {
+                    this.modalMessage = body.message;
+                    this.showSuccessModal = true;
+
+                    const pos = this.positions.find(p => p.id === this.selectedPositionId);
+                    if (pos) {
+                        pos.is_applied = true;
+                    }
+                    
+                    this.showApplicationForm = false;
+                    this.selectedPositionId = null;
+                    this.applicationData = { motivation: '', experience: '', availability: '', agree: false };
+                } else {
+                    this.modalMessage = body.message || 'Terjadi kesalahan saat mengajukan lamaran.';
+                    this.showErrorModal = true;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.modalMessage = 'Terjadi kesalahan jaringan. Silakan coba lagi.';
+                this.showErrorModal = true;
+            })
+            .finally(() => {
+                this.isSubmitting = false;
+            });
+        },
+
+        showReportModal: false,
+        showReportSuccessModal: false,
+        isSubmittingReport: false,
+        reportTicketNumber: '',
+        reportData: {
+            reason: '',
+            description: ''
+        },
+        openReportModal() {
+            this.reportData = { reason: '', description: '' };
+            if (this.$refs.evidenceInput) {
+                this.$refs.evidenceInput.value = '';
+            }
+            this.showReportModal = true;
+        },
+        submitReport() {
+            if (!this.reportData.reason) {
+                this.modalMessage = 'Silakan pilih alasan pelaporan terlebih dahulu.';
+                this.showErrorModal = true;
+                return;
+            }
+            if (!this.reportData.description || this.reportData.description.trim().length < 20) {
+                this.modalMessage = 'Kronologi kejadian minimal 20 karakter agar laporan jelas.';
+                this.showErrorModal = true;
+                return;
+            }
+
+            this.isSubmittingReport = true;
+            const formData = new FormData();
+            formData.append('event_id', '{{ $eventData['id'] }}');
+            @if(!empty($eventData['organizer_user_id']))
+            formData.append('reported_id', '{{ $eventData['organizer_user_id'] }}');
+            @endif
+            formData.append('reason', this.reportData.reason);
+            formData.append('description', this.reportData.description);
+            if (this.$refs.evidenceInput && this.$refs.evidenceInput.files[0]) {
+                formData.append('evidence', this.$refs.evidenceInput.files[0]);
+            }
+            formData.append('_token', '{{ csrf_token() }}');
+
+            fetch('{{ route('crew.reports.store') }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(({ status, body }) => {
+                if (body.success) {
+                    this.showReportModal = false;
+                    this.reportTicketNumber = body.ticket_number || '';
+                    this.modalMessage = body.message;
+                    this.showReportSuccessModal = true;
+                    this.reportData = { reason: '', description: '' };
+                    if (this.$refs.evidenceInput) {
+                        this.$refs.evidenceInput.value = '';
+                    }
+                } else {
+                    this.modalMessage = body.message || 'Gagal mengajukan laporan.';
+                    this.showErrorModal = true;
+                }
+            })
+            .catch(error => {
+                console.error('Report error:', error);
+                this.modalMessage = 'Terjadi kesalahan jaringan saat mengirim laporan.';
+                this.showErrorModal = true;
+            })
+            .finally(() => {
+                this.isSubmittingReport = false;
+            });
+        }
+     }">
   
     @php $fromDashboard = request('from') === 'dashboard'; @endphp
     <div class="mb-4">
@@ -32,6 +198,15 @@
                 <span class="w-2 h-2 bg-white rounded-full"></span>
                 {{ $eventData['status'] }}
             </span>
+
+            <button type="button" 
+                    @click="openReportModal()"
+                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-bold rounded-full shadow-lg backdrop-blur-md transition border border-rose-400/40 hover:scale-105 active:scale-95">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                Laporkan EO / Event
+            </button>
         </div>
         <div class="absolute bottom-0 left-0 right-0 p-6">
             <p class="text-xs text-indigo-200 font-medium mb-2">Penyelenggara : {{ $eventData['organizer'] }}</p>
@@ -78,90 +253,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" 
-         x-data="{ 
-            selectedPositionId: null, 
-            activeTab: 'positions', 
-            showApplicationForm: false,
-            isSubmitting: false,
-            showSuccessModal: false,
-            showErrorModal: false,
-            modalMessage: '',
-            positions: {{ Js::from($positions) }},
-             applicationData: {
-                 motivation: '',
-                 experience: '',
-                 availability: '',
-                 agree: false
-             },
-             get selectedPosition() {
-                 if (this.selectedPositionId === null) return null;
-                 return this.positions.find(p => p.id === this.selectedPositionId) || null;
-             },
-             selectPosition(positionId) {
-                 this.selectedPositionId = positionId;
-                 this.showApplicationForm = false;
-             },
-             openApplicationForm() {
-                 if (this.selectedPositionId === null) {
-                     alert('Silakan pilih posisi terlebih dahulu!');
-                     return;
-                 }
-                 this.showApplicationForm = true;
-                 this.$nextTick(() => {
-                     document.getElementById('application-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                 });
-             },
-             submitApplication() {
-                if (!this.applicationData.agree) {
-                    this.modalMessage = 'Anda harus menyetujui syarat dan ketentuan!';
-                    this.showErrorModal = true;
-                    return;
-                }
-                
-                this.isSubmitting = true;
-                
-                const formData = new FormData();
-                formData.append('position_id', this.selectedPositionId);
-                formData.append('motivation', this.applicationData.motivation);
-                formData.append('experience', this.applicationData.experience);
-                formData.append('availability', this.applicationData.availability);
-                formData.append('agree', this.applicationData.agree ? '1' : '0');
-                formData.append('_token', '{{ csrf_token() }}');
-
-                fetch('{{ route("applications.store") }}', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        this.modalMessage = data.message;
-                        this.showSuccessModal = true;
-                        
-                        this.showApplicationForm = false;
-                        this.selectedPositionId = null;
-                        this.applicationData = { motivation: '', experience: '', availability: '', agree: false };
-                    } else {
-                        this.modalMessage = data.message || 'Terjadi kesalahan saat mengajukan lamaran.';
-                        this.showErrorModal = true;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    this.modalMessage = 'Terjadi kesalahan jaringan. Silakan coba lagi.';
-                    this.showErrorModal = true;
-                })
-                .finally(() => {
-                    this.isSubmitting = false;
-                });
-            }
-         }">
-
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2">
            
             <div class="border-b border-gray-200 mb-6">
@@ -209,6 +301,14 @@
                                 @if(!empty($position['badge']))
                                     <span class="px-3 py-1 bg-[#4F46E5] text-white text-xs font-bold rounded-full">{{ $position['badge'] }}</span>
                                 @endif
+                                <template x-if="positions.find(p => p.id === {{ $position['id'] }})?.is_applied">
+                                    <span class="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200 flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        Sudah Dilamar
+                                    </span>
+                                </template>
                                 <span class="px-3 py-1 bg-orange-50 text-orange-600 text-xs font-bold rounded-full border border-orange-100">
                                     Sisa {{ $position['sisa_kursi'] }} Kursi
                                 </span>
@@ -218,7 +318,7 @@
                             <button @click.stop="selectPosition({{ $position['id'] }})" 
                                     class="ml-4 px-4 py-2 text-sm font-bold rounded-xl transition whitespace-nowrap flex items-center gap-1"
                                     :class="selectedPositionId === {{ $position['id'] }} ? 'bg-[#4F46E5] text-white hover:bg-indigo-700' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'">
-                                Pilih Posisi
+                                <span x-text="positions.find(p => p.id === {{ $position['id'] }})?.is_applied ? 'Lihat Pilihan' : 'Pilih Posisi'"></span>
                                 <svg x-show="selectedPositionId === {{ $position['id'] }}" 
                                      class="w-4 h-4" 
                                      fill="none" 
@@ -444,14 +544,41 @@
                     </template>
                 </div>
 
-                <button @click="openApplicationForm()" 
-                        class="w-full py-3 bg-[#4F46E5] text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-200">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    Ajukan Lamaran Volunteer
-                </button>
-                <p class="text-[10px] text-gray-400 text-center mt-3">Pendaftaran gratis tanpa dipungut biaya apapun.</p>
+                <template x-if="selectedPosition && selectedPosition.is_applied">
+                    <div class="space-y-3">
+                        <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+                            <div class="flex items-center gap-2 text-emerald-800 text-xs font-bold mb-1">
+                                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span>Anda sudah melamar posisi ini</span>
+                            </div>
+                            <p class="text-[11px] text-emerald-700 leading-relaxed">
+                                Anda tidak dapat melamar posisi yang sama dua kali. Namun, Anda tetap bisa memilih & melamar <strong class="font-bold">posisi lain</strong> di event ini.
+                            </p>
+                        </div>
+                        <a href="{{ route('applications.index') }}" 
+                           class="w-full py-3 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-200">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                            </svg>
+                            Pantau di Lamaran Saya
+                        </a>
+                    </div>
+                </template>
+
+                <template x-if="!selectedPosition || !selectedPosition.is_applied">
+                    <div>
+                        <button @click="openApplicationForm()" 
+                                class="w-full py-3 bg-[#4F46E5] text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-200">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Ajukan Lamaran Volunteer
+                        </button>
+                        <p class="text-[10px] text-gray-400 text-center mt-3">Pendaftaran gratis tanpa dipungut biaya apapun.</p>
+                    </div>
+                </template>
             </div>
 
             <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
@@ -590,6 +717,163 @@
                 <button @click="showErrorModal = false"
                         class="w-full py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition">
                     Tutup
+                </button>
+            </div>
+        </div>
+
+        <div x-show="showReportModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+             style="display: none;">
+            
+            <div @click.outside="if(!isSubmittingReport) showReportModal = false"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-7 relative max-h-[90vh] overflow-y-auto">
+                
+                <div class="flex items-start justify-between gap-3 mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-extrabold text-gray-900 leading-tight">Laporkan EO / Event</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Laporan akan diteruskan ke tim Admin VOLA secara rahasia.</p>
+                        </div>
+                    </div>
+                    <button type="button" 
+                            @click="if(!isSubmittingReport) showReportModal = false"
+                            class="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200/80 rounded-2xl p-3.5 mb-5 space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-gray-500 font-medium">Event :</span>
+                        <span class="font-bold text-gray-900 text-right truncate max-w-[240px]">{{ $eventData['title'] }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-gray-500 font-medium">Penyelenggara :</span>
+                        <span class="font-bold text-[#4F46E5] text-right">{{ $eventData['organizer'] }}</span>
+                    </div>
+                </div>
+
+                <form @submit.prevent="submitReport" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                            Alasan Pelaporan <span class="text-rose-500">*</span>
+                        </label>
+                        <select x-model="reportData.reason" 
+                                required
+                                class="w-full px-3.5 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition">
+                            <option value="" disabled>-- Pilih Alasan Pelaporan --</option>
+                            <option value="Penipuan / Ketidaksesuaian Informasi Event">Penipuan / Ketidaksesuaian Informasi Event</option>
+                            <option value="Perlakuan Tidak Layak / Diskriminasi">Perlakuan Tidak Layak / Diskriminasi</option>
+                            <option value="Pelanggaran Keselamatan & Kesehatan Relawan">Pelanggaran Keselamatan & Kesehatan Relawan</option>
+                            <option value="Pembatalan Sepihak Tanpa Kejelasan">Pembatalan Sepihak Tanpa Kejelasan</option>
+                            <option value="Eksploitasi Jam Kerja / Beban Kerja Tak Wajar">Eksploitasi Jam Kerja / Beban Kerja Tak Wajar</option>
+                            <option value="Penyalahgunaan Data / Privasi">Penyalahgunaan Data / Privasi</option>
+                            <option value="Lainnya">Lainnya (Pelanggaran Lain)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                            Kronologi & Penjelasan Detail <span class="text-rose-500">*</span>
+                        </label>
+                        <textarea x-model="reportData.description"
+                                  rows="4"
+                                  required
+                                  class="w-full px-3.5 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 resize-none transition"
+                                  placeholder="Jelaskan secara rinci apa yang terjadi, waktu kejadian, dan fakta pendukung lainnya..."></textarea>
+                        <p class="text-[11px] text-gray-400 mt-1">Minimal 20 karakter agar mudah diverifikasi admin.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                            Bukti Pendukung <span class="text-gray-400 font-normal">(Opsional)</span>
+                        </label>
+                        <input type="file" 
+                               x-ref="evidenceInput"
+                               accept=".jpg,.jpeg,.png,.pdf"
+                               class="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer border border-gray-200 rounded-xl p-1 bg-white">
+                        <p class="text-[11px] text-gray-400 mt-1">Format: JPG, PNG, atau PDF (maks. 5MB).</p>
+                    </div>
+
+                    <div class="p-3 bg-amber-50/80 border border-amber-200/80 rounded-xl flex items-start gap-2 text-xs text-amber-800">
+                        <svg class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Pastikan informasi yang Anda berikan jujur dan dapat dipertanggungjawabkan demi kenyamanan komunitas VOLA.</span>
+                    </div>
+
+                    <div class="flex items-center gap-3 pt-2">
+                        <button type="button" 
+                                @click="showReportModal = false"
+                                :disabled="isSubmittingReport"
+                                class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition text-sm">
+                            Batal
+                        </button>
+                        <button type="submit" 
+                                :disabled="isSubmittingReport"
+                                class="flex-1 px-4 py-2.5 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 transition text-sm shadow-md shadow-rose-200 flex items-center justify-center gap-2 disabled:opacity-50">
+                            <svg x-show="isSubmittingReport" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span x-text="isSubmittingReport ? 'Mengirim Laporan...' : 'Kirim Laporan'"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div x-show="showReportSuccessModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+             style="display: none;">
+            
+            <div @click.outside="showReportSuccessModal = false"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 sm:p-7 relative text-center">
+                
+                <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4 ring-8 ring-rose-50/50">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                
+                <h3 class="text-xl font-black text-gray-900 mb-1">Laporan Berhasil Diajukan</h3>
+                <p class="text-xs font-semibold text-rose-600 mb-3" x-show="reportTicketNumber" x-text="'Nomor Tiket: #' + reportTicketNumber"></p>
+                <p class="text-sm text-gray-600 leading-relaxed mb-6" x-text="modalMessage"></p>
+                
+                <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 text-xs text-gray-500 mb-6 text-left space-y-1.5">
+                    <p class="font-bold text-gray-800">📌 Apa langkah selanjutnya?</p>
+                    <p>• Laporan masuk antrean Admin dengan status <strong>Pending</strong>.</p>
+                    <p>• Tim Admin akan memvalidasi bukti dan memeriksa pihak terlapor.</p>
+                    <p>• Sanksi berupa peringatan hingga suspend akun akan dijatuhkan jika terbukti melanggar.</p>
+                </div>
+
+                <button type="button" 
+                        @click="showReportSuccessModal = false"
+                        class="w-full py-3 bg-[#4F46E5] text-white font-bold rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 text-sm">
+                    Selesai & Tutup
                 </button>
             </div>
         </div>

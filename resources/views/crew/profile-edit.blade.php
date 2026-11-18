@@ -24,7 +24,7 @@
                     <div class="relative w-24 h-24 rounded-full overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300 shrink-0">
                         <img x-show="photoPreview" :src="photoPreview" class="w-full h-full object-cover" style="display: none;">
                         <div x-show="!photoPreview" class="w-full h-full flex flex-col items-center justify-center text-gray-400">
-                            @if($profile?->photo_path)
+                            @if($profile?->photo_url)
                                 <img src="{{ $profile->photo_url }}" class="w-full h-full object-cover">
                             @else
                                 <svg class="w-8 h-8 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>

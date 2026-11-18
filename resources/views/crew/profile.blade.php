@@ -1,9 +1,9 @@
 <x-layouts.crew title="Profil Saya - VOLA">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6" 
          x-data="{ 
-            cvUrl: '{{ $profile?->cv_path ? asset("storage/" . $profile->cv_path) : "" }}',
+            cvUrl: '{{ $profile?->cv_url ?? "" }}',
             cvName: '{{ $profile?->cv_path ? basename($profile->cv_path) : "" }}',
-            portfolioUrl: '{{ $profile?->portfolio_path ? asset("storage/" . $profile->portfolio_path) : "" }}',
+            portfolioUrl: '{{ $profile?->portfolio_url ?? "" }}',
             portfolioName: '{{ $profile?->portfolio_path ? basename($profile->portfolio_path) : "" }}',
             
             uploading: false,
@@ -116,7 +116,7 @@
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
               
                 <div class="relative shrink-0">
-                    @if($profile?->photo_path)
+                    @if($profile?->photo_url)
                         <img src="{{ $profile->photo_url }}" 
                              alt="{{ $user->name }}" 
                              class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md">

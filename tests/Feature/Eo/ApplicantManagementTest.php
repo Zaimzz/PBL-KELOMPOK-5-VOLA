@@ -418,3 +418,83 @@ test('guest tidak bisa menerima atau menolak pendaftar', function () {
     $this->patch(route('eo.applicants.reject', $application))
         ->assertRedirect(route('login'));
 });
+
+// ============================================================
+// 18. Kuota posisi ditegakkan saat menerima pendaftar
+// ============================================================
+
+test('eo tidak dapat menerima pendaftar ketika kuota posisi sudah penuh', function () {
+    Notification::fake();
+
+    [$eo, , , $position] = makeVerifiedEoWithEvent();
+    $position->update(['quota' => 1]);
+
+    [, $acceptedProfile] = makeVolunteerWithProfile();
+    [$pendingVolunteer, $pendingProfile] = makeVolunteerWithProfile();
+
+    Application::factory()->accepted()->create([
+        'volunteer_profile_id' => $acceptedProfile->id,
+        'position_id' => $position->id,
+    ]);
+
+    $application = Application::factory()->create([
+        'volunteer_profile_id' => $pendingProfile->id,
+        'position_id' => $position->id,
+        'status' => ApplicationStatus::Pending,
+    ]);
+
+    $this->actingAs($eo)
+        ->patch(route('eo.applicants.accept', $application))
+        ->assertRedirect()
+        ->assertSessionHas('error');
+
+    expect($application->fresh()->status)->toBe(ApplicationStatus::Pending);
+    expect(Application::where('position_id', $position->id)->where('status', ApplicationStatus::Accepted)->count())->toBe(1);
+    Notification::assertNotSentTo($pendingVolunteer, ApplicationDecided::class);
+});
+
+test('eo dapat menerima pendaftar selama kuota posisi masih tersedia', function () {
+    Notification::fake();
+
+    [$eo, , , $position] = makeVerifiedEoWithEvent();
+    $position->update(['quota' => 2]);
+
+    [, $acceptedProfile] = makeVolunteerWithProfile();
+    [, $pendingProfile] = makeVolunteerWithProfile();
+
+    Application::factory()->accepted()->create([
+        'volunteer_profile_id' => $acceptedProfile->id,
+        'position_id' => $position->id,
+    ]);
+
+    $application = Application::factory()->create([
+        'volunteer_profile_id' => $pendingProfile->id,
+        'position_id' => $position->id,
+        'status' => ApplicationStatus::Pending,
+    ]);
+
+    $this->actingAs($eo)
+        ->patch(route('eo.applicants.accept', $application))
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    expect($application->fresh()->status)->toBe(ApplicationStatus::Accepted);
+    expect(Application::where('position_id', $position->id)->where('status', ApplicationStatus::Accepted)->count())->toBe(2);
+});
+
+test('pendaftar yang sudah ditolak tidak dapat diterima ulang', function () {
+    [$eo, , , $position] = makeVerifiedEoWithEvent();
+    [, $volunteerProfile] = makeVolunteerWithProfile();
+
+    $application = Application::factory()->rejected()->create([
+        'volunteer_profile_id' => $volunteerProfile->id,
+        'position_id' => $position->id,
+    ]);
+
+    $this->actingAs($eo)
+        ->patch(route('eo.applicants.accept', $application))
+        ->assertRedirect()
+        ->assertSessionHas('error');
+
+    expect($application->fresh()->status)->toBe(ApplicationStatus::Rejected);
+});

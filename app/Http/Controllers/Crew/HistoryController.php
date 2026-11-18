@@ -76,6 +76,8 @@ class HistoryController extends Controller
 
             return [
                 'id' => $app->id,
+                'event_id' => $event?->id,
+                'organizer_user_id' => $event?->organizer?->user_id,
                 'event_title' => $event?->title ?? 'Event Tidak Ditemukan',
                 'organizer' => $event?->organizer?->organization_name ?? '-',
                 'position' => $app->position?->name ?? '-',
