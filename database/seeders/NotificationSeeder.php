@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Notifications\ApplicationAccepted;
 use App\Notifications\ApplicationUnderReview;
 use App\Notifications\BriefingReminder;
 use App\Notifications\ProfileReminder;
+use Illuminate\Database\Seeder;
 
 class NotificationSeeder extends Seeder
 {
@@ -21,11 +21,11 @@ class NotificationSeeder extends Seeder
             $user->notifications()->delete();
 
             // Kirim 4 notifikasi dummy
-            $user->notify(new ApplicationAccepted());
-            $user->notify(new BriefingReminder());
-            $user->notify(new ApplicationUnderReview());
-            $user->notify(new ProfileReminder());
-            
+            $user->notify(new ApplicationAccepted);
+            $user->notify(new BriefingReminder);
+            $user->notify(new ApplicationUnderReview);
+            $user->notify(new ProfileReminder);
+
             $this->command->info('✅ 4 Notifikasi dummy berhasil dikirim ke adhee@example.com');
         } else {
             $this->command->error('❌ User dengan email adhee@example.com tidak ditemukan!');

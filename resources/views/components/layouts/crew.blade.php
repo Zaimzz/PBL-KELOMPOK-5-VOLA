@@ -36,14 +36,7 @@
         );
     }
 
-    $displayAvatar = null;
-    if ($profile && $profile->photo_url) {
-        $displayAvatar = $profile->photo_url;
-    } elseif ($authUser?->avatar_path) {
-        $displayAvatar = filter_var($authUser->avatar_path, FILTER_VALIDATE_URL)
-            ? $authUser->avatar_path
-            : \Illuminate\Support\Facades\Storage::url($authUser->avatar_path);
-    }
+    $displayAvatar = $authUser?->avatar_url;
 
     $words = array_values(array_filter(explode(' ', trim($displayName))));
     $initials = count($words) >= 2 

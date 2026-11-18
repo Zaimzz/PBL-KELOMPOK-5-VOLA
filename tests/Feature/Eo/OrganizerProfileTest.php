@@ -141,6 +141,7 @@ test('gagal update profil tanpa nama organisasi', function () {
 
 test('eo bisa upload dokumen legal yang valid (PDF)', function () {
     Storage::fake('local');
+    Storage::fake('public');
 
     $eo = User::factory()->eo()->create();
 
@@ -158,7 +159,7 @@ test('eo bisa upload dokumen legal yang valid (PDF)', function () {
 
     $profile = $eo->fresh()->organizerProfile;
     $this->assertNotNull($profile->document_path);
-    Storage::disk('local')->assertExists($profile->document_path);
+    Storage::disk('public')->assertExists($profile->document_path);
 });
 
 test('eo bisa upload dokumen legal yang valid (JPG)', function () {

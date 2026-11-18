@@ -71,7 +71,7 @@
                             {{-- Current poster display: shown when no new file is selected --}}
                             <div x-show="!posterPreview" style="display:block">
                                 <div class="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50 mb-3">
-                                    <img src="{{ Storage::disk('public')->url($event->poster_path) }}"
+                                    <img src="{{ $event->poster_url }}"
                                          alt="Poster event"
                                          class="w-full max-h-64 object-contain mx-auto block"
                                          onerror="this.src='{{ asset('images/event-placeholder.svg') }}'">

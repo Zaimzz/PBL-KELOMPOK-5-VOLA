@@ -10,7 +10,6 @@ use App\Notifications\EventApprovedNotification;
 use App\Notifications\EventRejectedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 
 class ReviewEventController extends Controller
 {
@@ -49,22 +48,23 @@ class ReviewEventController extends Controller
             EventStatus::Rejected,
         ];
 
-        // Status filter
-        if ($request->filled('status')) {
-            if ($request->status === 'all') {
-                $query->whereIn('status', $curationStatuses);
-            } elseif ($request->status === 'active' || $request->status === 'approved') {
-                // Event disetujui mencakup yang siap tayang maupun yang sedang menunggu pembayaran EO
-                $query->whereIn('status', [EventStatus::Active, EventStatus::AwaitingPayment]);
-            } else {
-                $query->where('status', $request->status);
-            }
-        } else {
-            // Default queue shows pending review events
+        // Status filter (default: 'all')
+        $status = $request->input('status', 'all');
+
+        if ($status === 'all' || blank($status)) {
+            $query->whereIn('status', $curationStatuses);
+        } elseif ($status === 'active' || $status === 'approved') {
+            // Event disetujui mencakup yang siap tayang maupun yang sedang menunggu pembayaran EO
+            $query->whereIn('status', [EventStatus::Active, EventStatus::AwaitingPayment]);
+        } elseif ($status === 'pending_review' || $status === 'pending') {
             $query->where('status', EventStatus::PendingReview);
+        } elseif ($status === 'rejected') {
+            $query->where('status', EventStatus::Rejected);
+        } else {
+            $query->where('status', $status);
         }
 
-        $events = $query->latest()->paginate(10)->withQueryString();
+        $events = $query->latest()->paginate(5)->withQueryString();
 
         // Metrics for header
         $stats = [
@@ -119,7 +119,7 @@ class ReviewEventController extends Controller
         }
 
         return view('admin.review-event.index', [
-            'events' => Event::with(['organizer.user', 'category', 'positions'])->where('status', EventStatus::PendingReview)->latest()->paginate(10)->withQueryString(),
+            'events' => Event::with(['organizer.user', 'category', 'positions'])->where('status', EventStatus::PendingReview)->latest()->paginate(5)->withQueryString(),
             'stats' => [
                 'pending' => Event::where('status', EventStatus::PendingReview)->count(),
                 'approved_this_month' => Event::where('status', EventStatus::Active)->count(),
@@ -269,7 +269,9 @@ class ReviewEventController extends Controller
                 ];
             })->values()->all(),
             'total_quota' => $totalQuota,
-            'poster_url' => $event->poster_path ? Storage::url($event->poster_path) : null,
+            'poster_path' => $event->poster_path,
+            'has_poster' => ! empty($event->poster_path),
+            'poster_url' => ! empty($event->poster_path) ? $event->poster_url : null,
             'submitted_date_formatted' => 'Diajukan '.($event->created_at ? $event->created_at->translatedFormat('d M Y') : '-'),
             'rejection_reason' => $event->rejection_reason,
             'approve_url' => route('admin.review-events.approve', $event),

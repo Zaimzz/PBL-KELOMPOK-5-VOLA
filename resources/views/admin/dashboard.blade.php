@@ -9,11 +9,14 @@
         <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-white/15 text-white backdrop-blur-xs mb-3 border border-white/20">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    PUSAT KONTROL UTAMA
+                    <span class="relative flex h-2 w-2 mr-0.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                    </span>
+                    <span>PUSAT KONTROL UTAMA</span>
                 </span>
                 <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                    Selamat {{ $greetingTime }}, {{ auth()->user()->name }}! 👋
+                    Selamat {{ $greetingTime }}, {{ auth()->user()->name }}</span>! 👋
                 </h1>
                 <p class="text-indigo-100 text-sm mt-1.5 max-w-xl leading-relaxed">
                     Ada <strong class="text-white font-bold">{{ $pendingEoCount }} penyelenggara</strong> baru yang butuh verifikasi dan <strong class="text-white font-bold">{{ $pendingReviewEventCount }} event</strong> menanti kurasi kelayakan hari ini.
@@ -48,9 +51,9 @@
     </div>
 
     <!-- Overview Metrics (At a Glance) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div id="admin-metrics-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <!-- 1. Total Event Berjalan -->
-        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-200 transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm relative overflow-hidden group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80">
             <div class="flex items-start justify-between">
                 <div>
                     <span class="text-xs font-semibold text-gray-500">Total Event Berjalan</span>
@@ -72,7 +75,7 @@
         </div>
 
         <!-- 2. Transaksi Bulan Ini -->
-        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-200 transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm relative overflow-hidden group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80">
             <div class="flex items-start justify-between">
                 <div class="min-w-0 pr-2">
                     <span class="text-xs font-semibold text-gray-500">Transaksi Bulan Ini</span>
@@ -90,7 +93,7 @@
         </div>
 
         <!-- 3. Laporan Menunggu Tindakan -->
-        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-200 transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm relative overflow-hidden group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80">
             <div class="flex items-start justify-between">
                 <div>
                     <span class="text-xs font-semibold text-gray-500">Laporan Menunggu</span>
@@ -114,12 +117,16 @@
         </div>
 
         <!-- 4. Total Crew -->
-        <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group hover:border-brand-200 transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm relative overflow-hidden group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80">
             <div class="flex items-start justify-between">
                 <div>
                     <span class="text-xs font-semibold text-gray-500">Total Crew</span>
                     <h3 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">{{ number_format($totalVolunteersCount, 0, ',', '.') }}</h3>
-                    <p class="text-xs text-blue-600 font-semibold mt-2">
+                    <p class="text-xs text-blue-600 font-semibold mt-2 inline-flex items-center gap-1.5">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                        </span>
                         Crew terdaftar di platform
                     </p>
                 </div>
@@ -132,8 +139,9 @@
         </div>
     </div>
 
-    <!-- Quick Actions Cards Grid (Aksi Cepat) -->
-    <div class="mb-8">
+    <div id="admin-content-container" class="space-y-8">
+        <!-- Quick Actions Cards Grid (Aksi Cepat) -->
+        <div>
         <div class="flex items-center justify-between mb-3">
             <h2 class="text-base font-bold text-gray-900">Aksi Cepat Moderasi</h2>
             <span class="text-xs text-gray-400">Pintasan menu operasional admin</span>
@@ -141,7 +149,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             <!-- 1. Katalog Event Publik -->
             <a href="{{ route('admin.active-events.index') }}"
-               class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-3.5 group">
+               class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80 flex items-center gap-3.5 group">
                 <div class="w-11 h-11 rounded-xl bg-indigo-50 text-brand-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -155,7 +163,7 @@
 
             <!-- 2. Kontrol Basis Akun -->
             <a href="{{ route('admin.users.index') }}"
-               class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-3.5 group">
+               class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80 flex items-center gap-3.5 group">
                 <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -169,7 +177,7 @@
 
             <!-- 3. Rekap Transaksi -->
             <a href="{{ route('admin.transactions.index') }}"
-               class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-3.5 group">
+               class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80 flex items-center gap-3.5 group">
                 <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
@@ -183,7 +191,7 @@
 
             <!-- 4. Laporan Komunitas -->
             <a href="{{ route('admin.reports.index') }}"
-               class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-3.5 group">
+               class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80 flex items-center gap-3.5 group">
                 <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
@@ -225,16 +233,34 @@
             @else
                 <div class="space-y-3">
                     @foreach($actionRequired as $action)
-                        <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:border-gray-200 transition-all duration-300 hover:shadow-md flex items-start gap-4">
-                            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 {{ $action['icon_color'] }}">
-                                @if($action['type'] == 'event')
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
+                        <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80 flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden relative border border-gray-100 {{ $action['icon_color'] }}">
+                                @if(!empty($action['image_url']))
+                                    <img src="{{ $action['image_url'] }}" 
+                                         alt="{{ $action['title'] }}"
+                                         class="w-full h-full object-cover"
+                                         onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                                    <div class="hidden w-full h-full flex items-center justify-center {{ $action['icon_color'] }}">
+                                        @if($action['type'] == 'event')
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                        @else
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                            </svg>
+                                        @endif
+                                    </div>
                                 @else
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                                    </svg>
+                                    @if($action['type'] == 'event')
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                    @else
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                        </svg>
+                                    @endif
                                 @endif
                             </div>
                             <div class="flex-1 min-w-0">
@@ -268,24 +294,35 @@
                     <h2 class="text-base font-bold text-gray-900">Aktivitas Terkini</h2>
                     <p class="text-xs text-gray-500">Log riwayat interaksi terbaru di sistem VOLA</p>
                 </div>
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
             </div>
 
-            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm divide-y divide-gray-100">
+            <div class="bg-white border border-gray-100 rounded-2xl p-2.5 sm:p-3 shadow-sm divide-y divide-gray-100">
                 @forelse($recentActivities as $act)
-                    <div class="py-3.5 first:pt-0 last:pb-0 flex items-start gap-3">
-                        <div class="w-2 h-2 rounded-full bg-brand-600 mt-1.5 shrink-0"></div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ $act['badge_color'] }}">
-                                    {{ $act['badge'] }}
-                                </span>
-                                <span class="text-[11px] text-gray-400 shrink-0">{{ $act['time'] }}</span>
+                    <a href="{{ $act['url'] ?? '#' }}" 
+                       class="group p-2.5 sm:p-3 -mx-1 sm:-mx-2 rounded-xl flex items-center justify-between gap-3 hover:bg-slate-50/90 transition-all duration-200 cursor-pointer block">
+                        <div class="flex items-start gap-3 min-w-0 flex-1">
+                            <div class="w-2 h-2 rounded-full bg-brand-600 mt-1.5 shrink-0 group-hover:scale-125 transition-transform"></div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ $act['badge_color'] }}">
+                                        {{ $act['badge'] }}
+                                    </span>
+                                    <span class="text-[11px] text-gray-400 shrink-0">&bull; {{ $act['time'] }}</span>
+                                </div>
+                                <h4 class="font-bold text-gray-900 text-xs mt-1 truncate group-hover:text-brand-600 transition-colors">{{ $act['title'] }}</h4>
+                                <p class="text-[11px] text-gray-500 mt-0.5 line-clamp-1 leading-relaxed">{{ $act['description'] }}</p>
                             </div>
-                            <h4 class="font-bold text-gray-900 text-xs mt-1 truncate">{{ $act['title'] }}</h4>
-                            <p class="text-[11px] text-gray-500 mt-0.5 line-clamp-1 leading-relaxed">{{ $act['description'] }}</p>
                         </div>
-                    </div>
+                        <div class="text-gray-300 group-hover:text-brand-600 group-hover:translate-x-0.5 transition-all shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                    </a>
                 @empty
                     <div class="py-8 text-center text-gray-400 text-xs">
                         Belum ada riwayat aktivitas terbaru yang tercatat di sistem.
@@ -295,5 +332,6 @@
         </div>
 
     </div>
+</div>
 
 </x-layouts.admin>

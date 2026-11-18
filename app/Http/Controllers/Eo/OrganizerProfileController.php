@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Eo;
 use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Eo\UpdateOrganizerProfileRequest;
+use App\Support\MediaStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -50,10 +51,10 @@ class OrganizerProfileController extends Controller
         $user = $request->user();
         $validated = $request->validated();
 
-        // Handle document upload
+        // Handle document upload ke Supabase Storage (public disk subfolder documents)
         if ($request->hasFile('document')) {
             $file = $request->file('document');
-            $path = $file->store('organizer-documents', 'local');
+            $path = $file->store('documents', 'public');
             $validated['document_path'] = $path;
         }
 
@@ -63,9 +64,9 @@ class OrganizerProfileController extends Controller
         $profile = $user->organizerProfile;
 
         if ($profile) {
-            // Hapus dokumen lama jika ada dokumen baru
+            // Hapus dokumen lama jika ada dokumen baru secara aman
             if (isset($validated['document_path']) && $profile->document_path) {
-                Storage::disk('local')->delete($profile->document_path);
+                MediaStorage::deleteSafe($profile->document_path);
             }
 
             // Jangan izinkan EO mengubah status verifikasi

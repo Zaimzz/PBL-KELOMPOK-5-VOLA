@@ -187,7 +187,7 @@
                             {{-- Poster --}}
                             <div class="w-28 sm:w-36 shrink-0 bg-gray-100 rounded-l-xl overflow-hidden">
                                 @if ($event->poster_path)
-                                    <img src="{{ Storage::disk('public')->url($event->poster_path) }}"
+                                    <img src="{{ $event->poster_url }}"
                                          alt="Poster {{ $event->title }}"
                                          class="w-full h-full object-cover">
                                 @else

@@ -8,7 +8,6 @@ use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class CrewDashboardController extends Controller
@@ -77,9 +76,7 @@ class CrewDashboardController extends Controller
                     ? $startDate.' – '.$endDate
                     : ($startDate ?? '-');
 
-                $imageUrl = $event->poster_path
-                    ? Storage::disk('public')->url($event->poster_path)
-                    : asset('images/event-placeholder.svg');
+                $imageUrl = $event->poster_url;
 
                 $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
 

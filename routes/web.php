@@ -93,6 +93,11 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     Route::put('/settings/password', [SettingsController::class, 'updatePassword'])
         ->name('settings.update.password');
 
+    // Settings
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::put('/settings/email', [SettingsController::class, 'updateEmail'])->name('settings.update.email');
+    Route::put('/settings/phone', [SettingsController::class, 'updatePhone'])->name('settings.update.phone');
+    Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.update.password');
     // Route Pencarian dan Detail Event
     Route::get('/search', [SearchController::class, 'index'])
         ->name('search.index');

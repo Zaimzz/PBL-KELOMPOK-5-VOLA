@@ -5,7 +5,9 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
+use App\Support\MediaStorage;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -24,6 +26,24 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    protected $appends = [
+        'avatar_url',
+    ];
+
+    /**
+     * URL publik foto profil / avatar pengguna (Google avatar, Supabase Storage, atau SVG default).
+     */
+    protected function avatarUrl(): Attribute
+    {
+        return Attribute::make(
+            get: function (): string {
+                $path = $this->avatar_path ?? $this->volunteerProfile?->photo_path;
+
+                return MediaStorage::avatarUrl($path);
+            },
+        );
+    }
 
     /**
      * Get the attributes that should be cast.

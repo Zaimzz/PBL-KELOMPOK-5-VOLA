@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\ReportStatus;
+use App\Support\MediaStorage;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,6 +26,31 @@ class Report extends Model
         'resolved_by',
         'resolved_at',
     ];
+
+    protected $appends = [
+        'evidence_url',
+        'evidence_is_image',
+    ];
+
+    /**
+     * URL publik berkas bukti laporan (Supabase Storage).
+     */
+    protected function evidenceUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): ?string => MediaStorage::evidenceUrl($this->evidence_path),
+        );
+    }
+
+    /**
+     * Cek apakah bukti berupa file gambar.
+     */
+    protected function evidenceIsImage(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): bool => MediaStorage::isImage($this->evidence_path),
+        );
+    }
 
     protected function casts(): array
     {
