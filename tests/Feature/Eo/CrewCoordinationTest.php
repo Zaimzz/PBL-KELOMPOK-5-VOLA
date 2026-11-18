@@ -416,3 +416,162 @@ test('empty state khusus filter tampil saat divisi tidak memiliki crew', functio
         ->assertOk()
         ->assertSee('Tidak Ada Crew pada Divisi Ini');
 });
+
+// ============================================================
+// 19. Dropdown pemilihan event
+// ============================================================
+
+function makeCrewEventFor(OrganizerProfile $profile, string $title): Event
+{
+    return Event::factory()->active()->for($profile, 'organizer')->create(['title' => $title]);
+}
+
+test('dropdown menampilkan seluruh event milik eo yang login', function () {
+    [$eo, $profile, $eventA] = makeCrewEoWithEvent();
+    $eventA->update(['title' => 'Festival Musik Kampus 2026']);
+    $eventB = makeCrewEventFor($profile, 'Seminar Nasional Teknologi');
+
+    [, , $otherEvent] = makeCrewEoWithEvent(); // event EO lain
+
+    $this->actingAs($eo)
+        ->get(route('eo.crew.index'))
+        ->assertOk()
+        ->assertSee('Pilih Event')
+        ->assertSee('Festival Musik Kampus 2026')
+        ->assertSee('Seminar Nasional Teknologi')
+        ->assertDontSee($otherEvent->title);
+});
+
+test('eo dengan satu event melihat dropdown dan data langsung tampil', function () {
+    [$eo, , $event, $position] = makeCrewEoWithEvent();
+    $event->update(['title' => 'Satu Event Saja']);
+    [, $vp] = makeCrewVolunteer();
+    acceptApplication($vp, $position);
+
+    $this->actingAs($eo)
+        ->get(route('eo.crew.index'))
+        ->assertOk()
+        ->assertViewHas('selectedEvent', fn ($e) => $e->id === $event->id)
+        ->assertSee('Satu Event Saja')
+        ->assertSee($vp->user->name);
+});
+
+test('memilih event lain mengubah daftar crew yang ditampilkan', function () {
+    [$eo, $profile, $eventA, $posA] = makeCrewEoWithEvent();
+    $eventB = makeCrewEventFor($profile, 'Event Beta');
+    $posB = EventPosition::factory()->for($eventB)->create(['quota' => 5]);
+
+    [, $vpA] = makeCrewVolunteer();
+    acceptApplication($vpA, $posA);
+    [, $vpB] = makeCrewVolunteer();
+    acceptApplication($vpB, $posB);
+
+    $this->actingAs($eo)
+        ->get(route('eo.crew.index', ['event_id' => $eventB->id]))
+        ->assertOk()
+        ->assertViewHas('selectedEvent', fn ($e) => $e->id === $eventB->id)
+        ->assertSee($vpB->user->name)
+        ->assertDontSee($vpA->user->name);
+});
+
+test('statistik dan filter divisi mengikuti event terpilih', function () {
+    [$eo, $profile, $eventA, $posA] = makeCrewEoWithEvent();
+    $posA->update(['name' => 'Usher A']);
+    $eventB = makeCrewEventFor($profile, 'Event Beta');
+    $posB = EventPosition::factory()->for($eventB)->create(['name' => 'LO B', 'quota' => 2]);
+
+    [, $vp1] = makeCrewVolunteer();
+    acceptApplication($vp1, $posA);
+    [, $vp2] = makeCrewVolunteer();
+    acceptApplication($vp2, $posB);
+    [, $vp3] = makeCrewVolunteer();
+    acceptApplication($vp3, $posB);
+
+    $this->actingAs($eo)
+        ->get(route('eo.crew.index', ['event_id' => $eventB->id]))
+        ->assertOk()
+        ->assertViewHas('totalAccepted', 2)
+        ->assertSee('LO B')
+        ->assertDontSee('Usher A');
+});
+
+test('filter divisi dari event lama tidak dibawa saat berpindah event', function () {
+    [$eo, $profile, $eventA, $posA] = makeCrewEoWithEvent();
+    $eventB = makeCrewEventFor($profile, 'Event Beta');
+    $posB = EventPosition::factory()->for($eventB)->create(['quota' => 5]);
+
+    [, $vpB] = makeCrewVolunteer();
+    acceptApplication($vpB, $posB);
+
+    $this->actingAs($eo)
+        ->get(route('eo.crew.index', ['event_id' => $eventB->id, 'position_id' => $posA->id]))
+        ->assertOk()
+        ->assertViewHas('filterPositionId', null)
+        ->assertSee($vpB->user->name);
+});
+
+test('pilihan event dipertahankan saat halaman dibuka ulang lewat query string', function () {
+    [$eo, $profile, $eventA] = makeCrewEoWithEvent();
+    $eventB = makeCrewEventFor($profile, 'Event Beta');
+
+    $this->actingAs($eo)
+        ->get(route('eo.crew.index', ['event_id' => $eventB->id]))
+        ->assertOk()
+        ->assertViewHas('selectedEvent', fn ($e) => $e->id === $eventB->id);
+});
+
+// ============================================================
+// 20. Validasi kepemilikan event_id
+// ============================================================
+
+test('manipulasi event_id milik eo lain ditolak dengan pesan kesalahan', function () {
+    [$eo] = makeCrewEoWithEvent();
+    [, , $otherEvent] = makeCrewEoWithEvent();
+
+    $this->actingAs($eo)
+        ->get(route('eo.crew.index', ['event_id' => $otherEvent->id]))
+        ->assertRedirect(route('eo.crew.index'))
+        ->assertSessionHas('error');
+});
+
+test('event_id yang tidak dikenal ditolak dengan pesan kesalahan', function () {
+    [$eo] = makeCrewEoWithEvent();
+
+    $this->actingAs($eo)
+        ->get(route('eo.crew.index', ['event_id' => 999999]))
+        ->assertRedirect(route('eo.crew.index'))
+        ->assertSessionHas('error');
+});
+
+// ============================================================
+// 21. Export mengikuti event terpilih
+// ============================================================
+
+test('ekspor csv hanya memuat crew dari event yang dipilih', function () {
+    [$eo, $profile, $eventA, $posA] = makeCrewEoWithEvent();
+    $eventB = makeCrewEventFor($profile, 'Event Beta');
+    $posB = EventPosition::factory()->for($eventB)->create(['quota' => 5]);
+
+    [, $vpA] = makeCrewVolunteer();
+    acceptApplication($vpA, $posA);
+    [, $vpB] = makeCrewVolunteer();
+    acceptApplication($vpB, $posB);
+
+    $response = $this->actingAs($eo)
+        ->get(route('eo.crew.export', ['event_id' => $eventB->id]));
+
+    $response->assertOk();
+
+    $csv = $response->streamedContent();
+    expect($csv)->toContain($vpB->user->name);
+    expect($csv)->not->toContain($vpA->user->name);
+});
+
+test('ekspor event milik eo lain ditolak', function () {
+    [$eo] = makeCrewEoWithEvent();
+    [, , $otherEvent] = makeCrewEoWithEvent();
+
+    $this->actingAs($eo)
+        ->get(route('eo.crew.export', ['event_id' => $otherEvent->id]))
+        ->assertForbidden();
+});

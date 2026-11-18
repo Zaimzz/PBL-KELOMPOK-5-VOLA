@@ -19,7 +19,7 @@ class CrewCoordinationController extends Controller
     /**
      * Display accepted crew grouped by position for the selected event.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         $user = $request->user();
         $organizerProfile = $user->organizerProfile;
@@ -43,9 +43,19 @@ class CrewCoordinationController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        // Resolve selected event
+        // Resolve selected event, validating ownership
         $selectedEventId = $request->query('event_id');
-        $selectedEvent = $events->firstWhere('id', $selectedEventId) ?? $events->first();
+
+        if ($selectedEventId !== null && $selectedEventId !== '') {
+            $selectedEvent = $events->firstWhere('id', $selectedEventId);
+
+            if (! $selectedEvent) {
+                return redirect()->route('eo.crew.index')
+                    ->with('error', 'Event tidak ditemukan atau bukan milik Anda.');
+            }
+        } else {
+            $selectedEvent = $events->first();
+        }
 
         if (! $selectedEvent) {
             return view('eo.crew.index', [
@@ -68,8 +78,11 @@ class CrewCoordinationController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Position filter
+        // Position filter — ignored when it does not belong to the selected event
         $filterPositionId = $request->query('position_id');
+        if ($filterPositionId && ! $positions->contains('id', $filterPositionId)) {
+            $filterPositionId = null;
+        }
 
         // Build accepted applications query
         $query = Application::query()

@@ -71,7 +71,7 @@
                 </div>
 
                 {{-- Event Selector --}}
-                @if ($events->count() > 1)
+                @if ($events->isNotEmpty())
                     <div class="shrink-0">
                         <form method="GET" action="{{ route('eo.crew.index') }}" id="event-form">
                             <label for="event_id" class="sr-only">Pilih Event</label>
@@ -223,7 +223,7 @@
                         </div>
                         <h3 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Crew yang Diterima</h3>
                         <p class="text-gray-500 max-w-sm mx-auto mb-6">
-                            Crew yang berhasil lolos seleksi akan muncul di halaman ini. Mulai lakukan seleksi pada menu Pendaftar.
+                            Crew yang berhasil lolos seleksi untuk event ini akan muncul di halaman Koordinasi Crew.
                         </p>
                         <a href="{{ route('eo.applicants.index', array_filter(['event_id' => $selectedEvent?->id])) }}"
                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
