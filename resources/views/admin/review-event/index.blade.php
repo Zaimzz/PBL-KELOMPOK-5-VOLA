@@ -1,45 +1,45 @@
 <x-layouts.admin title="Review Event">
 
     <!-- Header & Breadcrumbs -->
-    <div class="mb-6">
-        <div class="flex items-center gap-2 text-xs font-semibold text-brand-600 uppercase tracking-wider mb-1.5">
-            <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
-            <span>PANEL KURASI &bull; PENGAJUAN TERBUKA</span>
-        </div>
-
+    <div class="mb-6 relative z-10 opacity-100">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Review Event</h1>
-                <p class="text-gray-500 text-sm mt-1">Kurasi dan tinjau kelayakan pengajuan event baru sebelum dipublikasikan ke feed pencarian crew.</p>
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border mb-2.5 bg-amber-50 text-amber-700 border-amber-200/70">
+                    <span class="relative flex h-2 w-2 mr-0.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                    </span>
+                    <span>PANEL KURASI • PENGAJUAN TERBUKA</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Review <span class="text-amber-500">Event</span></h1>
+                <p class="text-slate-600 text-sm mt-1">Kurasi dan tinjau kelayakan pengajuan event baru sebelum dipublikasikan ke feed pencarian crew.</p>
             </div>
 
             <!-- Header Metrics: Luxury Cards -->
-            <div class="flex flex-wrap items-center gap-3">
+            <div id="admin-metrics-container" class="flex flex-wrap items-center gap-3">
                 <!-- Pengajuan Menunggu -->
-                <div class="bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm flex items-center gap-3 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
-                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                     </div>
                     <div>
-                        <div class="text-lg font-extrabold text-gray-900">{{ number_format($stats['pending'], 0, ',', '.') }}</div>
-                        <div class="text-[11px] text-gray-500 font-medium">Pengajuan Menunggu</div>
+                        <div class="text-lg font-extrabold text-slate-900">{{ number_format($stats['pending'], 0, ',', '.') }}</div>
+                        <div class="text-[11px] text-slate-600 font-medium">Pengajuan Menunggu</div>
                     </div>
                 </div>
 
                 <!-- Disetujui Bulan Ini -->
-                <div class="bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm flex items-center gap-3 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                         </svg>
                     </div>
                     <div>
-                        <div class="text-lg font-extrabold text-gray-900">{{ number_format($stats['approved_this_month'], 0, ',', '.') }}</div>
-                        <div class="text-[11px] text-gray-500 font-medium">Disetujui Bulan Ini</div>
+                        <div class="text-lg font-extrabold text-slate-900">{{ number_format($stats['approved_this_month'], 0, ',', '.') }}</div>
+                        <div class="text-[11px] text-slate-600 font-medium">Disetujui Bulan Ini</div>
                     </div>
                 </div>
             </div>
@@ -47,7 +47,7 @@
     </div>
 
     <!-- Main Container with Alpine.js State -->
-    <div x-data="reviewEventApp(@js($eventsPayload), {{ $selectedEvent ? $selectedEvent['id'] : 'null' }})" class="space-y-6">
+    <div id="admin-content-container" x-data="reviewEventApp(@js($eventsPayload), {{ $selectedEvent ? $selectedEvent['id'] : 'null' }})" class="space-y-6">
 
         <!-- Grid Layout: Left Panel (Queue) & Right Panel (Detail) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -57,18 +57,19 @@
             <!-- ========================================== -->
             <div class="lg:col-span-7 space-y-4">
 
-                <!-- Header Antrean & Search/Filter Bar -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div class="flex items-center gap-2.5">
-                        <h2 class="text-base font-bold text-gray-900">Daftar Antrean Kurasi</h2>
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
-                            {{ $events->total() }} Item
-                        </span>
+                <!-- Header Antrean + Search & Filter dalam Satu Kartu -->
+                <x-card class="p-4 space-y-3.5">
+                    <!-- Baris Atas: Judul & Badge Jumlah Item -->
+                    <div class="flex items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                        <div class="flex items-center gap-2.5">
+                            <h2 class="text-base font-bold text-gray-900">Daftar Antrean Kurasi</h2>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-brand-700">
+                                {{ $events->total() }} Item
+                            </span>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Search Input & Status Filter -->
-                <x-card class="p-3">
+                    <!-- Form Search & Filter Status -->
                     <form action="{{ route('admin.review-events.index') }}" method="GET" class="space-y-3">
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -83,33 +84,46 @@
                                    class="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
                         </div>
 
+                        @php
+                            $currentStatus = request('status', 'all');
+                            if (empty($currentStatus)) {
+                                $currentStatus = 'all';
+                            }
+                        @endphp
+
                         <!-- Status Filter Buttons -->
-                        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-                            <input type="hidden" name="status" id="statusFilterInput" value="{{ request('status') }}">
+                        <div class="flex items-center gap-2 overflow-x-auto pb-0.5 text-xs">
+                            <input type="hidden" name="status" id="statusFilterInput" value="{{ $currentStatus }}">
                             
+                            <button type="submit" onclick="document.getElementById('statusFilterInput').value='all'"
+                                    class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors {{ in_array($currentStatus, ['all', '']) ? 'bg-brand-600 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                                Semua Status
+                            </button>
                             <button type="submit" onclick="document.getElementById('statusFilterInput').value='pending_review'"
-                                    class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors {{ request('status', 'pending_review') === 'pending_review' ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                                    class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors {{ in_array($currentStatus, ['pending_review', 'pending']) ? 'bg-brand-600 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                                 Menunggu Review
                             </button>
                             <button type="submit" onclick="document.getElementById('statusFilterInput').value='active'"
-                                    class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors {{ request('status') === 'active' ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                                    class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors {{ in_array($currentStatus, ['active', 'approved']) ? 'bg-brand-600 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                                 Disetujui
                             </button>
                             <button type="submit" onclick="document.getElementById('statusFilterInput').value='rejected'"
-                                    class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors {{ request('status') === 'rejected' ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                                    class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors {{ $currentStatus === 'rejected' ? 'bg-brand-600 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                                 Ditolak
                             </button>
-                            <button type="submit" onclick="document.getElementById('statusFilterInput').value='all'"
-                                    class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors {{ request('status') === 'all' ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
-                                Semua Status
-                            </button>
 
-                            @if(request('search') || (request('status') && request('status') !== 'pending_review'))
+                            @php
+                                $hasActiveFilter = (request('search') && trim(request('search')) !== '')
+                                    || (request('status') && request('status') !== 'all');
+                            @endphp
+
+                            @if($hasActiveFilter)
                                 <a href="{{ route('admin.review-events.index') }}" 
+                                   data-reset="true"
                                    x-data="{ resetting: false }"
                                    @click="resetting = true"
-                                   class="group inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all whitespace-nowrap">
-                                    <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
+                                   class="group inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all whitespace-nowrap shrink-0">
+                                    <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
                                          :class="{ 'animate-spin text-brand-600': resetting }"
                                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -127,33 +141,34 @@
                         @php
                             $status = $event->status instanceof \App\Enums\EventStatus ? $event->status->value : (string) $event->status;
                             $totalQuota = $event->positions ? $event->positions->sum('quota') : 0;
+                            $isAlreadyReviewed = in_array($status, ['active', 'approved', 'rejected']);
                         @endphp
                         
                         <div 
                             x-on:click="selectEvent({{ $event->id }})"
                             :class="selectedId === {{ $event->id }} 
                                 ? 'border-2 border-brand-500 shadow-md ring-4 ring-brand-50 bg-white' 
-                                : 'border border-gray-100 bg-white shadow-sm hover:border-gray-200 hover:shadow-md'"
-                            class="rounded-2xl p-5 transition-all cursor-pointer relative"
+                                : 'border border-gray-100 bg-white shadow-sm hover:border-indigo-200/80 hover:shadow-lg hover:shadow-indigo-500/10 hover:-translate-y-0.5'"
+                            class="rounded-2xl p-5 transition-all duration-200 cursor-pointer relative"
                         >
                             <!-- Top Row: Status Badge, Category, Date, and Action Button -->
                             <div class="flex items-center justify-between gap-2 mb-3">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <!-- Status Badge -->
                                     @if($status === 'pending_review')
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/60">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/70">
                                             Menunggu Review
                                         </span>
                                     @elseif($status === 'active')
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
                                             Disetujui
                                         </span>
                                     @elseif($status === 'awaiting_payment')
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200/60">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/70">
                                             Menunggu Pembayaran
                                         </span>
                                     @elseif($status === 'rejected')
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200/60">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/70">
                                             Ditolak
                                         </span>
                                     @else
@@ -181,7 +196,7 @@
                                 <div>
                                     <template x-if="selectedId === {{ $event->id }}">
                                         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-xl shadow-sm">
-                                            Sedang Ditinjau
+                                            {{ $isAlreadyReviewed ? 'Detail Dibuka' : 'Sedang Ditinjau' }}
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -192,7 +207,7 @@
                                         <button type="button" 
                                                 x-on:click.stop="selectEvent({{ $event->id }})"
                                                 class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-brand-700 text-xs font-semibold rounded-xl transition-colors">
-                                            @if($status === 'active')
+                                            @if($isAlreadyReviewed)
                                                 Detail
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -208,19 +223,48 @@
                                 </div>
                             </div>
 
-                            <!-- Event Title -->
-                            <h3 class="text-lg font-bold text-gray-900 group-hover:text-brand-600 transition-colors mb-2">
-                                {{ $event->title }}
-                            </h3>
-
-                            <!-- Bottom Row: Organizer Info & Crew Quota -->
-                            <div class="flex items-center gap-2 text-xs text-gray-500">
-                                <div class="flex items-center gap-1 font-medium text-gray-700">
-                                    <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <span>{{ $event->organizer->organization_name ?? 'Penyelenggara' }}</span>
+                            <!-- Event Header: Thumbnail + Title & Organizer -->
+                            <div class="flex items-start gap-3.5 mb-2.5">
+                                <div class="w-14 h-14 rounded-xl bg-slate-900 overflow-hidden shrink-0 shadow-xs relative border border-gray-100 group/thumb">
+                                    @if($event->poster_url)
+                                        <div class="w-full h-full cursor-pointer relative"
+                                             x-on:click.stop="window.openAdminLightbox('{{ $event->poster_url }}', '{{ addslashes($event->title) }}', 'Poster Event: {{ addslashes($event->category?->name ?? 'Umum') }}', 'image')"
+                                             title="Klik untuk melihat poster penuh">
+                                            <img src="{{ $event->poster_url }}" 
+                                                 alt="{{ $event->title }}" 
+                                                 class="w-full h-full object-cover transition-transform duration-200 group-hover/thumb:scale-110"
+                                                 onerror="this.style.display='none'; this.parentElement.nextElementSibling.classList.remove('hidden');">
+                                            <div class="absolute inset-0 bg-slate-950/30 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0M10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div class="hidden w-full h-full bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 flex items-center justify-center text-brand-300 font-extrabold text-xs">
+                                            {{ strtoupper(substr($event->title, 0, 2)) }}
+                                        </div>
+                                    @else
+                                        <div class="w-full h-full bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 flex items-center justify-center text-brand-300 font-extrabold text-xs">
+                                            {{ strtoupper(substr($event->title, 0, 2)) }}
+                                        </div>
+                                    @endif
                                 </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-base font-bold text-gray-900 group-hover:text-brand-600 transition-colors line-clamp-2">
+                                        {{ $event->title }}
+                                    </h3>
+                                    <div class="flex items-center gap-1 font-medium text-xs text-gray-600 mt-1">
+                                        <svg class="w-3.5 h-3.5 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                        </svg>
+                                        <span class="truncate">{{ $event->organizer->organization_name ?? 'Penyelenggara' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bottom Row: Category & Crew Quota -->
+                            <div class="flex items-center gap-2 text-xs text-gray-500 pt-1 border-t border-gray-50">
+                                <span class="font-medium text-brand-600">{{ $event->category?->name ?? 'Umum' }}</span>
                                 <span class="text-gray-300">&bull;</span>
                                 <span class="font-normal">{{ $totalQuota }} Kuota Crew</span>
                             </div>
@@ -236,9 +280,11 @@
                 </div>
 
                 <!-- Pagination Bar -->
-                <div class="pt-2">
-                    {{ $events->links() }}
-                </div>
+                @if ($events->hasPages())
+                    <div class="bg-white border border-gray-100 rounded-2xl px-4 py-3 shadow-xs">
+                        {{ $events->withQueryString()->links('components.pagination') }}
+                    </div>
+                @endif
             </div>
 
             <!-- ============================================== -->
@@ -249,24 +295,49 @@
 
                     <template x-if="selectedEvent">
                         <div>
-                            <!-- Header Banner / Thumbnail Image with Dark Overlay -->
-                            <div class="relative h-56 sm:h-64 bg-slate-900 overflow-hidden">
-                                <template x-if="selectedEvent.poster_url">
-                                    <img :src="selectedEvent.poster_url" :alt="selectedEvent.title" class="w-full h-full object-cover">
+                            <!-- Header Banner / Thumbnail Image with Clean Gradient -->
+                            <div class="relative h-56 sm:h-64 bg-slate-900 overflow-hidden group">
+                                <template x-if="selectedEvent && selectedEvent.poster_url && !posterLoadFailed">
+                                    <div class="w-full h-full relative cursor-pointer"
+                                         :key="'poster-' + selectedEvent.id + '-' + selectedEvent.poster_url"
+                                         x-on:click="window.openAdminLightbox(selectedEvent.poster_url, selectedEvent.title, 'Poster Event Kurasi (' + selectedEvent.category + ')', 'image')"
+                                         title="Klik untuk memperbesar poster">
+                                        <img :src="selectedEvent.poster_url" 
+                                             :alt="selectedEvent.title" 
+                                             :key="'img-' + selectedEvent.id + '-' + selectedEvent.poster_url"
+                                             x-on:load="posterLoadFailed = false"
+                                             x-on:error="posterLoadFailed = true"
+                                             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
+                                        <!-- Hover Action Overlay -->
+                                        <div class="absolute inset-0 bg-slate-950/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20">
+                                            <span class="px-3.5 py-1.5 rounded-xl bg-slate-900/60 text-white font-bold text-xs backdrop-blur-md border border-white/20 flex items-center gap-1.5 shadow-lg">
+                                                <svg class="w-4 h-4 text-brand-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0M10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                                                </svg>
+                                                Perbesar Poster
+                                            </span>
+                                        </div>
+                                    </div>
                                 </template>
-                                <template x-if="!selectedEvent.poster_url">
-                                    <div class="w-full h-full bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 flex items-center justify-center p-6 text-center">
+                                <template x-if="!selectedEvent || !selectedEvent.poster_url || posterLoadFailed">
+                                    <div class="w-full h-full bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 flex items-center justify-center p-6 text-center"
+                                         :key="'empty-poster-' + (selectedEvent ? selectedEvent.id : 'none')">
                                         <div class="absolute inset-0 bg-[radial-gradient(#6366f1_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
                                         <div class="relative z-10">
-                                            <span class="inline-block px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-semibold mb-2" x-text="selectedEvent.category"></span>
+                                            <span class="inline-block px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-semibold mb-2" x-text="selectedEvent ? selectedEvent.category : 'Umum'"></span>
+                                            <p class="text-xs text-indigo-200/80">Poster Belum Diunggah</p>
                                         </div>
                                     </div>
                                 </template>
 
                                 <!-- Bottom Gradient & Title Overlay -->
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-6">
-                                    <p class="text-[11px] font-bold tracking-widest uppercase text-indigo-300 mb-1">DETAIL PENGAJUAN</p>
-                                    <h3 class="text-xl sm:text-2xl font-extrabold text-white leading-tight" x-text="selectedEvent.title"></h3>
+                                <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-transparent pt-20 pb-5 px-5 pointer-events-none z-10">
+                                    <div class="border-l-[3px] border-indigo-400 pl-3">
+                                        <p class="text-[10px] font-bold tracking-[0.16em] uppercase text-indigo-300 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] mb-0.5">
+                                            DETAIL PENGAJUAN
+                                        </p>
+                                        <h3 class="text-xl sm:text-2xl font-extrabold text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]" x-text="selectedEvent.title"></h3>
+                                    </div>
                                 </div>
                             </div>
 
@@ -535,26 +606,50 @@
                 selectedId: initialSelectedId,
                 selectedEvent: null,
                 loading: false,
+                posterLoadFailed: false,
 
                 init() {
+                    this.posterLoadFailed = false;
                     if (this.selectedId) {
-                        const found = this.events.find(e => e.id === this.selectedId);
+                        const found = this.events.find(e => Number(e.id) === Number(this.selectedId));
                         if (found) {
-                            this.selectedEvent = found;
+                            this.selectedEvent = Object.assign({}, found);
                         } else {
-                            this.selectEvent(this.selectedId);
+                            this.selectEvent(this.selectedId, false);
                         }
                     } else if (this.events.length > 0) {
-                        this.selectedEvent = this.events[0];
+                        this.selectedEvent = Object.assign({}, this.events[0]);
                         this.selectedId = this.events[0].id;
                     }
+
+                    // Handle Back/Forward browser navigation
+                    window.addEventListener('popstate', (e) => {
+                        const curUrl = new URL(window.location.href);
+                        const sel = curUrl.searchParams.get('selected');
+                        if (sel && Number(sel) !== Number(this.selectedId)) {
+                            this.selectEvent(Number(sel), false);
+                        }
+                    });
                 },
 
-                async selectEvent(id) {
-                    this.selectedId = id;
-                    const cached = this.events.find(e => e.id === id);
+                async selectEvent(id, shouldPushState = true) {
+                    if (!id) return;
+                    this.selectedId = Number(id);
+                    this.posterLoadFailed = false;
+
+                    // Update preview instan dari cache lokal
+                    const cached = this.events.find(e => Number(e.id) === Number(id));
                     if (cached) {
-                        this.selectedEvent = cached;
+                        this.selectedEvent = Object.assign({}, cached);
+                    }
+
+                    // Sync URL parameter ?selected=id via history.pushState
+                    if (shouldPushState) {
+                        const url = new URL(window.location.href);
+                        if (url.searchParams.get('selected') !== String(id)) {
+                            url.searchParams.set('selected', id);
+                            window.history.pushState({ selected: id }, '', url.toString());
+                        }
                     }
 
                     // Auto smooth scroll to detail panel on mobile / tablet screens
@@ -575,12 +670,17 @@
                         });
                         if (response.ok) {
                             const data = await response.json();
-                            this.selectedEvent = data;
+                            if (Number(this.selectedId) === Number(id)) {
+                                this.selectedEvent = data;
+                                this.posterLoadFailed = false;
+                            }
                         }
                     } catch (error) {
                         console.error('Gagal mengambil rincian event:', error);
                     } finally {
-                        this.loading = false;
+                        if (Number(this.selectedId) === Number(id)) {
+                            this.loading = false;
+                        }
                     }
                 }
             };

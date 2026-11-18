@@ -20,6 +20,7 @@ use App\Models\User;
 use App\Models\VolunteerProfile;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class VolaSampleDataSeeder extends Seeder
@@ -30,6 +31,8 @@ class VolaSampleDataSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->ensureSampleAssetsExist();
+
         // 1. Ambil data master kategori dan admin (sudah disiapkan oleh seeder pendahulu)
         $categories = EventCategory::all();
         $admin = User::where('role', UserRole::Admin)->first()
@@ -80,6 +83,7 @@ class VolaSampleDataSeeder extends Seeder
                     'email_verified_at' => $createdAt,
                     'password' => Hash::make('password'),
                     'phone' => '08'.fake()->numerify('##########'),
+                    'avatar_path' => ($index % 2 === 0) ? 'profiles/701k5GeSiAtNwc9GY4ZsCOQBmnGyb7G1SG35VT1M.jpg' : null,
                     'role' => UserRole::Volunteer,
                     'status' => $vData['status'],
                     'created_at' => $createdAt,
@@ -93,8 +97,11 @@ class VolaSampleDataSeeder extends Seeder
                     'bio' => 'Mahasiswa aktif yang berdedikasi dan memiliki antusiasme tinggi dalam kepanitiaan dan pengabdian masyarakat.',
                     'institution' => $universities[$index % count($universities)],
                     'city' => $cities[$index % count($cities)],
+                    'photo_path' => ($index % 2 === 0) ? 'profiles/701k5GeSiAtNwc9GY4ZsCOQBmnGyb7G1SG35VT1M.jpg' : null,
                     'skills' => array_slice($skillPool, $index % 4, 3),
                     'experience' => 'Berpengalaman menjadi relawan di 3 event tingkat regional dengan fokus pada divisi operasional lapangan.',
+                    'cv_path' => 'documents/cangkang1.jpg',
+                    'portfolio_path' => 'documents/cangkang1.jpg',
                     'created_at' => $createdAt,
                     'updated_at' => $createdAt,
                 ]
@@ -255,6 +262,7 @@ class VolaSampleDataSeeder extends Seeder
                     'email_verified_at' => $createdAt,
                     'password' => Hash::make('password'),
                     'phone' => $eoData['phone'],
+                    'avatar_path' => ($i % 2 === 0) ? 'profiles/701k5GeSiAtNwc9GY4ZsCOQBmnGyb7G1SG35VT1M.jpg' : null,
                     'role' => UserRole::Eo,
                     'status' => $eoData['user_status'],
                     'created_at' => $createdAt,
@@ -272,7 +280,7 @@ class VolaSampleDataSeeder extends Seeder
                     'pic_name' => $eoData['pic'],
                     'pic_phone' => $eoData['phone'],
                     'social_link' => 'https://instagram.com/'.Str::slug($eoData['org_name']),
-                    'document_path' => 'documents/legalitas-sample.pdf',
+                    'document_path' => ($i % 2 === 0) ? 'documents/cangkang1.jpg' : 'documents/legalitas-sample.pdf',
                     'verification_status' => $eoData['status'],
                     'verified_by' => $eoData['status'] === VerificationStatus::Verified ? $admin?->id : null,
                     'verified_at' => $eoData['status'] === VerificationStatus::Verified ? $createdAt->copy()->addDays(1) : null,
@@ -339,7 +347,7 @@ class VolaSampleDataSeeder extends Seeder
                     'category_id' => $cat->id,
                     'title' => $cItem['title'],
                     'description' => 'Event kolaborasi berskala besar yang membuka kesempatan bagi generasi muda untuk berkontribusi secara langsung dalam tim operasional.',
-                    'poster_path' => null,
+                    'poster_path' => ($cIdx % 2 === 0) ? 'posters/wlPPMC4NhaPWiMahkWBrEu7fjsb0kRvJoZUeo93S.jpg' : null,
                     'location' => 'Gedung Kesenian dan Balai Pertemuan Kota '.$cItem['city'],
                     'city' => $cItem['city'],
                     'start_date' => $startDate,
@@ -400,7 +408,7 @@ class VolaSampleDataSeeder extends Seeder
                     'category_id' => $cat->id,
                     'title' => $aItem['title'],
                     'description' => 'Kegiatan tahunan unggulan yang menghadirkan ribuan peserta serta membutuhkan relawan muda penuh semangat untuk mengisi posisi strategis operasional acara.',
-                    'poster_path' => null,
+                    'poster_path' => ($aIdx % 2 === 0) ? 'posters/wlPPMC4NhaPWiMahkWBrEu7fjsb0kRvJoZUeo93S.jpg' : null,
                     'location' => 'Pusat Konvensi dan Gedung Serbaguna '.$aItem['city'],
                     'city' => $aItem['city'],
                     'start_date' => $startDate,
@@ -600,7 +608,7 @@ class VolaSampleDataSeeder extends Seeder
                     'reported_id' => $reported->id,
                     'reason' => $template['reason'],
                     'description' => $template['desc'].' [Nomor referensi tiket: '.$ticketNumber.']',
-                    'evidence_path' => 'reports/bukti-pelanggaran-'.$r.'.jpg',
+                    'evidence_path' => 'documents/cangkang1.jpg',
                     'status' => $template['status'],
                     'action_taken' => $template['action'] ?? null,
                     'admin_notes' => $template['notes'] ?? null,
@@ -681,6 +689,71 @@ class VolaSampleDataSeeder extends Seeder
                     'updated_at' => $createdDate,
                 ]
             );
+        }
+    }
+
+    /**
+     * Memastikan berkas dummy pada disk public tersedia jika berjalan di lingkungan lokal.
+     */
+    private function ensureSampleAssetsExist(): void
+    {
+        try {
+            $publicDisk = Storage::disk('public');
+            if (! $publicDisk->exists('documents/legalitas-sample.pdf')) {
+                $publicDisk->makeDirectory('documents');
+                $pdfContent = "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n4 0 obj\n<< /Length 110 >>\nstream\nBT\n/F1 18 Tf\n50 720 Td\n(DOKUMEN LEGALITAS PENYELENGGARA - VOLA) Tj\nET\nendstream\nendobj\n5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\nxref\n0 6\n0000000000 65535 f \n0000000010 00000 n \n0000000060 00000 n \n0000000117 00000 n \n0000000234 00000 n \n0000000395 00000 n \ntrailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n465\n%%EOF";
+                $publicDisk->put('documents/legalitas-sample.pdf', $pdfContent);
+            }
+
+            if (! $publicDisk->exists('documents/cangkang1.jpg') && extension_loaded('gd')) {
+                $publicDisk->makeDirectory('documents');
+                $im = imagecreatetruecolor(800, 1100);
+                $bg = imagecolorallocate($im, 248, 250, 252);
+                imagefilledrectangle($im, 0, 0, 800, 1100, $bg);
+                $indigo = imagecolorallocate($im, 79, 70, 229);
+                $dark = imagecolorallocate($im, 15, 23, 42);
+                imagestring($im, 5, 40, 50, 'SURAT KEPUTUSAN LEGALITAS PENYELENGGARA EVENT', $indigo);
+                imagestring($im, 4, 40, 90, 'Nomor Izin Berusaha (NIB): 0120004928192', $dark);
+                imagestring($im, 3, 40, 130, 'Dokumen contoh verifikasi identitas dan legalitas kemitraan VOLA.', $dark);
+                ob_start();
+                imagejpeg($im, null, 90);
+                $imgData = ob_get_clean();
+                $publicDisk->put('documents/cangkang1.jpg', $imgData);
+            }
+
+            // Pastikan dokumen legalitas FEST. dan momenara juga tersedia di storage
+            if (! $publicDisk->exists('organizer-documents/3oQs2aUy1mQujx2xdEg2FBlVbjQraj4bwBAg3j7q.jpg')) {
+                if ($publicDisk->exists('documents/cangkang1.jpg')) {
+                    $publicDisk->put('organizer-documents/3oQs2aUy1mQujx2xdEg2FBlVbjQraj4bwBAg3j7q.jpg', $publicDisk->get('documents/cangkang1.jpg'));
+                }
+            }
+
+            if (! $publicDisk->exists('organizer-documents/QcyFkC7UrALxRz78N3089LXrOR5rCiubyDQAPUfS.pdf')) {
+                if ($publicDisk->exists('documents/legalitas-sample.pdf')) {
+                    $publicDisk->put('organizer-documents/QcyFkC7UrALxRz78N3089LXrOR5rCiubyDQAPUfS.pdf', $publicDisk->get('documents/legalitas-sample.pdf'));
+                }
+            }
+
+            if (! $publicDisk->exists('reports/bukti-pelanggaran-1.jpg')) {
+                $publicDisk->makeDirectory('reports');
+                if (extension_loaded('gd')) {
+                    for ($i = 1; $i <= 25; $i++) {
+                        $im = imagecreatetruecolor(600, 400);
+                        $bg = imagecolorallocate($im, 15, 23, 42);
+                        imagefilledrectangle($im, 0, 0, 600, 400, $bg);
+                        $rose = imagecolorallocate($im, 244, 63, 94);
+                        $white = imagecolorallocate($im, 255, 255, 255);
+                        imagestring($im, 5, 20, 20, 'BUKTI PELAPORAN VOLA #'.$i, $rose);
+                        imagestring($im, 3, 20, 60, 'Lampiran bukti pelaporan digital terverifikasi.', $white);
+                        ob_start();
+                        imagejpeg($im, null, 85);
+                        $data = ob_get_clean();
+                        $publicDisk->put('reports/bukti-pelanggaran-'.$i.'.jpg', $data);
+                    }
+                }
+            }
+        } catch (\Throwable) {
+            // Abaikan jika penyimpanan cloud / s3 tidak mengizinkan write tanpa credentials
         }
     }
 }

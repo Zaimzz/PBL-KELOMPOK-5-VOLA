@@ -361,5 +361,5 @@ test('PublicationPackage price returns correct amounts', function () {
 });
 
 test('PublicationPackage throws on unknown slug', function () {
-    expect(fn () => PublicationPackage::price('nonexistent'))->toThrow(\InvalidArgumentException::class);
+    expect(fn () => PublicationPackage::price('nonexistent'))->toThrow(InvalidArgumentException::class);
 });

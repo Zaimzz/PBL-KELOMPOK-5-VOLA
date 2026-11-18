@@ -6,7 +6,6 @@ use App\Enums\EventStatus;
 use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class EventDetailController extends Controller
@@ -52,9 +51,7 @@ class EventDetailController extends Controller
         $location = trim(($model->location ?? '').($model->city ? ', '.$model->city : ''), ', ') ?: '-';
         $locationCity = $model->city ?? $model->location ?? '-';
 
-        $imageUrl = $model->poster_path
-            ? Storage::disk('public')->url($model->poster_path)
-            : asset('images/event-placeholder.svg');
+        $imageUrl = $model->poster_url;
 
         $orgName = $organizer?->organization_name ?? '-';
         $orgAbbr = implode('', array_map(

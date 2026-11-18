@@ -7,7 +7,6 @@ use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class SearchController extends Controller
@@ -38,11 +37,11 @@ class SearchController extends Controller
         if ($query !== '') {
             $dbQuery->where(function ($q) use ($query, $operator) {
                 $q->where('title', $operator, '%'.$query.'%')
-                  ->orWhere('location', $operator, '%'.$query.'%')
-                  ->orWhere('city', $operator, '%'.$query.'%')
-                  ->orWhereHas('category', fn ($cq) => $cq->where('name', $operator, '%'.$query.'%'))
-                  ->orWhereHas('organizer', fn ($oq) => $oq->where('organization_name', $operator, '%'.$query.'%'))
-                  ->orWhereHas('positions', fn ($pq) => $pq->where('name', $operator, '%'.$query.'%'));
+                    ->orWhere('location', $operator, '%'.$query.'%')
+                    ->orWhere('city', $operator, '%'.$query.'%')
+                    ->orWhereHas('category', fn ($cq) => $cq->where('name', $operator, '%'.$query.'%'))
+                    ->orWhereHas('organizer', fn ($oq) => $oq->where('organization_name', $operator, '%'.$query.'%'))
+                    ->orWhereHas('positions', fn ($pq) => $pq->where('name', $operator, '%'.$query.'%'));
             });
         }
 
@@ -53,7 +52,7 @@ class SearchController extends Controller
         if ($location !== '' && $location !== 'Semua Lokasi') {
             $dbQuery->where(function ($q) use ($location, $operator) {
                 $q->where('city', $operator, '%'.$location.'%')
-                  ->orWhere('location', $operator, '%'.$location.'%');
+                    ->orWhere('location', $operator, '%'.$location.'%');
             });
         }
 
@@ -106,9 +105,7 @@ class SearchController extends Controller
 
             $categoryName = $event->category?->name ?? 'Umum';
 
-            $imageUrl = $event->poster_path
-                ? Storage::disk('public')->url($event->poster_path)
-                : $this->getImageByCategory($categoryName);
+            $imageUrl = $event->poster_url;
 
             $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
 

@@ -170,6 +170,36 @@ class TransactionTest extends TestCase
         ]);
     }
 
+    public function test_show_endpoint_with_event_poster_path(): void
+    {
+        $eventWithPoster = Event::factory()->create([
+            'organizer_id' => $this->organizer->id,
+            'title' => 'Jakarta Game Expo 2025',
+            'status' => EventStatus::Active,
+            'poster_path' => 'events/posters/sample-poster.jpg',
+        ]);
+
+        $tx = Payment::factory()->create([
+            'event_id' => $eventWithPoster->id,
+            'invoice_number' => 'INV-2025-100',
+            'amount' => 500000,
+            'status' => PaymentStatus::Paid,
+            'payment_type' => 'qris',
+        ]);
+
+        $response = $this->actingAs($this->admin)->getJson(route('admin.transactions.show', $tx));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'id' => $tx->id,
+            'invoice_number' => 'INV-2025-100',
+            'event' => [
+                'title' => 'Jakarta Game Expo 2025',
+            ],
+        ]);
+        $this->assertNotNull($response->json('event.poster_url'));
+    }
+
     public function test_download_invoice_returns_successful_response(): void
     {
         $tx = Payment::factory()->create([

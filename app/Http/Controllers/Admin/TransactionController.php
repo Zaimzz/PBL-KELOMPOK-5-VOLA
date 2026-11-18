@@ -157,6 +157,7 @@ class TransactionController extends Controller
                 'title' => $payment->event?->title ?? 'Event',
                 'category' => $payment->event?->category?->name ?? 'Umum',
                 'location' => $payment->event?->city ?? 'Indonesia',
+                'poster_url' => $payment->event?->poster_url,
             ],
             'organizer' => [
                 'name' => $payment->event?->organizer?->organization_name ?? 'Penyelenggara',

@@ -418,4 +418,3 @@ test('guest tidak bisa menerima atau menolak pendaftar', function () {
     $this->patch(route('eo.applicants.reject', $application))
         ->assertRedirect(route('login'));
 });
-

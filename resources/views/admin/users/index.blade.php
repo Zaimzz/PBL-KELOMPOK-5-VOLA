@@ -1,70 +1,52 @@
 <x-layouts.admin title="Manajemen Pengguna">
 
     <!-- Header & Breadcrumbs Section -->
-    <div class="mb-6">
-        <div class="mb-4">
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Manajemen Pengguna</h1>
-            <p class="text-gray-500 text-sm mt-1">Kelola data seluruh crew dan penyelenggara event, pantau status akun, dan moderasi akses platform.</p>
-        </div>
+    <div class="mb-6 relative z-10 opacity-100 w-full max-w-full min-w-0">
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 w-full">
+            <!-- Sisi Kiri: Badge, Judul & Deskripsi -->
+            <div class="max-w-md">
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border mb-2.5 bg-sky-50 text-sky-700 border-sky-200/70">
+                    <span class="relative flex h-2 w-2 mr-0.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-sky-600"></span>
+                    </span>
+                    <span>DIREKTORI AKUN • MODERASI AKSES</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Manajemen <span class="text-amber-500">Pengguna</span></h1>
+                <p class="text-slate-600 text-sm mt-1 leading-relaxed">Kelola data seluruh crew dan penyelenggara event, pantau status akun, dan moderasi akses platform.</p>
+            </div>
 
-        <!-- Header Metrics: 4 Luxury Cards in Full-Width Grid (Wider 'Ditangguhkan' Card) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Total Pengguna -->
-            <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-3.5">
-                <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+            <!-- Sisi Kanan: 4 Luxury Cards Memanjang 1 Baris -->
+            <div id="admin-metrics-container" class="flex flex-wrap items-center gap-3 w-full xl:w-auto shrink-0">
+                <x-metric-card label="Total Pengguna" :value="number_format($stats['total_users'], 0, ',', '.')" bg="bg-indigo-50" text="text-indigo-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
-                </div>
-                <div>
-                    <div class="text-xl font-extrabold text-gray-900">{{ number_format($stats['total_users'], 0, ',', '.') }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Total Pengguna</div>
-                </div>
-            </div>
+                </x-metric-card>
 
-            <!-- Crew Aktif -->
-            <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-3.5">
-                <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <x-metric-card label="Crew Aktif" :value="number_format($stats['active_volunteers'], 0, ',', '.')" bg="bg-blue-50" text="text-blue-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                     </svg>
-                </div>
-                <div>
-                    <div class="text-xl font-extrabold text-gray-900">{{ number_format($stats['active_volunteers'], 0, ',', '.') }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Crew Aktif</div>
-                </div>
-            </div>
+                </x-metric-card>
 
-            <!-- Event Organizer -->
-            <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-3.5">
-                <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <x-metric-card label="Event Organizer" :value="number_format($stats['total_eos'], 0, ',', '.')" bg="bg-emerald-50" text="text-emerald-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                     </svg>
-                </div>
-                <div>
-                    <div class="text-xl font-extrabold text-gray-900">{{ number_format($stats['total_eos'], 0, ',', '.') }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Event Organizer</div>
-                </div>
-            </div>
+                </x-metric-card>
 
-            <!-- Akun Ditangguhkan -->
-            <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-3.5">
-                <div class="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                <x-metric-card label="Ditangguhkan" :value="number_format($stats['suspended_users'], 0, ',', '.')" bg="bg-rose-50" text="text-rose-600" valueClass="text-rose-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
                     </svg>
-                </div>
-                <div>
-                    <div class="text-xl font-extrabold text-rose-600">{{ number_format($stats['suspended_users'], 0, ',', '.') }}</div>
-                    <div class="text-xs text-gray-500 font-medium">Ditangguhkan</div>
-                </div>
+                </x-metric-card>
             </div>
         </div>
     </div>
 
     <!-- Main Container with Alpine.js State -->
-    <div x-data="userManager()" class="space-y-6">
+    <div id="admin-content-container" x-data="userManager()" class="w-full max-w-full min-w-0 space-y-6">
 
         <!-- Search & Filter Card -->
         <x-card class="p-3">
@@ -95,7 +77,7 @@
                         select(val) {
                             this.selected = val;
                             this.open = false;
-                            $nextTick(() => { this.$refs.hiddenRole.form.submit(); });
+                            $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenRole.form); });
                         }
                     }" 
                     class="relative w-full sm:w-48 shrink-0"
@@ -150,7 +132,7 @@
                         select(val) {
                             this.selected = val;
                             this.open = false;
-                            $nextTick(() => { this.$refs.hiddenStatus.form.submit(); });
+                            $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenStatus.form); });
                         }
                     }" 
                     class="relative w-full sm:w-48 shrink-0"
@@ -193,8 +175,16 @@
                     </div>
                 </div>
 
-                @if(request('search') || (request('role') && request('role') !== 'all') || (request('status') && request('status') !== 'all'))
+                <!-- Reset Button -->
+                @php
+                    $hasActiveFilter = (request('search') && trim(request('search')) !== '')
+                        || (request('role') && request('role') !== 'all')
+                        || (request('status') && request('status') !== 'all');
+                @endphp
+
+                @if($hasActiveFilter)
                     <a href="{{ route('admin.users.index') }}" 
+                       data-reset="true"
                        x-data="{ resetting: false }"
                        @click="resetting = true"
                        class="group inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all shrink-0">
@@ -223,17 +213,17 @@
         @endif
 
         <!-- Data Table -->
-        <x-card padding="p-0" class="overflow-hidden shadow-sm border border-gray-100">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+        <x-card padding="p-0" class="overflow-hidden shadow-sm border border-slate-200/90 w-full max-w-full min-w-0">
+            <div class="overflow-x-auto w-full">
+                <table class="table-fixed w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-gray-50/75 border-b border-gray-100 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                            <th class="py-3.5 px-6">Nama / Pengguna</th>
-                            <th class="py-3.5 px-4">Peran</th>
-                            <th class="py-3.5 px-6">Email & Kontak</th>
-                            <th class="py-3.5 px-6">Asal / Institusi</th>
-                            <th class="py-3.5 px-4 text-center">Status Akun</th>
-                            <th class="py-3.5 px-6 text-right">Aksi</th>
+                        <tr class="bg-gray-50/75 border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                            <th class="py-3.5 px-4 w-[19%]">Nama / Pengguna</th>
+                            <th class="py-3.5 px-2 w-[14%] text-center">Peran</th>
+                            <th class="py-3.5 px-3 w-[20%]">Email & Kontak</th>
+                            <th class="py-3.5 px-3 w-[16%]">Asal / Institusi</th>
+                            <th class="py-3.5 px-2 w-[12%] text-center">Status Akun</th>
+                            <th class="py-3.5 px-3 w-[19%] text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-sm">
@@ -250,77 +240,81 @@
                             @endphp
                             <tr class="hover:bg-gray-50/60 transition-colors">
                                 <!-- Nama / Pengguna -->
-                                <td class="py-4 px-6">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full {{ $isVolunteer ? 'bg-blue-100 text-blue-700' : 'bg-indigo-100 text-indigo-700' }} flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden shadow-xs">
+                                <td class="py-4 px-4">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="w-9 h-9 rounded-full {{ $isVolunteer ? 'bg-blue-100 text-blue-700' : 'bg-indigo-100 text-indigo-700' }} flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden shadow-xs">
                                             @if($user->avatar_path)
                                                 <img src="{{ Storage::url($user->avatar_path) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
                                             @else
                                                 {{ strtoupper(substr($user->name, 0, 2)) }}
                                             @endif
                                         </div>
-                                        <div>
-                                            <div class="font-bold text-gray-900 text-sm leading-snug line-clamp-1">{{ $user->name }}</div>
-                                            <div class="text-xs text-gray-400 mt-0.5">Gabung {{ $user->created_at->translatedFormat('d M Y') }}</div>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="font-bold text-gray-900 text-sm leading-snug truncate" title="{{ $user->name }}">{{ $user->name }}</div>
+                                            <div class="text-[11px] text-gray-400 mt-0.5 truncate">Gabung {{ $user->created_at->translatedFormat('d M Y') }}</div>
                                         </div>
                                     </div>
                                 </td>
 
                                 <!-- Peran -->
-                                <td class="py-4 px-4 whitespace-nowrap">
-                                    @if($isVolunteer)
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/60">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-                                            Crew
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-brand-700 border border-indigo-200/60">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-brand-600"></span>
-                                            Event Organizer
-                                        </span>
-                                    @endif
+                                <td class="py-4 px-2 text-center whitespace-nowrap">
+                                    <div class="flex items-center justify-center">
+                                        @if($isVolunteer)
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/70">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
+                                                Crew
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-brand-700 border border-indigo-200/70">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-brand-600 shrink-0"></span>
+                                                Event Organizer
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
 
                                 <!-- Email & Kontak -->
-                                <td class="py-4 px-6">
-                                    <div class="font-medium text-gray-900 text-xs">{{ $user->email }}</div>
-                                    <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                                        <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <td class="py-4 px-3">
+                                    <div class="font-medium text-gray-900 text-xs truncate" title="{{ $user->email }}">{{ $user->email }}</div>
+                                    <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-1 truncate">
+                                        <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                                         </svg>
-                                        {{ $user->phone ?: '-' }}
+                                        <span class="truncate">{{ $user->phone ?: '-' }}</span>
                                     </div>
                                 </td>
 
                                 <!-- Asal / Institusi -->
-                                <td class="py-4 px-6">
-                                    <div class="font-semibold text-gray-800 text-xs line-clamp-1">{{ $institution }}</div>
-                                    <div class="text-[11px] text-gray-400 mt-0.5">{{ $location }}</div>
+                                <td class="py-4 px-3">
+                                    <div class="font-semibold text-gray-800 text-xs truncate" title="{{ $institution }}">{{ $institution }}</div>
+                                    <div class="text-[11px] text-gray-400 mt-0.5 truncate">{{ $location }}</div>
                                 </td>
 
                                 <!-- Status Akun -->
-                                <td class="py-4 px-4 text-center whitespace-nowrap">
-                                    @if($isActive)
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                            Aktif
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                                            Ditangguhkan
-                                        </span>
-                                    @endif
+                                <td class="py-4 px-2 text-center whitespace-nowrap">
+                                    <div class="flex items-center justify-center">
+                                        @if($isActive)
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
+                                                Aktif
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/70">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-rose-600 shrink-0"></span>
+                                                Ditangguhkan
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
 
                                 <!-- Aksi -->
-                                <td class="py-4 px-6 text-right whitespace-nowrap">
-                                    <div class="inline-flex items-center gap-2">
+                                <td class="py-4 px-3 text-center whitespace-nowrap">
+                                    <div class="inline-flex items-center justify-center gap-1.5">
                                         <!-- Tombol Detail Akun -->
                                         <button type="button"
                                                 @click="openDetail({{ $user->id }})"
-                                                class="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-brand-700 text-xs font-semibold rounded-xl transition-colors">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-brand-700 text-xs font-semibold rounded-xl transition-colors">
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                             </svg>
@@ -331,8 +325,8 @@
                                         @if($isActive)
                                             <button type="button"
                                                     @click="confirmStatusChange({{ $user->id }}, '{{ addslashes($user->name) }}', 'suspend')"
-                                                    class="inline-flex items-center gap-1 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold rounded-xl transition-colors">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold rounded-xl transition-colors">
+                                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
                                                 </svg>
                                                 Suspend
@@ -340,8 +334,8 @@
                                         @else
                                             <button type="button"
                                                     @click="confirmStatusChange({{ $user->id }}, '{{ addslashes($user->name) }}', 'activate')"
-                                                    class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-xl transition-colors">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-xl transition-colors">
+                                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                 </svg>
                                                 Aktifkan
@@ -366,8 +360,8 @@
             </div>
 
             <!-- Pagination Bar -->
-            <div class="p-4 border-t border-gray-100">
-                {{ $users->links() }}
+            <div class="p-4 border-t border-slate-100">
+                {{ $users->withQueryString()->links('components.pagination') }}
             </div>
         </x-card>
 

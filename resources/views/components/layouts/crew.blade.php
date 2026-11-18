@@ -26,14 +26,7 @@
             ->where('status', 'accepted')->count();
     }
 
-    $displayAvatar = null;
-    if ($profile && $profile->photo_path) {
-        $displayAvatar = \Illuminate\Support\Facades\Storage::disk('public')->url($profile->photo_path);
-    } elseif ($authUser?->avatar_path) {
-        $displayAvatar = filter_var($authUser->avatar_path, FILTER_VALIDATE_URL)
-            ? $authUser->avatar_path
-            : \Illuminate\Support\Facades\Storage::url($authUser->avatar_path);
-    }
+    $displayAvatar = $authUser?->avatar_url;
 
     $words = array_values(array_filter(explode(' ', trim($displayName))));
     $initials = count($words) >= 2 

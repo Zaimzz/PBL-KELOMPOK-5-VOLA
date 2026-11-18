@@ -107,4 +107,3 @@ class SearchTest extends TestCase
         $response2->assertSee('Jogja International Street Festival 2025');
     }
 }
-

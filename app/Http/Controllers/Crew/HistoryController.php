@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Application;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -16,7 +17,7 @@ class HistoryController extends Controller
         $user = Auth::user();
         $profile = $user?->volunteerProfile;
 
-        if (!$profile) {
+        if (! $profile) {
             return view('crew.history', [
                 'paginatedHistories' => collect([]),
                 'counts' => ['all' => 0, 'festival' => 0, 'seminar' => 0, 'sosial' => 0, 'kampus' => 0, 'komunitas' => 0, 'olahraga' => 0, 'musik' => 0],
@@ -35,8 +36,8 @@ class HistoryController extends Controller
 
         if ($activeCategory !== 'all') {
             $query->whereHas('position.event.category', function ($q) use ($activeCategory) {
-              
-                $q->where('name', $activeCategory); 
+
+                $q->where('name', $activeCategory);
             });
         }
 
@@ -49,13 +50,13 @@ class HistoryController extends Controller
 
         $counts = [
             'all' => (clone $baseQueryAll)->count(),
-            'festival' => (clone $baseQueryAll)->whereHas('position.event.category', fn($q) => $q->where('name', 'Festival'))->count(),
-            'seminar' => (clone $baseQueryAll)->whereHas('position.event.category', fn($q) => $q->where('name', 'Seminar'))->count(),
-            'sosial' => (clone $baseQueryAll)->whereHas('position.event.category', fn($q) => $q->where('name', 'Sosial'))->count(),
-            'kampus' => (clone $baseQueryAll)->whereHas('position.event.category', fn($q) => $q->where('name', 'Kampus'))->count(),
-            'komunitas' => (clone $baseQueryAll)->whereHas('position.event.category', fn($q) => $q->where('name', 'Komunitas'))->count(),
-            'olahraga' => (clone $baseQueryAll)->whereHas('position.event.category', fn($q) => $q->where('name', 'Olahraga'))->count(),
-            'musik' => (clone $baseQueryAll)->whereHas('position.event.category', fn($q) => $q->where('name', 'Musik'))->count(),
+            'festival' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Festival'))->count(),
+            'seminar' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Seminar'))->count(),
+            'sosial' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Sosial'))->count(),
+            'kampus' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Kampus'))->count(),
+            'komunitas' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Komunitas'))->count(),
+            'olahraga' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Olahraga'))->count(),
+            'musik' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Musik'))->count(),
         ];
 
         $perPage = 4;
@@ -63,15 +64,15 @@ class HistoryController extends Controller
 
         $histories = $paginatedApps->getCollection()->map(function ($app) {
             $event = $app->position?->event;
-            
+
             $startDate = $event?->start_date?->translatedFormat('d M Y');
             $endDate = $event?->end_date?->translatedFormat('d M Y');
             $dateFormatted = $startDate;
             if ($endDate && $endDate !== $startDate) {
-                $dateFormatted .= ' – ' . $endDate;
+                $dateFormatted .= ' – '.$endDate;
             }
 
-            $location = trim(($event?->location ?? '') . ', ' . ($event?->city ?? ''));
+            $location = trim(($event?->location ?? '').', '.($event?->city ?? ''));
 
             return [
                 'id' => $app->id,
@@ -81,13 +82,13 @@ class HistoryController extends Controller
                 'date' => $dateFormatted ?: '-',
                 'location' => $location ?: '-',
                 'category' => $event?->category?->name ?? 'Umum',
-                'hours' => 0, 
+                'hours' => 0,
                 'status_label' => $app->status === 'accepted' ? 'Selesai' : 'Ditolak',
                 'status' => $app->status,
             ];
         });
 
-        $result = new \Illuminate\Pagination\LengthAwarePaginator(
+        $result = new LengthAwarePaginator(
             $histories,
             $paginatedApps->total(),
             $perPage,
@@ -111,7 +112,9 @@ class HistoryController extends Controller
         $user = Auth::user();
         $profile = $user?->volunteerProfile;
 
-        if (!$profile) abort(403);
+        if (! $profile) {
+            abort(403);
+        }
 
         $app = Application::where('volunteer_profile_id', $profile->id)
             ->where('id', $id)
@@ -119,8 +122,8 @@ class HistoryController extends Controller
             ->firstOrFail();
 
         $event = $app->position?->event;
-        
-        if (!$event || $app->status !== 'accepted') {
+
+        if (! $event || $app->status !== 'accepted') {
             abort(404, 'Sertifikat tidak tersedia untuk lamaran ini.');
         }
 
@@ -130,7 +133,7 @@ class HistoryController extends Controller
         $endDate = $event->end_date?->translatedFormat('d M Y');
         $dateFormatted = $startDate;
         if ($endDate && $endDate !== $startDate) {
-            $dateFormatted .= ' – ' . $endDate;
+            $dateFormatted .= ' – '.$endDate;
         }
 
         $eventData = [
@@ -138,15 +141,15 @@ class HistoryController extends Controller
             'event_title' => $event->title,
             'organizer' => $event->organizer?->organization_name ?? '-',
             'position' => $app->position?->name ?? '-',
-            'location' => trim(($event->location ?? '') . ', ' . ($event->city ?? '')),
+            'location' => trim(($event->location ?? '').', '.($event->city ?? '')),
             'date' => $dateFormatted,
             'category' => $event->category?->name ?? 'Umum',
         ];
 
         $pdf = Pdf::loadView('crew.certificate-pdf', compact('eventData', 'displayName'));
         $pdf->setPaper('A4', 'landscape');
-        
-        $filename = 'Sertifikat-' . str_replace(' ', '-', $event->title) . '-' . str_replace(' ', '-', $displayName) . '.pdf';
+
+        $filename = 'Sertifikat-'.str_replace(' ', '-', $event->title).'-'.str_replace(' ', '-', $displayName).'.pdf';
 
         return $pdf->download($filename);
     }
@@ -156,7 +159,9 @@ class HistoryController extends Controller
         $user = Auth::user();
         $profile = $user?->volunteerProfile;
 
-        if (!$profile) abort(403);
+        if (! $profile) {
+            abort(403);
+        }
 
         $apps = Application::where('volunteer_profile_id', $profile->id)
             ->whereIn('status', ['accepted', 'rejected'])
@@ -169,7 +174,7 @@ class HistoryController extends Controller
         $displayCity = $user->city ?? '-';
 
         $totalEvents = $apps->count();
-        $totalHours = 0; 
+        $totalHours = 0;
         $totalCategories = $apps->pluck('position.event.category.name')->unique()->filter()->count();
 
         $histories = $apps->map(function ($app) {
@@ -177,14 +182,16 @@ class HistoryController extends Controller
             $startDate = $event?->start_date?->translatedFormat('d M Y');
             $endDate = $event?->end_date?->translatedFormat('d M Y');
             $dateFormatted = $startDate;
-            if ($endDate && $endDate !== $startDate) $dateFormatted .= ' – ' . $endDate;
+            if ($endDate && $endDate !== $startDate) {
+                $dateFormatted .= ' – '.$endDate;
+            }
 
             return [
                 'event_title' => $event?->title ?? '-',
                 'organizer' => $event?->organizer?->organization_name ?? '-',
                 'position' => $app->position?->name ?? '-',
                 'date' => $dateFormatted ?: '-',
-                'location' => trim(($event?->location ?? '') . ', ' . ($event?->city ?? '')),
+                'location' => trim(($event?->location ?? '').', '.($event?->city ?? '')),
                 'category' => $event?->category?->name ?? 'Umum',
                 'hours' => 0,
                 'status_label' => $app->status === 'accepted' ? 'Selesai' : 'Ditolak',
@@ -202,7 +209,7 @@ class HistoryController extends Controller
         ));
 
         $pdf->setPaper('A4', 'portrait');
-        $filename = 'Riwayat-Pengalaman-' . str_replace(' ', '-', $displayName) . '.pdf';
+        $filename = 'Riwayat-Pengalaman-'.str_replace(' ', '-', $displayName).'.pdf';
 
         return $pdf->download($filename);
     }

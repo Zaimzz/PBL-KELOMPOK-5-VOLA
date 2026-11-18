@@ -70,7 +70,7 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     Route::post('/profile/documents/upload', [CrewProfileController::class, 'uploadDocument'])->name('profile.documents.upload');
     Route::delete('/profile/documents/{type}', [CrewProfileController::class, 'deleteDocument'])->name('profile.documents.delete');
 
-     // Settings
+    // Settings
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings/email', [SettingsController::class, 'updateEmail'])->name('settings.update.email');
     Route::put('/settings/phone', [SettingsController::class, 'updatePhone'])->name('settings.update.phone');

@@ -24,7 +24,7 @@ class MyEventController extends Controller
 
             $events = $applications->map(function ($app) {
                 $event = $app->position->event;
-               
+
                 $now = now();
                 $startDate = $event->start_date;
                 $endDate = $event->end_date ?? $event->start_date;
@@ -39,15 +39,15 @@ class MyEventController extends Controller
                 return [
                     'id' => $event->id,
                     'title' => $event->title,
-                    'image' => $event->poster_path ? asset('storage/' . $event->poster_path) : 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
+                    'image' => $event->poster_path ? asset('storage/'.$event->poster_path) : 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
                     'organizer' => $event->organizer->organization_name ?? 'Unknown Organizer',
-                    'date' => $event->start_date->translatedFormat('d M Y') . ($event->end_date && $event->end_date != $event->start_date ? ' - ' . $event->end_date->translatedFormat('d M Y') : ''),
-                    'location' => trim(($event->location ?? '') . ', ' . ($event->city ?? '')),
+                    'date' => $event->start_date->translatedFormat('d M Y').($event->end_date && $event->end_date != $event->start_date ? ' - '.$event->end_date->translatedFormat('d M Y') : ''),
+                    'location' => trim(($event->location ?? '').', '.($event->city ?? '')),
                     'position' => $app->position->name,
                     'category' => $event->category->name ?? 'Umum',
                     'status' => $status,
                     'application_id' => $app->id,
-                    'crew_id' => 'CRW-' . str_pad($app->id, 5, '0', STR_PAD_LEFT), 
+                    'crew_id' => 'CRW-'.str_pad($app->id, 5, '0', STR_PAD_LEFT),
                 ];
             });
         }

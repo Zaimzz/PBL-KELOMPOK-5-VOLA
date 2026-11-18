@@ -188,4 +188,3 @@ class ApplicantController extends Controller
         }
     }
 }
-

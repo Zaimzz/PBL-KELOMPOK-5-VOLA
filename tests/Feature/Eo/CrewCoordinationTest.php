@@ -8,6 +8,7 @@ use App\Models\EventPosition;
 use App\Models\OrganizerProfile;
 use App\Models\User;
 use App\Models\VolunteerProfile;
+use Illuminate\Support\Facades\Route;
 
 // ============================================================
 // Helpers
@@ -384,15 +385,14 @@ test('volunteer tidak bisa mengunduh csv crew', function () {
 // ============================================================
 
 test('tidak ada route pengelolaan grup whatsapp', function () {
-    $routes = collect(\Illuminate\Support\Facades\Route::getRoutes()->getRoutes())
+    $routes = collect(Route::getRoutes()->getRoutes())
         ->map(fn ($r) => $r->getName())
         ->filter()
         ->values()
         ->toArray();
 
     // No route name should contain 'whatsapp' or 'group' in EO namespace
-    $eoWhatsappRoutes = array_filter($routes, fn ($name) =>
-        str_contains($name, 'eo.whatsapp') || str_contains($name, 'eo.group')
+    $eoWhatsappRoutes = array_filter($routes, fn ($name) => str_contains($name, 'eo.whatsapp') || str_contains($name, 'eo.group')
     );
 
     expect($eoWhatsappRoutes)->toBeEmpty();
@@ -416,4 +416,3 @@ test('empty state khusus filter tampil saat divisi tidak memiliki crew', functio
         ->assertOk()
         ->assertSee('Tidak Ada Crew pada Divisi Ini');
 });
-

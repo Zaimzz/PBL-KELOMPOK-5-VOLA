@@ -10,6 +10,7 @@ use App\Http\Requests\Eo\UpdateEventRequest;
 use App\Models\Event;
 use App\Models\EventCategory;
 use App\Models\PositionType;
+use App\Support\MediaStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -164,7 +165,7 @@ class EventController extends Controller
         if ($request->hasFile('poster')) {
             // Delete old poster if exists
             if ($event->poster_path) {
-                Storage::disk('public')->delete($event->poster_path);
+                MediaStorage::deleteSafe($event->poster_path);
             }
             $data['poster_path'] = $request->file('poster')->store('posters', 'public');
         }
@@ -196,9 +197,9 @@ class EventController extends Controller
     {
         Gate::authorize('delete', $event);
 
-        // Delete poster if exists
+        // Delete poster if exists secara aman
         if ($event->poster_path) {
-            Storage::disk('public')->delete($event->poster_path);
+            MediaStorage::deleteSafe($event->poster_path);
         }
 
         $event->delete();

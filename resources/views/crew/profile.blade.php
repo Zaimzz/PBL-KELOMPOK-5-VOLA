@@ -117,7 +117,7 @@
               
                 <div class="relative shrink-0">
                     @if($profile?->photo_path)
-                        <img src="{{ asset('storage/' . $profile->photo_path) }}" 
+                        <img src="{{ $profile->photo_url }}" 
                              alt="{{ $user->name }}" 
                              class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md">
                     @else
