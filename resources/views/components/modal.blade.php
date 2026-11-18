@@ -73,12 +73,12 @@ $isAdmin = request()->is('admin*');
 
             <!-- Centering Wrapper: Full viewport overlay dengan safe padding minimal 24px-32px (p-6 sm:p-8) -->
             <div
-                class="fixed inset-0 z-[9999] {{ $isAdmin ? 'lg:pl-64' : '' }} flex items-center justify-center p-6 sm:p-8"
-                x-on:click.self="show = false"
+                class="fixed inset-0 z-[9999] {{ $isAdmin ? 'lg:pl-64' : '' }} flex items-center justify-center p-6 sm:p-8 cursor-pointer"
+                x-on:click="show = false"
             >
                 <div
                     x-show="show"
-                    class="bg-white rounded-2xl overflow-hidden shadow-2xl relative border border-gray-100 transform transition-all w-full {{ $maxWidth }} my-auto max-h-[85vh] max-h-[85dvh] flex flex-col"
+                    class="bg-white rounded-2xl overflow-hidden shadow-2xl relative border border-gray-100 transform transition-all w-full {{ $maxWidth }} my-auto max-h-[85vh] max-h-[85dvh] flex flex-col cursor-default"
                     x-transition:enter="ease-out duration-300"
                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"

@@ -7,7 +7,6 @@ use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class SearchController extends Controller
@@ -106,9 +105,7 @@ class SearchController extends Controller
 
             $categoryName = $event->category?->name ?? 'Umum';
 
-            $imageUrl = $event->poster_path
-                ? Storage::disk('public')->url($event->poster_path)
-                : $this->getImageByCategory($categoryName);
+            $imageUrl = $event->poster_url;
 
             $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
 

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Crew;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
@@ -12,7 +11,7 @@ class NotificationController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         // Ambil semua notifikasi dari tabel 'notifications' milik user ini
         // Urutkan dari yang terbaru
         $notifications = $user->notifications()->latest()->get()->map(function ($notif) {
@@ -22,7 +21,7 @@ class NotificationController extends Controller
                 'title' => $notif->data['title'] ?? 'Notifikasi',
                 'message' => $notif->data['message'] ?? '',
                 'time' => $notif->created_at->diffForHumans(), // "2 jam yang lalu"
-                'read' => !is_null($notif->read_at), // true jika sudah dibaca
+                'read' => ! is_null($notif->read_at), // true jika sudah dibaca
                 'link' => $notif->data['link'] ?? '#',
             ];
         });

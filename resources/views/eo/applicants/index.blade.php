@@ -318,7 +318,7 @@
                                     <td class="px-5 py-4">
                                         <div class="flex flex-col gap-1">
                                             @if ($volunteer?->cv_path)
-                                                <a href="{{ Storage::url($volunteer->cv_path) }}"
+                                                <a href="{{ $volunteer->cv_url }}"
                                                    target="_blank"
                                                    rel="noopener noreferrer"
                                                    class="inline-flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-700 font-medium transition-colors">
@@ -329,7 +329,7 @@
                                                 </a>
                                             @endif
                                             @if ($volunteer?->portfolio_path)
-                                                <a href="{{ Storage::url($volunteer->portfolio_path) }}"
+                                                <a href="{{ $volunteer->portfolio_url }}"
                                                    target="_blank"
                                                    rel="noopener noreferrer"
                                                    class="inline-flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">

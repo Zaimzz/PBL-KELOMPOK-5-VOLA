@@ -236,7 +236,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $unregisteredResponse->assertSessionHasErrors([
-            'email' => 'Email atau kata sandi yang Anda masukkan tidak valid.',
+            'email' => self::GENERIC_CREDENTIAL_ERROR,
         ]);
 
         $wrongPasswordResponse = $this->post('/admin/login', [
@@ -245,7 +245,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $wrongPasswordResponse->assertSessionHasErrors([
-            'email' => 'Email atau kata sandi yang Anda masukkan tidak valid.',
+            'email' => self::GENERIC_CREDENTIAL_ERROR,
         ]);
         $wrongPasswordResponse->assertSessionDoesntHaveErrors(['password']);
         $this->assertGuest();

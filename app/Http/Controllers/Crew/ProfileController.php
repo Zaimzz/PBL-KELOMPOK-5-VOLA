@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Crew;
 
 use App\Http\Controllers\Controller;
+use App\Support\MediaStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -60,7 +60,7 @@ class ProfileController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($profile && $profile->photo_path) {
-                Storage::disk('public')->delete($profile->photo_path);
+                MediaStorage::deleteSafe($profile->photo_path);
             }
             $path = $request->file('photo')->store('profiles', 'public');
             $validated['photo_path'] = $path;
@@ -117,7 +117,7 @@ class ProfileController extends Controller
         $profile = $user->volunteerProfile;
 
         if ($profile && $profile->{$request->type}) {
-            Storage::disk('public')->delete($profile->{$request->type});
+            MediaStorage::deleteSafe($profile->{$request->type});
         }
 
         $originalName = $request->file('file')->getClientOriginalName();
@@ -130,7 +130,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'url' => Storage::disk('public')->url($path),
+            'url' => MediaStorage::documentUrl($path),
             'filename' => $originalName,
             'message' => 'File berhasil diunggah!',
         ]);
@@ -146,7 +146,7 @@ class ProfileController extends Controller
         $profile = $user->volunteerProfile;
 
         if ($profile && $profile->{$type}) {
-            Storage::disk('public')->delete($profile->{$type});
+            MediaStorage::deleteSafe($profile->{$type});
             $profile->update([$type => null]);
         }
 

@@ -204,6 +204,9 @@
 
 <body class="antialiased bg-gray-50 text-gray-900 font-sans overscroll-none" x-data="adminNavbar()" :class="{ 'overflow-hidden': sidebarOpen || logoutModalOpen }">
 
+    <!-- Subtle Top Loading Bar -->
+    <div id="admin-top-progress" class="fixed top-0 left-0 h-0.5 bg-gradient-to-r from-brand-600 via-indigo-500 to-[#4F46E5] z-[99999] transition-all duration-300 pointer-events-none opacity-0 w-0"></div>
+
     {{-- Tailwind compiler safelist for dynamic notification & search badge classes --}}
     <div class="hidden bg-emerald-50 bg-emerald-100 text-emerald-600 text-emerald-700 border-emerald-200 bg-indigo-50 bg-indigo-100 text-indigo-600 text-indigo-700 border-indigo-200 bg-purple-50 bg-purple-100 text-purple-600 text-purple-700 border-purple-200 bg-sky-50 bg-sky-100 text-sky-600 text-sky-700 border-sky-200 bg-rose-50 bg-rose-100 text-rose-600 text-rose-700 border-rose-200 bg-amber-50 bg-amber-100 text-amber-600 text-amber-700 border-amber-200"></div>
 
@@ -346,7 +349,7 @@
             x-cloak></div>
 
         <!-- Main Content -->
-        <div class="flex-1 lg:ml-64 min-h-screen flex flex-col justify-between overscroll-none">
+        <div class="min-w-0 flex-1 lg:ml-64 min-h-screen flex flex-col justify-between overscroll-none">
 
             <!-- Topbar -->
             <header
@@ -627,8 +630,18 @@
                         <button type="button"
                             x-on:click="profileOpen = !profileOpen"
                             class="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 focus:outline-none p-1 rounded-xl hover:bg-gray-100 transition-colors">
-                            <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-bold tracking-wider shadow-sm">
-                                {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 2)) }}
+                            <div class="relative w-8 h-8 rounded-full bg-brand-600 overflow-hidden shrink-0 flex items-center justify-center text-white text-xs font-bold tracking-wider shadow-sm">
+                                @if(auth()->user()?->avatar_path)
+                                    <img src="{{ auth()->user()->avatar_url }}" 
+                                         alt="{{ auth()->user()->name }}" 
+                                         class="w-full h-full object-cover"
+                                         onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                                    <div class="hidden w-full h-full flex items-center justify-center bg-brand-600 text-white font-bold text-xs">
+                                        {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 2)) }}
+                                    </div>
+                                @else
+                                    {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 2)) }}
+                                @endif
                             </div>
                             <span class="hidden sm:block font-semibold text-xs text-gray-800">{{ auth()->user()->name ?? 'Admin VOLA' }}</span>
                             <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
@@ -683,11 +696,13 @@
             @endif
 
             <!-- Page Content -->
-            <main class="flex-1 p-4 sm:p-6 lg:p-8 relative overscroll-none">
+            <main id="admin-main-content" class="min-w-0 flex-1 p-4 sm:p-6 lg:p-8 relative overscroll-none w-full">
                 <!-- Background Decoration Aura & Subtle Grid -->
                 <div class="absolute top-0 inset-x-0 h-96 bg-gradient-to-b from-brand-50/40 via-indigo-50/15 to-transparent pointer-events-none z-0"></div>
                 <div class="absolute inset-0 opacity-40 pointer-events-none z-0" style="background-image: radial-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px); background-size: 24px 24px;"></div>
-                {{ $slot }}
+                <div id="admin-slot-container" class="min-w-0 relative z-10 w-full opacity-100">
+                    {{ $slot }}
+                </div>
             </main>
 
             <!-- Footer -->
@@ -787,6 +802,12 @@
             </div>
         </div>
     </div>
+
+    <!-- Global Image & Document Lightbox -->
+    <x-admin-lightbox />
+
+    <!-- Global Admin Interaction & Seamless Partial Swap Scripts -->
+    <x-admin-scripts />
 
     @stack('scripts')
 </body>

@@ -78,7 +78,7 @@
             <section
                 class="vd-hero"
                 @if ($event->poster_path)
-                    style="background-image: linear-gradient(90deg, rgba(9,16,39,.96), rgba(9,16,39,.65)), url('{{ \Illuminate\Support\Facades\Storage::disk('public')->url($event->poster_path) }}');"
+                    style="background-image: linear-gradient(90deg, rgba(9,16,39,.96), rgba(9,16,39,.65)), url('{{ $event->poster_url }}');"
                 @endif
             >
                 <div class="vd-hero-top">

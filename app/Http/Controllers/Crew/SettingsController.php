@@ -14,13 +14,14 @@ class SettingsController extends Controller
     public function index(): View
     {
         $user = Auth::user();
+
         return view('crew.settings', compact('user'));
     }
 
     public function updateEmail(Request $request)
     {
         $request->validate([
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . Auth::id()],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.Auth::id()],
         ]);
 
         Auth::user()->update(['email' => $request->email]);
@@ -47,7 +48,7 @@ class SettingsController extends Controller
         ]);
 
         Auth::user()->update([
-            'password' => Hash::make($request->password)
+            'password' => Hash::make($request->password),
         ]);
 
         return back()->with('status', 'Kata sandi berhasil diperbarui.');

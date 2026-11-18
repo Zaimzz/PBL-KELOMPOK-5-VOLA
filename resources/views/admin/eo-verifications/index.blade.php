@@ -1,63 +1,48 @@
 <x-layouts.admin title="Verifikasi EO">
 
     <!-- Header & Breadcrumb -->
-    <div class="mb-6">
-        <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
-            <span class="font-bold text-brand-600 uppercase tracking-wider text-xs">MANAJEMEN KEMITRAAN &bull; KURASI LEGALITAS</span>
-        </div>
-        
+    <div class="mb-6 relative z-10 opacity-100">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Verifikasi EO</h1>
-                <p class="text-gray-500 text-sm mt-1">Tinjau dan validasi pendaftaran akun Event Organizer baru yang mengajukan akses ke platform VOLA.</p>
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border mb-2.5 bg-indigo-50 text-indigo-700 border-indigo-200/70">
+                    <span class="relative flex h-2 w-2 mr-0.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                    </span>
+                    <span>MANAJEMEN KEMITRAAN • KURASI LEGALITAS</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Verifikasi <span class="text-amber-600">EO</span></h1>
+                <p class="text-slate-600 text-sm mt-1">Tinjau dan validasi pendaftaran akun Event Organizer baru yang mengajukan akses ke platform VOLA.</p>
             </div>
             
             <!-- Header Metrics: 3 Luxury Cards with Micro-interactions -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full sm:w-auto">
+            <div id="admin-metrics-container" class="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full sm:w-auto shrink-0">
                 <!-- Menunggu -->
-                <div class="bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-lg font-extrabold text-gray-900">{{ number_format($stats['pending'], 0, ',', '.') }}</div>
-                        <div class="text-[11px] text-gray-500 font-medium">Menunggu Verifikasi</div>
-                    </div>
-                </div>
+                <x-metric-card label="Menunggu Verifikasi" :value="number_format($stats['pending'], 0, ',', '.')" bg="bg-amber-100" text="text-amber-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </x-metric-card>
 
                 <!-- Terverifikasi -->
-                <div class="bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-lg font-extrabold text-gray-900">{{ number_format($stats['verified'], 0, ',', '.') }}</div>
-                        <div class="text-[11px] text-gray-500 font-medium">Terverifikasi</div>
-                    </div>
-                </div>
+                <x-metric-card label="Terverifikasi" :value="number_format($stats['verified'], 0, ',', '.')" bg="bg-emerald-100" text="text-emerald-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </x-metric-card>
 
                 <!-- Ditolak -->
-                <div class="bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-lg font-extrabold text-gray-900">{{ number_format($stats['rejected'], 0, ',', '.') }}</div>
-                        <div class="text-[11px] text-gray-500 font-medium">Ditolak</div>
-                    </div>
-                </div>
+                <x-metric-card label="Ditolak" :value="number_format($stats['rejected'], 0, ',', '.')" bg="bg-rose-100" text="text-rose-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </x-metric-card>
             </div>
         </div>
     </div>
 
     <!-- Main Container with Alpine.js State -->
-    <div x-data="eoVerificationManager(@js($organizersPayload ?? []), {{ request('selected') ? (int) request('selected') : 'null' }})" class="space-y-6">
+    <div id="admin-content-container" x-data="eoVerificationManager(@js($organizersPayload ?? []), {{ request('selected') ? (int) request('selected') : 'null' }})" class="space-y-6">
 
         <!-- Filter & Search Bar -->
         <x-card class="p-3">
@@ -93,12 +78,18 @@
                         Ditolak
                     </button>
                     
-                    @if(request('search') || request('status'))
+                    @php
+                        $hasActiveFilter = (request('search') && trim(request('search')) !== '')
+                            || (request('status') && request('status') !== 'all' && request('status') !== '');
+                    @endphp
+
+                    @if($hasActiveFilter)
                         <a href="{{ route('admin.eo-verifications') }}" 
+                           data-reset="true"
                            x-data="{ resetting: false }"
                            @click="resetting = true"
-                           class="group inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all whitespace-nowrap">
-                            <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
+                           class="group inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all whitespace-nowrap shrink-0">
+                            <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
                                  :class="{ 'animate-spin text-brand-600': resetting }"
                                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -129,20 +120,25 @@
                     <tbody class="divide-y divide-gray-100 text-xs sm:text-sm">
                         @forelse($organizers as $organizer)
                             @php
-                                $hasPhysicalDoc = false;
-                                if (!empty($organizer->document_path)) {
-                                    $hasPhysicalDoc = \Illuminate\Support\Facades\Storage::disk('local')->exists($organizer->document_path)
-                                        || \Illuminate\Support\Facades\Storage::disk('public')->exists($organizer->document_path)
-                                        || file_exists(public_path('storage/' . $organizer->document_path));
-                                }
+                                $hasPhysicalDoc = !empty($organizer->document_path);
                                 $vStatus = $organizer->verification_status instanceof \App\Enums\VerificationStatus ? $organizer->verification_status->value : (string) $organizer->verification_status;
                             @endphp
                             <tr class="hover:bg-gray-50/60 transition-colors duration-150">
                                 <!-- Organisasi -->
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center shrink-0 text-brand-600 font-extrabold text-sm shadow-xs">
-                                            {{ strtoupper(substr($organizer->organization_name, 0, 2)) }}
+                                        <div class="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center shrink-0 text-brand-600 font-extrabold text-sm shadow-xs overflow-hidden relative">
+                                            @if($organizer->user?->avatar_path)
+                                                <img src="{{ $organizer->user->avatar_url }}" 
+                                                     alt="{{ $organizer->organization_name }}"
+                                                     class="w-full h-full object-cover"
+                                                     onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                                                <div class="hidden w-full h-full flex items-center justify-center font-extrabold text-sm text-brand-600">
+                                                    {{ strtoupper(substr($organizer->organization_name, 0, 2)) }}
+                                                </div>
+                                            @else
+                                                {{ strtoupper(substr($organizer->organization_name, 0, 2)) }}
+                                            @endif
                                         </div>
                                         <div>
                                             <div class="font-bold text-gray-900">{{ $organizer->organization_name }}</div>
@@ -175,13 +171,19 @@
                                 <td class="px-6 py-4">
                                     <div class="space-y-1.5">
                                         @if($hasPhysicalDoc)
-                                            <a href="{{ route('admin.eo-verifications.document', $organizer) }}" target="_blank"
-                                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-xl hover:bg-blue-100 transition-colors shadow-2xs">
+                                            @php
+                                                $isImgDoc = preg_match('/\.(jpg|jpeg|png|webp|svg)$/i', $organizer->document_path);
+                                                $docRoute = route('admin.eo-verifications.document', $organizer);
+                                            @endphp
+                                            <button type="button"
+                                                    onclick="window.openAdminLightbox('{{ $docRoute }}', '{{ addslashes($organizer->organization_name) }}', 'Dokumen Verifikasi: {{ addslashes($organizer->organization_type ?? 'Legalitas') }}', '{{ $isImgDoc ? 'image' : 'pdf' }}')"
+                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-xl hover:bg-blue-100 transition-colors shadow-2xs cursor-pointer">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                                 </svg>
-                                                <span>Dokumen Legalitas</span>
-                                            </a>
+                                                <span>Lihat Dokumen</span>
+                                            </button>
                                         @else
                                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-gray-400 bg-gray-100 rounded-lg">
                                                 <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,24 +221,24 @@
                                 <!-- Status Badge -->
                                 <td class="px-6 py-4 text-center whitespace-nowrap">
                                     @if($vStatus === 'pending')
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200/60">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/70">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
                                             Menunggu
                                         </span>
                                     @elseif($vStatus === 'verified')
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
                                             Terverifikasi
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200/60">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/70">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
                                             Ditolak
                                         </span>
                                     @endif
                                 </td>
 
-                                <!-- Tombol Aksi (Revamped: Modern Solid/Pastel, Proportional Icons, No Tiny Button Spinners) -->
+                                <!-- Tombol Aksi -->
                                 <td class="px-6 py-4 text-center whitespace-nowrap">
                                     <div class="inline-flex items-center gap-1.5">
                                         @if($vStatus === 'pending')
@@ -265,7 +267,7 @@
                                             </button>
                                         @endif
 
-                                        <!-- Tombol Lihat Detail (Modal Overlay Loading State) -->
+                                        <!-- Tombol Lihat Detail -->
                                         <button type="button"
                                                 @click="openDetailModal({{ $organizer->id }})"
                                                 class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-brand-700 text-xs font-bold rounded-xl transition-all duration-200 shadow-2xs active:scale-95"
@@ -279,7 +281,7 @@
                                     </div>
 
                                     @if($vStatus === 'pending')
-                                        <!-- Reject Modal per Organizer (Compact Anti-Scroll) -->
+                                        <!-- Reject Modal per Organizer -->
                                         <x-modal name="reject-modal-{{ $organizer->id }}" :show="false" maxWidth="md">
                                             <form method="POST" action="{{ route('admin.eo-verifications.reject', $organizer) }}" class="p-5 text-left flex flex-col space-y-3"
                                                   x-data="{ reason: '', hasError: false }"
@@ -348,7 +350,7 @@
             
             <!-- Pagination Bar -->
             <div class="p-4 border-t border-gray-100">
-                {{ $organizers->links() }}
+                {{ $organizers->withQueryString()->links('components.pagination') }}
             </div>
         </x-card>
 
@@ -357,7 +359,7 @@
         <!-- ============================================== -->
         <x-modal name="eo-detail-modal" :show="false" maxWidth="3xl">
             <div class="p-5 flex flex-col flex-1 min-h-0 overflow-hidden">
-                <!-- Overlay Loading State (Sesuai Standar Event Aktif) -->
+                <!-- Overlay Loading State -->
                 <template x-if="loading">
                     <div class="py-12 text-center text-gray-400 my-auto">
                         <svg class="w-8 h-8 animate-spin mx-auto text-brand-600 mb-2.5" fill="none" viewBox="0 0 24 24">
@@ -396,17 +398,29 @@
                 <template x-if="!loading && !hasError && currentOrganizer">
                     <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
                         <!-- Header Modal -->
-                        <div class="flex items-center gap-3 pb-3 border-b border-gray-100 shrink-0">
-                            <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-black text-sm shadow-xs"
-                                 x-text="currentOrganizer.avatar_initials">
-                            </div>
-                            <div class="min-w-0">
-                                <h2 class="text-base sm:text-lg font-extrabold text-gray-900 truncate" x-text="currentOrganizer.organization_name"></h2>
-                                <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-[10px] font-semibold bg-gray-100 text-gray-700 px-2 py-0.5 rounded" x-text="currentOrganizer.organization_type"></span>
-                                    <span class="text-[11px] text-gray-400">&bull; <span x-text="currentOrganizer.city"></span></span>
+                        <div class="flex items-center justify-between pb-3 border-b border-gray-100 shrink-0">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center font-black text-sm shadow-xs overflow-hidden relative shrink-0">
+                                    <template x-if="currentOrganizer.avatar_url">
+                                        <img :src="currentOrganizer.avatar_url" class="w-full h-full object-cover">
+                                    </template>
+                                    <template x-if="!currentOrganizer.avatar_url">
+                                        <span x-text="currentOrganizer.avatar_initials"></span>
+                                    </template>
+                                </div>
+                                <div class="min-w-0">
+                                    <h2 class="text-base sm:text-lg font-extrabold text-gray-900 truncate" x-text="currentOrganizer.organization_name"></h2>
+                                    <div class="flex items-center gap-2 mt-0.5">
+                                        <span class="text-[10px] font-semibold bg-gray-100 text-gray-700 px-2 py-0.5 rounded" x-text="currentOrganizer.organization_type"></span>
+                                        <span class="text-[11px] text-gray-400">&bull; <span x-text="currentOrganizer.city"></span></span>
+                                    </div>
                                 </div>
                             </div>
+                            <button type="button" @click="closeDetailModal()" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Tutup Modal">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
                         </div>
 
                         <!-- Grid Details -->
@@ -483,22 +497,109 @@
 
                             <!-- Dokumen Terlampir Section -->
                             <div>
-                                <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Dokumen Legalitas Terlampir</h4>
+                                <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Dokumen Legalitas Terlampir</h4>
                                 <template x-if="currentOrganizer.has_document && currentOrganizer.document_url">
-                                    <a :href="currentOrganizer.document_url" target="_blank"
-                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-xl hover:bg-blue-100 transition-colors shadow-2xs">
-                                        <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                                        </svg>
-                                        <span>Buka Dokumen Legalitas (PDF/Image)</span>
-                                    </a>
+                                    <div class="p-3 bg-blue-50/70 border border-blue-100 rounded-xl space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-1.5 text-blue-900 text-xs">
+                                                <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="font-bold text-xs" x-text="currentOrganizer.document_type === 'image' ? 'Foto Dokumen / Identitas EO' : 'Dokumen Legalitas (PDF)'"></span>
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <a :href="currentOrganizer.document_url + '?download=1'" 
+                                                   target="_blank"
+                                                   download
+                                                   class="px-2 py-1 bg-white hover:bg-blue-50 text-blue-700 font-bold text-[10px] rounded-lg border border-blue-200 transition-colors shadow-2xs inline-flex items-center gap-1">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                                    </svg>
+                                                    <span>Unduh</span>
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <!-- Preview if Image and not failed -->
+                                        <template x-if="currentOrganizer.document_type === 'image' && !docImageFailed">
+                                            <div class="relative rounded-lg overflow-hidden bg-slate-100 border border-blue-200/60 h-36 group cursor-pointer"
+                                                 x-on:click="window.openAdminLightbox(currentOrganizer.document_url, currentOrganizer.organization_name, 'Dokumen Legalitas: ' + currentOrganizer.organization_type, 'image')">
+                                                
+                                                <!-- Skeleton Loader selama gambar sedang dimuat -->
+                                                <div x-show="docImageLoading"
+                                                     class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 animate-pulse z-10">
+                                                    <svg class="w-6 h-6 animate-spin text-blue-500 mb-1.5" fill="none" viewBox="0 0 24 24">
+                                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                                    </svg>
+                                                    <span class="text-[11px] font-medium text-slate-500">Memuat pratinjau dokumen...</span>
+                                                </div>
+
+                                                <img :src="currentOrganizer.document_url" 
+                                                     :alt="currentOrganizer.organization_name"
+                                                     x-on:load="docImageLoading = false"
+                                                     x-on:error="docImageLoading = false; docImageFailed = true"
+                                                     :class="docImageLoading ? 'opacity-0' : 'opacity-100'"
+                                                     class="w-full h-full object-contain group-hover:scale-105 transition-all duration-200">
+                                                
+                                                <div x-show="!docImageLoading"
+                                                     class="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <span class="px-2.5 py-1 rounded-lg bg-white/20 text-white font-bold text-[11px] backdrop-blur-md border border-white/30 flex items-center gap-1">
+                                                        <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0M10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                                                        </svg>
+                                                        Perbesar Foto Dokumen
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <!-- Fallback if Image failed to load -->
+                                        <template x-if="currentOrganizer.document_type === 'image' && docImageFailed">
+                                            <div class="p-3 bg-amber-50/80 border border-amber-200/80 rounded-xl flex items-center justify-between gap-3">
+                                                <div class="flex items-center gap-2.5 min-w-0">
+                                                    <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                        </svg>
+                                                    </div>
+                                                    <div class="min-w-0">
+                                                        <p class="text-xs font-bold text-amber-900 truncate">Pratinjau visual tidak tersedia untuk berkas ini</p>
+                                                        <p class="text-[11px] text-amber-700 truncate">Berkas gambar belum tersedia secara fisik atau format tidak didukung.</p>
+                                                    </div>
+                                                </div>
+                                                <a :href="currentOrganizer.document_url"
+                                                   target="_blank"
+                                                   rel="noopener noreferrer"
+                                                   class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-amber-300 text-amber-800 text-xs font-semibold rounded-lg hover:bg-amber-100 transition-colors shrink-0 shadow-2xs">
+                                                    <span>Buka Berkas</span>
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                                    </svg>
+                                                </a>
+                                            </div>
+                                        </template>
+
+                                        <!-- Preview Button for PDF / Document -->
+                                        <template x-if="currentOrganizer.document_type !== 'image' || (!docImageFailed && !docImageLoading)">
+                                            <button type="button"
+                                                    x-on:click="window.openAdminLightbox(currentOrganizer.document_url, currentOrganizer.organization_name, 'Dokumen Legalitas: ' + currentOrganizer.organization_type, currentOrganizer.document_type || 'pdf')"
+                                                    class="w-full py-2 px-3 bg-white hover:bg-blue-50 text-blue-700 rounded-lg border border-blue-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors">
+                                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                </svg>
+                                                <span x-text="currentOrganizer.document_type === 'image' ? 'Perbesar Foto Dokumen di Lightbox' : 'Buka Dokumen PDF di Lightbox'"></span>
+                                            </button>
+                                        </template>
+                                    </div>
                                 </template>
                                 <template x-if="!currentOrganizer.has_document || !currentOrganizer.document_url">
                                     <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-xl">
                                         <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                                         </svg>
-                                        <span>Dokumen belum tersedia di server</span>
+                                        <span>Dokumen belum diunggah oleh penyelenggara</span>
                                     </div>
                                 </template>
                             </div>
@@ -557,27 +658,60 @@
                 hasError: false,
                 errorMessage: '',
                 currentId: null,
+                docImageLoading: false,
+                docImageFailed: false,
 
                 init() {
                     if (autoSelectedId) {
                         this.$nextTick(() => {
-                            this.openDetailModal(autoSelectedId);
+                            this.openDetailModal(autoSelectedId, false);
                         });
                     }
+
+                    // Handle Back/Forward browser navigation
+                    window.addEventListener('popstate', (e) => {
+                        const curUrl = new URL(window.location.href);
+                        const sel = curUrl.searchParams.get('selected');
+                        if (sel) {
+                            this.openDetailModal(parseInt(sel), false);
+                        } else {
+                            this.$dispatch('close');
+                            this.currentOrganizer = null;
+                            this.currentId = null;
+                        }
+                    });
+
+                    window.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape' && this.currentId) {
+                            this.closeDetailModal();
+                        }
+                    });
                 },
 
-                openDetailModal(id) {
+                openDetailModal(id, shouldPushState = true) {
                     this.currentId = id;
                     this.loading = true;
                     this.hasError = false;
                     this.errorMessage = '';
                     this.currentOrganizer = null;
+                    this.docImageLoading = false;
+                    this.docImageFailed = false;
+
+                    if (shouldPushState) {
+                        const url = new URL(window.location.href);
+                        if (url.searchParams.get('selected') !== String(id)) {
+                            url.searchParams.set('selected', id);
+                            window.history.pushState({ selected: id }, '', url.toString());
+                        }
+                    }
+
                     this.$dispatch('open-modal', 'eo-detail-modal');
 
                     const found = this.organizers.find(o => o.id == id);
                     setTimeout(() => {
                         if (found) {
                             this.currentOrganizer = found;
+                            this.docImageLoading = found.document_type === 'image' && Boolean(found.has_document && found.document_url);
                             this.loading = false;
                         } else {
                             this.hasError = true;
@@ -585,6 +719,17 @@
                             this.loading = false;
                         }
                     }, 150);
+                },
+
+                closeDetailModal() {
+                    this.$dispatch('close');
+                    this.currentOrganizer = null;
+                    this.currentId = null;
+                    const url = new URL(window.location.href);
+                    if (url.searchParams.has('selected')) {
+                        url.searchParams.delete('selected');
+                        window.history.pushState({}, '', url.toString());
+                    }
                 }
             };
         }

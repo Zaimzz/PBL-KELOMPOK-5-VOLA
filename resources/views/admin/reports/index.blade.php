@@ -1,63 +1,52 @@
-<x-layouts.admin title="Laporan Pelanggaran">
+<x-layouts.admin title="Laporan Pengguna">
 
     <!-- Header Section -->
-    <div class="mb-6">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Laporan Pengguna</h1>
-                <p class="text-gray-500 text-sm mt-1">Kelola aduan pelanggaran dari komunitas, verifikasi bukti pendukung, dan lakukan tindakan moderasi akun.</p>
+    <div class="mb-6 relative z-10 opacity-100 w-full max-w-full min-w-0">
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-6 w-full">
+            <div class="max-w-lg">
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border mb-2.5 bg-rose-50 text-rose-700 border-rose-200/70">
+                    <span class="relative flex h-2 w-2 mr-0.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-600"></span>
+                    </span>
+                    <span>PUSAT ADUAN • MODERASI KOMUNITAS</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight" aria-label="Laporan Pengguna">Laporan <span class="text-amber-500">Pengguna</span></h1>
+                <p class="text-slate-600 text-sm mt-1 leading-relaxed">Kelola aduan pelanggaran dari komunitas, verifikasi bukti pendukung, dan lakukan tindakan moderasi akun.</p>
             </div>
 
-            <!-- Header Metrics: 3 Luxury Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:w-auto">
+            <!-- Header Metrics: 3 Luxury Cards (1 Baris Sejajar) -->
+            <div id="admin-metrics-container" class="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto shrink-0">
                 <!-- Menunggu Tindakan -->
-                <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center gap-3.5 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
-                    <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-xl font-extrabold text-gray-900">{{ number_format($stats['pending'], 0, ',', '.') }}</div>
-                        <div class="text-xs text-gray-500 font-medium">Menunggu Tindakan</div>
-                    </div>
-                </div>
+                <x-metric-card label="Menunggu Tindakan" :value="number_format($stats['pending'], 0, ',', '.')" bg="bg-amber-100" text="text-amber-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </x-metric-card>
 
                 <!-- Sedang Ditinjau -->
-                <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center gap-3.5 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
-                    <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-xl font-extrabold text-gray-900">{{ number_format($stats['in_review'], 0, ',', '.') }}</div>
-                        <div class="text-xs text-gray-500 font-medium">Sedang Ditinjau</div>
-                    </div>
-                </div>
+                <x-metric-card label="Sedang Ditinjau" :value="number_format($stats['in_review'], 0, ',', '.')" bg="bg-blue-100" text="text-blue-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                </x-metric-card>
 
                 <!-- Laporan Selesai -->
-                <div class="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center gap-3.5 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
-                    <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <div class="text-xl font-extrabold text-gray-900">{{ number_format($stats['resolved'], 0, ',', '.') }}</div>
-                        <div class="text-xs text-gray-500 font-medium">Laporan Selesai</div>
-                    </div>
-                </div>
+                <x-metric-card label="Laporan Selesai" :value="number_format($stats['resolved'], 0, ',', '.')" bg="bg-emerald-100" text="text-emerald-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </x-metric-card>
             </div>
         </div>
     </div>
 
     <!-- Main Container with Alpine.js State -->
-    <div x-data="reportManager()" class="space-y-6">
+    <div id="admin-content-container" x-data="reportManager()" class="w-full max-w-full min-w-0 space-y-6">
 
         <!-- Search & Filter Card -->
-        <x-card class="p-3">
+        <div class="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-sm">
             <form action="{{ route('admin.reports.index') }}" method="GET" class="flex flex-col lg:flex-row items-center gap-3">
                 <!-- Search Box -->
                 <div class="relative flex-1 w-full">
@@ -108,12 +97,18 @@
                     </button>
                 </div>
 
-                @if(request('search') || ($statusFilter && $statusFilter !== 'all'))
+                @php
+                    $hasActiveFilter = (request('search') && trim(request('search')) !== '')
+                        || (request('status') && request('status') !== 'all');
+                @endphp
+
+                @if($hasActiveFilter)
                     <a href="{{ route('admin.reports.index') }}" 
+                       data-reset="true"
                        x-data="{ resetting: false }"
                        @click="resetting = true"
-                       class="group inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all shrink-0">
-                        <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
+                       class="group inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all shrink-0">
+                        <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
                              :class="{ 'animate-spin text-brand-600': resetting }"
                              fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -122,7 +117,7 @@
                     </a>
                 @endif
             </form>
-        </x-card>
+        </div>
 
         <!-- Flash Success Notification -->
         @if(session('success'))
@@ -138,18 +133,18 @@
         @endif
 
         <!-- Data Table -->
-        <x-card padding="p-0" class="overflow-hidden shadow-sm border border-gray-100">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden w-full max-w-full">
+            <div class="overflow-x-auto w-full">
+                <table class="table-fixed w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-gray-50/75 border-b border-gray-100 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                            <th class="py-3.5 px-6">ID Laporan</th>
-                            <th class="py-3.5 px-6">Pelapor</th>
-                            <th class="py-3.5 px-6">Terlapor</th>
-                            <th class="py-3.5 px-6">Alasan Laporan</th>
-                            <th class="py-3.5 px-4 text-center">Bukti</th>
-                            <th class="py-3.5 px-4 text-center">Status</th>
-                            <th class="py-3.5 px-6 text-right">Tindakan Admin</th>
+                        <tr class="bg-gray-50/75 border-b border-gray-100 text-[11px] font-semibold uppercase tracking-wider text-gray-500">
+                            <th class="py-3.5 px-3 w-[15%]">ID Laporan</th>
+                            <th class="py-3.5 px-3 w-[16%]">Pelapor</th>
+                            <th class="py-3.5 px-3 w-[16%]">Terlapor</th>
+                            <th class="py-3.5 px-2.5 w-[17%]">Alasan Laporan</th>
+                            <th class="py-3.5 px-2 w-[11%] text-center">Bukti</th>
+                            <th class="py-3.5 px-2 w-[12%] text-center">Status</th>
+                            <th class="py-3.5 px-2.5 w-[13%] text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-sm">
@@ -157,16 +152,16 @@
                             @php
                                 $statusVal = $report->status->value;
                                 $statusBadgeClass = match($statusVal) {
-                                    'pending' => 'bg-amber-50 text-amber-700 border-amber-200',
-                                    'in_review' => 'bg-blue-50 text-blue-700 border-blue-200',
-                                    'resolved' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                    'rejected' => 'bg-gray-100 text-gray-700 border-gray-200',
+                                    'pending' => 'bg-amber-50 text-amber-800 border-amber-200/70',
+                                    'in_review' => 'bg-sky-50 text-sky-700 border-sky-200/70',
+                                    'resolved' => 'bg-emerald-50 text-emerald-700 border-emerald-200/70',
+                                    'rejected' => 'bg-rose-50 text-rose-700 border-rose-200/70',
                                 };
                                 $statusDotClass = match($statusVal) {
-                                    'pending' => 'bg-amber-500',
-                                    'in_review' => 'bg-blue-500',
-                                    'resolved' => 'bg-emerald-500',
-                                    'rejected' => 'bg-gray-400',
+                                    'pending' => 'bg-amber-600',
+                                    'in_review' => 'bg-sky-600',
+                                    'resolved' => 'bg-emerald-600',
+                                    'rejected' => 'bg-rose-600',
                                 };
                                 $statusLabel = match($statusVal) {
                                     'pending' => 'Menunggu',
@@ -177,25 +172,25 @@
                             @endphp
                             <tr class="hover:bg-gray-50/60 transition-colors">
                                 <!-- ID Laporan & Waktu -->
-                                <td class="py-4 px-6 whitespace-nowrap">
-                                    <div class="font-bold text-gray-900 text-xs tracking-tight">#{{ $report->ticket_number }}</div>
-                                    <div class="text-[11px] text-gray-400 mt-0.5">{{ $report->created_at->translatedFormat('d M Y, H:i') }}</div>
+                                <td class="py-3.5 px-3 min-w-0">
+                                    <div class="font-bold text-gray-900 text-xs tracking-tight truncate">#{{ $report->ticket_number }}</div>
+                                    <div class="text-[11px] text-gray-400 mt-0.5 whitespace-nowrap">{{ $report->created_at->translatedFormat('d M Y, H:i') }}</div>
                                 </td>
 
                                 <!-- Pelapor -->
-                                <td class="py-4 px-6">
-                                    <div class="font-bold text-gray-900 text-xs">{{ $report->reporter->name ?? 'User' }}</div>
-                                    <div class="text-[11px] text-gray-500 mt-0.5">{{ $report->reporter->email ?? '-' }}</div>
+                                <td class="py-3.5 px-3 min-w-0">
+                                    <div class="font-bold text-gray-900 text-xs truncate">{{ $report->reporter->name ?? 'User' }}</div>
+                                    <div class="text-[11px] text-gray-500 mt-0.5 truncate" title="{{ $report->reporter->email ?? '-' }}">{{ $report->reporter->email ?? '-' }}</div>
                                     <span class="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600">
                                         {{ $report->reporter?->role === \App\Enums\UserRole::Eo ? 'EO' : 'Crew' }}
                                     </span>
                                 </td>
 
                                 <!-- Terlapor -->
-                                <td class="py-4 px-6">
-                                    <div class="font-bold text-gray-900 text-xs">{{ $report->reported->name ?? 'User' }}</div>
-                                    <div class="text-[11px] text-gray-500 mt-0.5">{{ $report->reported->email ?? '-' }}</div>
-                                    <div class="flex items-center gap-1.5 mt-1">
+                                <td class="py-3.5 px-3 min-w-0">
+                                    <div class="font-bold text-gray-900 text-xs truncate">{{ $report->reported->name ?? 'User' }}</div>
+                                    <div class="text-[11px] text-gray-500 mt-0.5 truncate" title="{{ $report->reported->email ?? '-' }}">{{ $report->reported->email ?? '-' }}</div>
+                                    <div class="flex items-center gap-1.5 mt-1 flex-wrap">
                                         <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $report->reported->role === \App\Enums\UserRole::Eo ? 'bg-indigo-50 text-brand-700' : 'bg-blue-50 text-blue-700' }}">
                                             {{ $report->reported->role === \App\Enums\UserRole::Eo ? 'EO' : 'Crew' }}
                                         </span>
@@ -208,54 +203,60 @@
                                 </td>
 
                                 <!-- Alasan Laporan -->
-                                <td class="py-4 px-6">
-                                    <span class="inline-block font-bold text-gray-900 text-xs bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md mb-1">
+                                <td class="py-3.5 px-2.5 min-w-0">
+                                    <span class="inline-block font-bold text-gray-900 text-[11px] bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md mb-1 max-w-full truncate" title="{{ $report->reason }}">
                                         {{ $report->reason }}
                                     </span>
-                                    <p class="text-xs text-gray-600 line-clamp-2 leading-relaxed">{{ $report->description }}</p>
+                                    <p class="text-[11px] text-gray-600 line-clamp-2 leading-snug break-words" title="{{ $report->description }}">{{ $report->description }}</p>
                                     @if($report->action_taken)
-                                        <div class="text-[11px] text-brand-700 font-semibold mt-1 flex items-center gap-1">
-                                            <svg class="w-3 h-3 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div class="text-[10px] text-brand-700 font-semibold mt-1 flex items-center gap-1 truncate">
+                                            <svg class="w-3 h-3 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
-                                            {{ $report->action_taken }}
+                                            <span class="truncate">{{ $report->action_taken }}</span>
                                         </div>
                                     @endif
                                 </td>
 
                                 <!-- Bukti Pendukung -->
-                                <td class="py-4 px-4 text-center whitespace-nowrap">
-                                    @if($report->evidence_path)
-                                        <a href="{{ Storage::url($report->evidence_path) }}" target="_blank"
-                                           class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-brand-700 text-xs font-semibold rounded-lg transition-colors">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <td class="py-3.5 px-2 text-center whitespace-nowrap">
+                                    @if($report->evidence_url)
+                                        @php
+                                            $isImgEvidence = $report->evidence_is_image;
+                                        @endphp
+                                        <button type="button"
+                                                onclick="window.openAdminLightbox('{{ $report->evidence_url }}', 'Bukti Laporan #{{ $report->ticket_number }}', 'Alasan: {{ addslashes($report->reason) }}', '{{ $isImgEvidence ? 'image' : 'pdf' }}')"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-brand-700 text-xs font-semibold rounded-lg transition-colors cursor-pointer">
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
                                             </svg>
-                                            Lihat Bukti
-                                        </a>
+                                            <span>Lihat Bukti</span>
+                                        </button>
                                     @else
                                         <span class="text-xs text-gray-400 italic">Tidak ada</span>
                                     @endif
                                 </td>
 
                                 <!-- Status Badge -->
-                                <td class="py-4 px-4 text-center whitespace-nowrap">
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border {{ $statusBadgeClass }}">
-                                        <span class="w-1.5 h-1.5 rounded-full {{ $statusDotClass }}"></span>
+                                <td class="py-3.5 px-2 text-center whitespace-nowrap">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border {{ $statusBadgeClass }}">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $statusDotClass }} shrink-0"></span>
                                         {{ $statusLabel }}
                                     </span>
                                 </td>
 
                                 <!-- Tindakan Admin -->
-                                <td class="py-4 px-6 text-right whitespace-nowrap">
-                                    <button type="button"
-                                            @click="openActionModal({{ $report->id }})"
-                                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-bold rounded-xl transition-colors">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
-                                        </svg>
-                                        Tindak Lanjuti
-                                    </button>
+                                <td class="py-3.5 px-2.5 text-center whitespace-nowrap">
+                                    <div class="flex items-center justify-center">
+                                        <button type="button"
+                                                @click="openActionModal({{ $report->id }})"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-bold rounded-xl transition-colors">
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                                            </svg>
+                                            Tindak Lanjuti
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -274,10 +275,10 @@
             </div>
 
             <!-- Pagination Bar -->
-            <div class="p-4 border-t border-gray-100">
-                {{ $reports->links() }}
+            <div class="p-4 border-t border-slate-100">
+                {{ $reports->withQueryString()->links('components.pagination') }}
             </div>
-        </x-card>
+        </div>
 
         <!-- Modal Tindak Lanjuti / Resolusi Laporan (Alpine.js Landscape 2-Column - Compact Anti-Scroll) -->
         <template x-teleport="body">
@@ -444,11 +445,19 @@
                                                     </svg>
                                                     <span class="font-semibold text-[11px]">Bukti Terlampir</span>
                                                 </div>
-                                                <a :href="selectedReport.evidence_url" target="_blank"
-                                                   class="px-2.5 py-1 bg-white hover:bg-brand-50 text-brand-700 font-bold text-[11px] rounded-lg border border-brand-200 transition-colors shadow-2xs inline-flex items-center gap-1">
-                                                    <span>Buka Berkas</span>
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                                </a>
+                                                <div class="flex items-center gap-1.5">
+                                                    <button type="button"
+                                                            x-on:click="window.openAdminLightbox(selectedReport.evidence_url, 'Bukti Laporan #' + selectedReport.ticket_number, 'Alasan: ' + selectedReport.reason, selectedReport.evidence_is_image ? 'image' : 'pdf')"
+                                                            class="px-2.5 py-1 bg-white hover:bg-brand-50 text-brand-700 font-bold text-[11px] rounded-lg border border-brand-200 transition-colors shadow-2xs inline-flex items-center gap-1 cursor-pointer">
+                                                        <svg class="w-3 h-3 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                        <span>Lihat di Lightbox</span>
+                                                    </button>
+                                                    <a :href="selectedReport.evidence_url" target="_blank" rel="noopener noreferrer"
+                                                       class="px-2 py-1 bg-white hover:bg-gray-50 text-gray-600 font-medium text-[11px] rounded-lg border border-gray-200 transition-colors shadow-2xs inline-flex items-center gap-1">
+                                                        <span>Tab Baru</span>
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                    </a>
+                                                </div>
                                             </div>
                                         </template>
                                     </div>
@@ -547,9 +556,9 @@
     <script>
         function setReportStatus(status) {
             const input = document.getElementById('reportStatusInput');
-            if (input) {
+            if (input && input.form) {
                 input.value = status;
-                input.form.submit();
+                window.adminSubmitForm(input.form);
             }
         }
 

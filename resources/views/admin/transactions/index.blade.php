@@ -2,16 +2,17 @@
 
     <!-- Header Section -->
     <div class="mb-6">
-        <div class="mb-2">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase bg-brand-50 text-brand-700 border border-brand-100">
-                <span class="w-2 h-2 rounded-full bg-brand-600"></span>
-                PORTAL KEUANGAN &bull; Rekapitulasi Platform
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border mb-2.5 bg-violet-50 text-violet-700 border-violet-200/70">
+            <span class="relative flex h-2 w-2 mr-0.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-violet-600"></span>
             </span>
+            <span>PORTAL KEUANGAN • REKAPITULASI PLATFORM</span>
         </div>
 
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Data Transaksi</h1>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Data <span class="text-amber-600">Transaksi</span></h1>
                 <p class="text-gray-500 text-sm mt-1">Rekapitulasi pembayaran layanan publikasi dan rekrutmen event oleh pihak penyelenggara.</p>
             </div>
 
@@ -19,42 +20,45 @@
             <div class="relative" x-data="{ open: false }" @click.outside="open = false">
                 <button @click="open = !open" type="button" 
                         class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-brand-700 bg-brand-50 border border-brand-200 rounded-xl hover:bg-brand-100 transition-colors">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                     </svg>
-                    Unduh Laporan
-                    <svg class="w-4 h-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" :class="{'rotate-180': open}">
+                    <span>Unduh Laporan</span>
+                    <svg class="w-4 h-4 opacity-70 shrink-0 transition-transform duration-200" 
+                         :class="{ 'rotate-180': open }" 
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
                 </button>
 
                 <!-- Dropdown Menu -->
                 <div x-show="open" 
-                    x-transition:enter="transition ease-out duration-100" 
-                    x-transition:enter-start="transform opacity-0 scale-95" 
-                    x-transition:enter-end="transform opacity-100 scale-100" 
-                    x-transition:leave="transition ease-in duration-75" 
-                    x-transition:leave-start="transform opacity-100 scale-100" 
-                    x-transition:leave-end="transform opacity-0 scale-95" 
-                    class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden" 
-                    style="display: none;">
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                     class="absolute right-0 mt-1.5 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden" 
+                     style="display: none;"
+                     x-cloak>
                     <div class="py-1">
                         <a href="{{ route('admin.transactions.download-report', ['period' => request('period'), 'month' => request('month'), 'status' => request('status')]) }}" target="_blank" 
-                        class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition-colors">
+                           class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition-colors">
                             <svg class="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                             </svg>
                             Cetak PDF
                         </a>
                         <a href="{{ route('admin.transactions.download-excel', ['period' => request('period'), 'month' => request('month'), 'status' => request('status')]) }}" 
-                        class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition-colors border-t border-gray-50">
+                           class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition-colors border-t border-gray-50">
                             <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                             Ekspor Excel (.xlsx)
                         </a>
                         <a href="{{ route('admin.transactions.download-csv', ['period' => request('period'), 'month' => request('month'), 'status' => request('status')]) }}" 
-                        class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition-colors border-t border-gray-50">
+                           class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition-colors border-t border-gray-50">
                             <svg class="w-4 h-4 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
                             </svg>
@@ -68,7 +72,7 @@
         <!-- 3 Metrics Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
             <!-- Total Volume Pembayaran -->
-            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+            <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80">
                 <div class="flex items-start justify-between">
                     <div>
                         <span class="text-xs font-semibold text-gray-500">Total Volume Pembayaran</span>
@@ -89,7 +93,7 @@
             </div>
 
             <!-- Transaksi Berhasil -->
-            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+            <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80">
                 <div class="flex items-start justify-between">
                     <div>
                         <span class="text-xs font-semibold text-gray-500">Transaksi Berhasil</span>
@@ -107,7 +111,7 @@
             </div>
 
             <!-- Menunggu Pembayaran -->
-            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+            <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80">
                 <div class="flex items-start justify-between">
                     <div>
                         <span class="text-xs font-semibold text-gray-500">Menunggu Pembayaran</span>
@@ -130,10 +134,10 @@
     </div>
 
     <!-- Main Content & Alpine.js Manager -->
-    <div x-data="transactionManager()" class="space-y-6">
+    <div id="admin-content-container" x-data="transactionManager()" class="w-full max-w-full min-w-0 space-y-6">
 
         <!-- Search & Filter Bar -->
-        <x-card class="p-3">
+        <div class="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-sm">
             <form action="{{ route('admin.transactions.index') }}" method="GET" class="flex flex-col lg:flex-row items-center gap-3">
                 <!-- Search Box -->
                 <div class="relative flex-1 w-full">
@@ -175,8 +179,9 @@
                 <!-- Period / Date Range Filter Dropdown + Conditional Month Picker -->
                 @php
                     $rawPeriod = request('period', 'all');
-                    $selectedPeriod = str_starts_with($rawPeriod, 'month:') ? 'custom_month' : ($rawPeriod === 'all' && request('month') ? 'custom_month' : $rawPeriod);
-                    $selectedMonth = str_starts_with($rawPeriod, 'month:') ? substr($rawPeriod, 6) : request('month', now()->format('Y-m'));
+                    $isCustomMonth = str_starts_with($rawPeriod, 'month:') || $rawPeriod === 'custom_month' || (request()->has('month') && request('month') !== '' && $rawPeriod !== 'all');
+                    $selectedPeriod = $isCustomMonth ? 'custom_month' : ($rawPeriod ?: 'all');
+                    $selectedMonth = str_starts_with($rawPeriod, 'month:') ? substr($rawPeriod, 6) : ($isCustomMonth ? request('month', now()->format('Y-m')) : '');
                 @endphp
                 <div x-data="{ 
                         open: false,
@@ -191,8 +196,23 @@
                         select(val) {
                             this.period = val;
                             this.open = false;
+                            const monthEl = document.getElementById('txMonthInput');
                             if (val !== 'custom_month') {
-                                $nextTick(() => { this.$refs.hiddenPeriod.form.submit(); });
+                                if (monthEl) {
+                                    monthEl.value = '';
+                                    monthEl.disabled = true;
+                                }
+                                $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenPeriod.form); });
+                            } else {
+                                if (monthEl) {
+                                    monthEl.disabled = false;
+                                    if (!monthEl.value) {
+                                        const today = new Date();
+                                        const ym = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
+                                        monthEl.value = ym;
+                                    }
+                                }
+                                $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenPeriod.form); });
                             }
                         }
                     }" 
@@ -239,19 +259,29 @@
                     </div>
 
                     <input type="month"
+                           id="txMonthInput"
                            name="month"
                            value="{{ $selectedMonth }}"
                            x-show="period === 'custom_month'"
+                           :disabled="period !== 'custom_month'"
                            x-cloak
-                           @change="$el.form.submit()"
+                           @change="window.adminSubmitForm($el.form)"
                            class="w-full sm:w-auto py-2 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
                 </div>
 
-                @if(request('search') || (request('status') && request('status') !== 'all') || (request('period') && request('period') !== 'all') || request('month'))
+                @php
+                    $hasActiveFilter = (request('search') && trim(request('search')) !== '')
+                        || (request('status') && request('status') !== 'all')
+                        || ($rawPeriod !== 'all')
+                        || ($isCustomMonth && request('month') && trim(request('month')) !== '');
+                @endphp
+
+                @if($hasActiveFilter)
                     <a href="{{ route('admin.transactions.index') }}" 
+                       data-reset="true"
                        x-data="{ resetting: false }"
                        @click="resetting = true"
-                       class="group inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all shrink-0">
+                       class="group inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all shrink-0">
                         <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
                              :class="{ 'animate-spin text-brand-600': resetting }"
                              fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -261,21 +291,21 @@
                     </a>
                 @endif
             </form>
-        </x-card>
+        </div>
 
         <!-- Transactions Table Card -->
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden w-full max-w-full min-w-0">
+            <div class="overflow-x-auto w-full">
+                <table class="table-fixed w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50/80 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-                            <th class="py-3.5 px-6">Nomor Invoice</th>
-                            <th class="py-3.5 px-6">Penyelenggara & Event</th>
-                            <th class="py-3.5 px-4">Nominal</th>
-                            <th class="py-3.5 px-4">Tanggal</th>
-                            <th class="py-3.5 px-4">Metode</th>
-                            <th class="py-3.5 px-4 text-center">Status</th>
-                            <th class="py-3.5 px-6 text-right">Aksi</th>
+                            <th class="py-3.5 px-6 w-[17%]">Nomor Invoice</th>
+                            <th class="py-3.5 px-6 w-[23%]">Penyelenggara & Event</th>
+                            <th class="py-3.5 px-4 w-[15%]">Nominal</th>
+                            <th class="py-3.5 px-4 w-[12%]">Tanggal</th>
+                            <th class="py-3.5 px-4 w-[13%] text-center">Metode</th>
+                            <th class="py-3.5 px-4 w-[10%] text-center">Status</th>
+                            <th class="py-3.5 px-6 w-[10%] text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-sm">
@@ -283,6 +313,65 @@
                             @php
                                 $statusStr = $tx->status instanceof \App\Enums\PaymentStatus ? $tx->status->value : (string) $tx->status;
                                 $payType = strtolower($tx->payment_type ?? '');
+
+                                $methodConfig = match (true) {
+                                    str_contains($payType, 'qris') => [
+                                        'label' => 'QRIS',
+                                        'class' => 'bg-violet-50 text-violet-700 border-violet-200/80',
+                                        'icon'  => 'M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z',
+                                    ],
+                                    str_contains($payType, 'bank_transfer') || str_contains($payType, '_va') || str_contains($payType, 'echannel') || str_contains($payType, 'bca') || str_contains($payType, 'mandiri') || str_contains($payType, 'bni') || str_contains($payType, 'bri') || str_contains($payType, 'permata') || str_contains($payType, 'cimb') || str_contains($payType, 'danamon') || str_contains($payType, 'bsi') => [
+                                        'label' => match (true) {
+                                            str_contains($payType, 'bca') => 'BCA VA',
+                                            str_contains($payType, 'mandiri') || str_contains($payType, 'echannel') => 'Mandiri VA',
+                                            str_contains($payType, 'bni') => 'BNI VA',
+                                            str_contains($payType, 'bri') => 'BRI VA',
+                                            str_contains($payType, 'permata') => 'Permata VA',
+                                            str_contains($payType, 'cimb') => 'CIMB VA',
+                                            str_contains($payType, 'danamon') => 'Danamon VA',
+                                            str_contains($payType, 'bsi') => 'BSI VA',
+                                            default => 'Virtual Account',
+                                        },
+                                        'class' => 'bg-blue-50 text-blue-700 border-blue-200/80',
+                                        'icon'  => 'M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z',
+                                    ],
+                                    str_contains($payType, 'gopay') || str_contains($payType, 'shopeepay') || str_contains($payType, 'dana') || str_contains($payType, 'ovo') || str_contains($payType, 'linkaja') => [
+                                        'label' => match (true) {
+                                            str_contains($payType, 'gopay') => 'GoPay',
+                                            str_contains($payType, 'shopeepay') => 'ShopeePay',
+                                            str_contains($payType, 'dana') => 'DANA',
+                                            str_contains($payType, 'ovo') => 'OVO',
+                                            str_contains($payType, 'linkaja') => 'LinkAja',
+                                            default => 'E-Wallet',
+                                        },
+                                        'class' => 'bg-emerald-50 text-emerald-700 border-emerald-200/80',
+                                        'icon'  => 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z',
+                                    ],
+                                    str_contains($payType, 'credit_card') => [
+                                        'label' => 'Kartu Kredit',
+                                        'class' => 'bg-amber-50 text-amber-800 border-amber-200/80',
+                                        'icon'  => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
+                                    ],
+                                    str_contains($payType, 'cstore') || str_contains($payType, 'indomaret') || str_contains($payType, 'alfamart') => [
+                                        'label' => match (true) {
+                                            str_contains($payType, 'indomaret') => 'Indomaret',
+                                            str_contains($payType, 'alfamart') => 'Alfamart',
+                                            default => 'Gerai Retail',
+                                        },
+                                        'class' => 'bg-orange-50 text-orange-700 border-orange-200/80',
+                                        'icon'  => 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z',
+                                    ],
+                                    str_contains($payType, 'akulaku') || str_contains($payType, 'kredivo') => [
+                                        'label' => str_contains($payType, 'kredivo') ? 'Kredivo' : 'Akulaku',
+                                        'class' => 'bg-rose-50 text-rose-700 border-rose-200/80',
+                                        'icon'  => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                                    ],
+                                    default => [
+                                        'label' => strtoupper($tx->payment_type ?: 'Midtrans'),
+                                        'class' => 'bg-slate-100 text-slate-700 border-slate-200',
+                                        'icon'  => null,
+                                    ],
+                                };
                             @endphp
                             <tr class="hover:bg-gray-50/60 transition-colors">
                                 <!-- Nomor Invoice -->
@@ -322,58 +411,44 @@
                                 </td>
 
                                 <!-- Metode Pembayaran -->
-                                <td class="py-4 px-4 whitespace-nowrap">
-                                    @if(str_contains($payType, 'qris'))
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
-                                            <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
-                                            </svg>
-                                            QRIS
+                                <td class="py-4 px-4 text-center whitespace-nowrap">
+                                    <div class="flex items-center justify-center">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border {{ $methodConfig['class'] }}">
+                                            @if($methodConfig['icon'])
+                                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $methodConfig['icon'] }}"/>
+                                                </svg>
+                                            @endif
+                                            {{ $methodConfig['label'] }}
                                         </span>
-                                    @elseif(str_contains($payType, 'bca'))
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
-                                            <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
-                                            </svg>
-                                            BCA VA
-                                        </span>
-                                    @elseif(str_contains($payType, 'mandiri'))
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-100">
-                                            <svg class="w-3.5 h-3.5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
-                                            </svg>
-                                            Mandiri Virtual Account
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-gray-50 text-gray-700 border border-gray-200">
-                                            {{ strtoupper($tx->payment_type ?: 'Midtrans') }}
-                                        </span>
-                                    @endif
+                                    </div>
                                 </td>
 
                                 <!-- Status Badge -->
                                 <td class="py-4 px-4 text-center whitespace-nowrap">
-                                    @if($statusStr === 'paid')
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                                            Lunas
-                                        </span>
-                                    @elseif($statusStr === 'pending')
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
-                                            Menunggu
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
-                                            {{ ucfirst($statusStr) }}
-                                        </span>
-                                    @endif
+                                    <div class="flex items-center justify-center">
+                                        @if($statusStr === 'paid' || $statusStr === 'lunas')
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                                Lunas
+                                            </span>
+                                        @elseif($statusStr === 'pending' || $statusStr === 'menunggu')
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/70">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                                                Menunggu
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/70">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                                                {{ ucfirst($statusStr) }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
 
                                 <!-- Aksi -->
-                                <td class="py-4 px-6 text-right whitespace-nowrap">
-                                    <div class="flex items-center justify-end gap-2">
+                                <td class="py-4 px-6 text-center whitespace-nowrap">
+                                    <div class="flex items-center justify-center gap-2">
                                         <!-- View Detail (Eye Icon) -->
                                         <button type="button"
                                                 x-on:click="openDetail({{ $tx->id }})"
@@ -412,8 +487,8 @@
             </div>
 
             <!-- Pagination Bar -->
-            <div class="px-6 py-4 border-t border-gray-200">
-                {{ $transactions->links() }}
+            <div class="px-6 py-4 border-t border-slate-100">
+                {{ $transactions->withQueryString()->links('components.pagination') }}
             </div>
         </div>
 
@@ -520,8 +595,17 @@
     <!-- Script Filter Status Pills -->
     <script>
         function setTxStatus(status) {
-            document.getElementById('txStatusInput').value = status;
-            document.getElementById('txStatusInput').form.submit();
+            const input = document.getElementById('txStatusInput');
+            if (input && input.form) {
+                input.value = status;
+                const hiddenPeriod = input.form.querySelector('input[name="period"]');
+                const monthEl = document.getElementById('txMonthInput');
+                if (hiddenPeriod && hiddenPeriod.value !== 'custom_month' && monthEl) {
+                    monthEl.value = '';
+                    monthEl.disabled = true;
+                }
+                window.adminSubmitForm(input.form);
+            }
         }
 
         function transactionManager() {
