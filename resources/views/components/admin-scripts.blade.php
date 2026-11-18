@@ -57,6 +57,9 @@
         // 2. Global Single-Click Protection & Button Loading Guard
         window.initAdminSingleClickGuard = function () {
             document.addEventListener('submit', function (e) {
+                // Abaikan jika submit dibatalkan oleh validasi client-side
+                if (e.defaultPrevented) return;
+
                 const form = e.target;
                 if (!form || !(form instanceof HTMLFormElement)) return;
 
@@ -124,13 +127,14 @@
                         window.unlockAdminButton(submitBtn);
                     }
                 }, 15000);
-            }, true);
+            }, false);
         };
 
         window.unlockAdminButton = function (btn) {
             if (!btn) return;
             if (btn.dataset.originalHtml) {
                 btn.innerHTML = btn.dataset.originalHtml;
+                delete btn.dataset.originalHtml;
             }
             btn.disabled = false;
             btn.removeAttribute('aria-busy');
@@ -138,6 +142,12 @@
             btn.classList.remove('pointer-events-none', 'opacity-75', 'cursor-not-allowed');
             btn.style.width = '';
             btn.style.minWidth = '';
+        };
+
+        window.unlockAdminForm = function (form) {
+            if (!form) return;
+            const buttons = form.querySelectorAll('button[data-loading="true"], button[type="submit"]');
+            buttons.forEach(btn => window.unlockAdminButton(btn));
         };
 
         // 3. Native Partial Swapper Engine

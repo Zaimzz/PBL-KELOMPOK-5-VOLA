@@ -402,9 +402,11 @@
             </div>
 
             <!-- Pagination Bar -->
-            <div class="px-6 py-4 border-t border-slate-100">
-                {{ $events->withQueryString()->links('components.pagination') }}
-            </div>
+            @if ($events->total() > 0)
+                <div class="px-6 py-4 border-t border-slate-100">
+                    {{ $events->withQueryString()->links('components.pagination') }}
+                </div>
+            @endif
         </div>
 
         <!-- ============================================== -->

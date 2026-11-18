@@ -114,7 +114,7 @@ class EoVerificationController extends Controller
 
         Cache::forget('admin_dashboard_stats_'.(int) $request->user()->id);
 
-        return back()->with('success', 'Akun EO berhasil disetujui.');
+        return back()->with('success', 'Akun EO "'.$organizer->organization_name.'" berhasil disetujui dan diverifikasi.');
     }
 
     public function reject(Request $request, OrganizerProfile $organizer)
@@ -146,7 +146,7 @@ class EoVerificationController extends Controller
 
         Cache::forget('admin_dashboard_stats_'.(int) $request->user()->id);
 
-        return back()->with('success', 'Akun EO berhasil ditolak.');
+        return back()->with('success', 'Pengajuan akun EO "'.$organizer->organization_name.'" telah ditolak.');
     }
 
     public function document(Request $request, OrganizerProfile $organizer)

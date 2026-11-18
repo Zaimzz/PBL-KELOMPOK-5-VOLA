@@ -201,15 +201,7 @@
 
         <!-- Flash Success Notification -->
         @if(session('success'))
-            <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-sm font-semibold flex items-center justify-between shadow-xs">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                    </svg>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-800">&times;</button>
-            </div>
+            <x-alert type="success">{{ session('success') }}</x-alert>
         @endif
 
         <!-- Data Table -->
@@ -360,9 +352,11 @@
             </div>
 
             <!-- Pagination Bar -->
-            <div class="p-4 border-t border-slate-100">
-                {{ $users->withQueryString()->links('components.pagination') }}
-            </div>
+            @if ($users->total() > 0)
+                <div class="p-4 border-t border-slate-100">
+                    {{ $users->withQueryString()->links('components.pagination') }}
+                </div>
+            @endif
         </x-card>
 
         <!-- Komponen Grafik: Distribusi Pertumbuhan Pengguna -->
