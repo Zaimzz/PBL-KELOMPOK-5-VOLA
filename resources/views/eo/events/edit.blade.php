@@ -28,7 +28,7 @@
             @endif
         </div>
 
-        @if (in_array($event->status->value, ['draft', 'rejected']))
+        @can('submit', $event)
             <form action="{{ route('eo.events.submit', $event) }}" method="POST">
                 @csrf
                 <button type="submit"
@@ -40,7 +40,7 @@
                     {{ $event->status->value === 'rejected' ? 'Submit Ulang untuk Review' : 'Kirim untuk Review' }}
                 </button>
             </form>
-        @endif
+        @endcan
     </div>
 
     @php $isLocked = ! in_array($event->status->value, ['draft', 'rejected']); @endphp
@@ -68,13 +68,24 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Poster / Banner Acara</label>
 
                         @if ($event->poster_path)
-                            <div class="mb-3 relative inline-block" x-show="!posterPreview">
-                                <img src="{{ Storage::url($event->poster_path) }}"
-                                     alt="Poster event"
-                                     class="w-48 h-32 object-cover rounded-lg border border-gray-200">
-                                <span class="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">Poster aktif</span>
+                            {{-- Current poster display: shown when no new file is selected --}}
+                            <div x-show="!posterPreview" style="display:block">
+                                <div class="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50 mb-3">
+                                    <img src="{{ $event->poster_url }}"
+                                         alt="Poster event"
+                                         class="w-full max-h-64 object-contain mx-auto block"
+                                         onerror="this.src='{{ asset('images/event-placeholder.svg') }}'">
+                                    <span class="absolute top-3 right-3 inline-flex items-center gap-1 bg-green-500 text-white text-xs font-medium px-2.5 py-1 rounded-full shadow">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        Poster aktif
+                                    </span>
+                                </div>
+                                @if (! $isLocked)
+                                    <p class="text-xs text-gray-500 mb-3">Upload poster baru di bawah untuk menggantikan yang sudah ada.</p>
+                                @endif
                             </div>
-                            <p class="text-xs text-gray-500 mb-2" x-show="!posterPreview">Upload poster baru untuk menggantikan yang lama.</p>
                         @endif
 
                         @if (! $isLocked)
@@ -90,18 +101,20 @@
                                        class="hidden"
                                        x-on:change="previewPoster($event)">
 
-                                {{-- Empty state: visible sebelum Alpine init --}}
+                                {{-- Empty state --}}
                                 <div x-show="!posterPreview" style="display:block" class="p-6 text-center">
                                     <svg class="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
-                                    <p class="text-sm text-gray-500">Klik atau tarik file ke sini</p>
+                                    <p class="text-sm text-gray-500">
+                                        {{ $event->poster_path ? 'Klik untuk mengganti poster' : 'Klik atau tarik file ke sini' }}
+                                    </p>
                                     <p class="text-xs text-gray-400 mt-1">JPG, PNG, WEBP &mdash; maks 2 MB</p>
                                 </div>
 
-                                {{-- Preview state --}}
+                                {{-- Preview state (new file selected) --}}
                                 <div x-show="posterPreview" class="p-4">
-                                    <img :src="posterPreview" class="max-h-48 mx-auto rounded-lg object-contain block" alt="Preview poster baru">
+                                    <img :src="posterPreview" class="max-h-56 mx-auto rounded-lg object-contain block" alt="Preview poster baru">
                                     <div class="mt-3 flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
                                         <div class="flex items-center gap-2 min-w-0">
                                             <svg class="w-4 h-4 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +124,7 @@
                                             <span class="text-xs text-gray-400 shrink-0" x-text="posterFileSize"></span>
                                         </div>
                                         <button type="button" x-on:click.stop="clearPoster()"
-                                                class="ml-2 text-xs text-red-500 hover:text-red-700 font-medium shrink-0">Hapus</button>
+                                                class="ml-2 text-xs text-red-500 hover:text-red-700 font-medium shrink-0">Batalkan</button>
                                     </div>
                                 </div>
                             </div>
@@ -123,6 +136,11 @@
                                 </svg>
                                 <p class="text-sm text-red-600" x-text="posterError"></p>
                             </div>
+                        @elseif ($event->poster_path)
+                            {{-- Locked: show poster only, no upload --}}
+                            {{-- (already shown above) --}}
+                        @else
+                            <p class="text-sm text-gray-400 italic">Tidak ada poster yang diunggah.</p>
                         @endif
 
                         @error('poster')
@@ -210,16 +228,22 @@
                             <div>
                                 <label for="start_time" class="block text-sm font-medium text-gray-700 mb-1">Waktu Mulai</label>
                                 <input type="time" name="start_time" id="start_time"
-                                       value="{{ old('start_time', $event->start_time) }}"
+                                       value="{{ old('start_time', $event->start_time ? date('H:i', strtotime((string) $event->start_time)) : '') }}"
                                        {{ $isLocked ? 'disabled' : '' }}
-                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm {{ $isLocked ? 'bg-gray-50 text-gray-500' : '' }}">
+                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm {{ $isLocked ? 'bg-gray-50 text-gray-500' : '' }} @error('start_time') border-red-300 @enderror">
+                                @error('start_time')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div>
                                 <label for="end_time" class="block text-sm font-medium text-gray-700 mb-1">Waktu Selesai</label>
                                 <input type="time" name="end_time" id="end_time"
-                                       value="{{ old('end_time', $event->end_time) }}"
+                                       value="{{ old('end_time', $event->end_time ? date('H:i', strtotime((string) $event->end_time)) : '') }}"
                                        {{ $isLocked ? 'disabled' : '' }}
-                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm {{ $isLocked ? 'bg-gray-50 text-gray-500' : '' }}">
+                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm {{ $isLocked ? 'bg-gray-50 text-gray-500' : '' }} @error('end_time') border-red-300 @enderror">
+                                @error('end_time')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
 
@@ -269,7 +293,11 @@
                                 <input type="text" name="contact_info" id="contact_info"
                                        value="{{ old('contact_info', $event->contact_info) }}"
                                        {{ $isLocked ? 'disabled' : '' }}
-                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm {{ $isLocked ? 'bg-gray-50 text-gray-500' : '' }}">
+                                       placeholder="No. HP / Email kontak"
+                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm {{ $isLocked ? 'bg-gray-50 text-gray-500' : '' }} @error('contact_info') border-red-300 @enderror">
+                                @error('contact_info')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div>
                                 <label for="pic_name" class="block text-sm font-medium text-gray-700 mb-1">Nama PIC</label>
@@ -295,18 +323,18 @@
 
         </div>
 
-        {{-- RIGHT: Positions Panel --}}
+        {{-- RIGHT: Saved Positions Panel --}}
         <div class="xl:col-span-1 space-y-6">
 
-            {{-- Positions --}}
+            {{-- Existing saved positions list --}}
             <x-card>
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 bg-brand-100 text-brand-700 rounded-full flex items-center justify-center text-sm font-bold">2</div>
-                        <h2 class="text-sm font-semibold text-gray-900">Kebutuhan Posisi</h2>
+                        <h2 class="text-sm font-semibold text-gray-900">Posisi yang Sudah Ditambahkan</h2>
                     </div>
                     <span class="text-xs font-medium text-brand-600 bg-brand-50 px-2 py-1 rounded-full">
-                        Total: {{ $event->positions->count() }} Posisi
+                        Total: {{ $event->positions->count() }} Posisi &middot; {{ $event->positions->sum('quota') }} Crew
                     </span>
                 </div>
 
@@ -316,7 +344,7 @@
                         description="Tambah minimal 1 posisi untuk dapat mengirim event."
                     />
                 @else
-                    <div class="space-y-3 mb-4">
+                    <div class="space-y-3">
                         @foreach ($event->positions as $position)
                             <div class="border border-gray-200 rounded-lg p-3" x-data="{ editing: false }">
                                 <div x-show="!editing">
@@ -398,78 +426,10 @@
                         @endforeach
                     </div>
                 @endif
-
-                {{-- Add Position Form --}}
-                @if (! $isLocked)
-                    <div x-data="{ showForm: {{ $event->positions->isEmpty() ? 'true' : 'false' }} }">
-                        <button type="button"
-                                x-show="!showForm"
-                                x-on:click="showForm = true"
-                                class="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-200 rounded-lg text-sm text-brand-600 hover:border-brand-400 hover:bg-brand-50 transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Tambah Divisi Lain
-                        </button>
-
-                        <form action="{{ route('eo.events.positions.store', $event) }}" method="POST" x-show="showForm" x-cloak>
-                            @csrf
-                            <div class="border border-dashed border-brand-300 bg-brand-50 rounded-lg p-4 space-y-3">
-                                <p class="text-xs font-semibold text-brand-700">Tambah Posisi Baru</p>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Nama Posisi <span class="text-red-500">*</span></label>
-                                    <input type="text" name="name" required
-                                           placeholder="Contoh: Liaison Officer (LO)"
-                                           class="w-full rounded-lg border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500">
-                                    @error('name')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Kuota <span class="text-red-500">*</span></label>
-                                    <input type="number" name="quota" min="1" value="1" required
-                                           class="w-full rounded-lg border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500">
-                                    @error('quota')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Tanggung Jawab / Deskripsi</label>
-                                    <textarea name="description" rows="2"
-                                              placeholder="Deskripsikan tugas posisi ini..."
-                                              class="w-full rounded-lg border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500"></textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Kualifikasi / Persyaratan</label>
-                                    <textarea name="requirements" rows="2"
-                                              placeholder="Syarat yang dibutuhkan untuk posisi ini..."
-                                              class="w-full rounded-lg border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500"></textarea>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button type="submit"
-                                            class="flex-1 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
-                                        Tambah Posisi
-                                    </button>
-                                    @if (! $event->positions->isEmpty())
-                                        <button type="button"
-                                                x-on:click="showForm = false"
-                                                class="px-4 py-2 bg-white text-gray-600 text-sm rounded-lg border border-gray-300 hover:bg-gray-50">
-                                            Batal
-                                        </button>
-                                    @endif
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                @else
-                    @if ($event->positions->isEmpty())
-                        <p class="text-xs text-gray-400 text-center italic">Tidak ada posisi. Edit tidak tersedia saat event terkunci.</p>
-                    @endif
-                @endif
             </x-card>
 
             {{-- Danger Zone (delete) --}}
-            @if (in_array($event->status->value, ['draft', 'rejected']))
+            @can('delete', $event)
                 <x-card>
                     <h3 class="text-sm font-semibold text-red-700 mb-2">Zona Berbahaya</h3>
                     <p class="text-xs text-gray-500 mb-3">Menghapus event ini bersifat permanen dan tidak dapat dibatalkan.</p>
@@ -483,13 +443,17 @@
                         </button>
                     </form>
                 </x-card>
-            @endif
+            @endcan
         </div>
     </div>
 
-</x-layouts.eo>
+    {{-- Position Picker (full width, below main grid) --}}
+    @if (! $isLocked)
+        @include('eo.events.partials.position-picker')
+    @endif
 
-@push('scripts')
+    @push('scripts')
+
 <script>
 function editEventForm() {
     const today = new Date();
@@ -582,3 +546,4 @@ function editEventForm() {
 }
 </script>
 @endpush
+</x-layouts.eo>

@@ -2,72 +2,239 @@
 
 namespace App\Http\Controllers\Crew;
 
+use App\Enums\ApplicationStatus;
+use App\Enums\EventStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Application;
+use App\Models\EventPosition;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class ApplicationController extends Controller
 {
     public function index(): View
     {
-        $applications = [
-            [
-                'id' => 1,
-                'event_title' => 'Indonesia Comic & Pop Culture Con 2025',
-                'event_organizer' => 'PT Pop Media Nusantara',
-                'event_category' => 'Expo & Festival',
-                'position' => 'Liaison Officer (LO) Bintang Tamu',
-                'location' => 'ICE BSD City, Tangerang',
-                'status' => 'accepted',
-                'status_label' => 'Diterima',
-                'applied_at' => '24 April 2025',
-                'message' => 'Selamat! Kamu lolos seleksi berkas & wawancara. Silakan cek detail di menu Event Saya.',
-                'message_type' => 'success',
-                'can_cancel' => false,
-            ],
-            [
-                'id' => 2,
-                'event_title' => 'Bandung Creative Tech Summit 2025',
-                'event_organizer' => 'Bandung Digital Hub',
-                'event_category' => 'Konferensi Teknologi',
-                'position' => 'Usher & Registrasi Tamu VIP',
-                'location' => 'Sasana Budaya Ganesha (Sabuga), Bandung',
-                'status' => 'pending',
-                'status_label' => 'Menunggu Seleksi',
-                'applied_at' => '26 April 2025',
-                'message' => 'Berkas telah terkirim dan sedang menunggu kurasi awal panitia.',
-                'message_type' => 'warning',
-                'can_cancel' => true,
-            ],
-            [
-                'id' => 3,
-                'event_title' => 'Run For Earth Green Marathon 2025',
-                'event_organizer' => 'Yayasan Bumi Lestari',
-                'event_category' => 'Kegiatan Sosial & Olahraga',
-                'position' => 'Water Station Marshal',
-                'location' => 'GBK Senayan, Jakarta',
-                'status' => 'processing',
-                'status_label' => 'Sedang Diproses',
-                'applied_at' => '20 April 2025',
-                'message' => 'Tahap 2: Wawancara online. Jadwal screening akan dikonfirmasi panitia.',
-                'message_type' => 'info',
-                'can_cancel' => false,
-            ],
-            [
-                'id' => 4,
-                'event_title' => 'Jakarta Culinary & Coffee Festival 2025',
-                'event_organizer' => 'Jakarta Food & Hospitality Expo',
-                'event_category' => 'Festival Kuliner',
-                'position' => 'Stage Manager Assistant',
-                'location' => 'Senayan Park, Jakarta',
-                'status' => 'rejected',
-                'status_label' => 'Tidak Lolos',
-                'applied_at' => '18 April 2025',
-                'message' => 'Kuota telah terpenuhi. Terima kasih atas partisipasi dan antusiasme.',
-                'message_type' => 'error',
-                'can_cancel' => false,
-            ],
-        ];
+        $user = Auth::user();
+        $profile = $user?->volunteerProfile;
+
+        $applications = [];
+
+        if ($profile) {
+            $rawApplications = Application::query()
+                ->where('volunteer_profile_id', $profile->id)
+                ->with(['position.event.organizer', 'position.event.category', 'event.organizer', 'event.category'])
+                ->latest('applied_at')
+                ->latest('id')
+                ->get();
+
+            $applications = $rawApplications->map(function (Application $app) {
+                $position = $app->position;
+                $event = $app->event ?? $position?->event;
+                $organizer = $event?->organizer;
+                $category = $event?->category;
+
+                $statusVal = $app->status instanceof ApplicationStatus
+                    ? $app->status->value
+                    : (string) $app->status;
+
+                $statusLabel = match ($statusVal) {
+                    'accepted' => 'Diterima',
+                    'rejected' => 'Tidak Lolos',
+                    'processing' => 'Sedang Diproses',
+                    'withdrawn' => 'Dibatalkan',
+                    default => 'Menunggu Seleksi',
+                };
+
+                $messageType = match ($statusVal) {
+                    'accepted' => 'success',
+                    'rejected', 'withdrawn' => 'error',
+                    'processing' => 'info',
+                    default => 'warning',
+                };
+
+                if (! empty($app->decision_note)) {
+                    $message = $app->decision_note;
+                } else {
+                    $message = match ($statusVal) {
+                        'accepted' => 'Selamat! Kamu lolos seleksi berkas & pendaftaran volunteer. Silakan cek detail di menu Event Saya.',
+                        'rejected' => 'Kuota telah terpenuhi atau kriteria belum sesuai. Terima kasih atas partisipasi dan antusiasme kamu.',
+                        'processing' => 'Lamaran kamu sedang dalam tahap kurasi/seleksi lanjutan panitia.',
+                        'withdrawn' => 'Lamaran telah dibatalkan.',
+                        default => 'Berkas telah terkirim dan sedang menunggu kurasi awal panitia.',
+                    };
+                }
+
+                $appliedAt = $app->applied_at ?? $app->created_at;
+                $appliedAtFormatted = $appliedAt ? $appliedAt->translatedFormat('d F Y') : '-';
+
+                $locationParts = array_filter([$event?->location, $event?->city]);
+                $location = ! empty($locationParts) ? implode(', ', $locationParts) : 'Lokasi belum ditentukan';
+
+                return [
+                    'id' => $app->id,
+                    'event_id' => $event?->id,
+                    'event_title' => $event?->title ?? 'Event Tidak Ditemukan',
+                    'event_organizer' => $organizer?->organization_name ?? 'Penyelenggara Event',
+                    'event_category' => $category?->name ?? 'Kategori Umum',
+                    'position' => $position?->name ?? 'Posisi Relawan',
+                    'location' => $location,
+                    'status' => $statusVal,
+                    'status_label' => $statusLabel,
+                    'applied_at' => $appliedAtFormatted,
+                    'message' => $message,
+                    'message_type' => $messageType,
+                ];
+            })->toArray();
+        }
 
         return view('crew.applications', compact('applications'));
+    }
+
+    public function store(Request $request): JsonResponse|RedirectResponse
+    {
+        $user = Auth::user();
+        $profile = $user?->volunteerProfile;
+
+        if (! $profile) {
+            $msg = 'Anda harus melengkapi profil volunteer terlebih dahulu.';
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $msg,
+                ], 422);
+            }
+
+            return back()->withErrors(['profile' => $msg]);
+        }
+
+        $validated = $request->validate([
+            'position_id' => 'required|exists:event_positions,id',
+            'motivation' => 'required|string|min:20',
+            'experience' => 'nullable|string',
+            'availability' => 'nullable|string',
+        ]);
+
+        $position = EventPosition::with('event')->findOrFail($validated['position_id']);
+        $event = $position->event;
+
+        if (! $event || $event->status !== EventStatus::Active) {
+            $msg = 'Event ini sedang tidak menerima pendaftaran.';
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 422);
+            }
+
+            return back()->withErrors(['event' => $msg]);
+        }
+
+        if ($event->registration_deadline && $event->registration_deadline->lt(today())) {
+            $msg = 'Batas pendaftaran event ini sudah lewat.';
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 422);
+            }
+
+            return back()->withErrors(['event' => $msg]);
+        }
+
+        $existing = Application::where('volunteer_profile_id', $profile->id)
+            ->where('position_id', $position->id)
+            ->first();
+
+        if ($existing) {
+            $msg = 'Anda sudah melamar untuk posisi ini.';
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $msg,
+                ], 409);
+            }
+
+            return back()->withErrors(['position_id' => $msg]);
+        }
+
+        Application::create([
+            'volunteer_profile_id' => $profile->id,
+            'position_id' => $position->id,
+            'status' => ApplicationStatus::Pending,
+            'cover_letter' => $request->motivation,
+            'applied_at' => now(),
+        ]);
+
+        Cache::forget('crew_application_counts_'.$profile->id);
+
+        $successMsg = 'Lamaran berhasil diajukan! Silakan pantau status di menu "Lamaran Saya".';
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $successMsg,
+            ]);
+        }
+
+        return redirect()->route('applications.index')->with('success', $successMsg);
+    }
+
+    public function downloadAcceptanceLetter(int $id)
+    {
+        $user = Auth::user();
+        $profile = $user?->volunteerProfile;
+
+        if (! $profile) {
+            abort(403);
+        }
+
+        $application = Application::where('volunteer_profile_id', $profile->id)
+            ->where('id', $id)
+            ->with(['position.event.organizer', 'position.event.category', 'event.organizer', 'event.category'])
+            ->firstOrFail();
+
+        $statusVal = $application->status instanceof ApplicationStatus
+            ? $application->status->value
+            : (string) $application->status;
+
+        if ($statusVal !== 'accepted') {
+            return back()->withErrors(['error' => 'Bukti penerimaan hanya tersedia untuk lamaran yang diterima.']);
+        }
+
+        $position = $application->position;
+        $event = $application->event ?? $position?->event;
+        $organizer = $event?->organizer;
+        $category = $event?->category;
+
+        $appliedAt = $application->applied_at ?? $application->created_at;
+        $appliedAtFormatted = $appliedAt ? $appliedAt->translatedFormat('d F Y') : '-';
+
+        $locationParts = array_filter([$event?->location, $event?->city]);
+        $location = ! empty($locationParts) ? implode(', ', $locationParts) : 'Lokasi belum ditentukan';
+
+        $applicationData = [
+            'id' => $application->id,
+            'event_title' => $event?->title ?? 'Event',
+            'event_organizer' => $organizer?->organization_name ?? 'Panitia Event',
+            'position' => $position?->name ?? 'Volunteer',
+            'event_category' => $category?->name ?? 'Umum',
+            'location' => $location,
+            'applied_at' => $appliedAtFormatted,
+        ];
+
+        $displayName = $user->name ?? 'Volunteer';
+
+        $pdf = Pdf::loadView('crew.bukti-penerimaan', [
+            'application' => $applicationData,
+            'displayName' => $displayName,
+        ]);
+        $pdf->setPaper('A4', 'landscape');
+
+        $filename = 'Bukti-Penerimaan-'.str_replace(' ', '-', $event?->title ?? 'Event').'-'.str_replace(' ', '-', $displayName).'.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    public function downloadCertificate(int $id): RedirectResponse
+    {
+        return redirect()->route('history.downloadCertificate', ['id' => $id]);
     }
 }

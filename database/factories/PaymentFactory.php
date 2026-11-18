@@ -22,12 +22,14 @@ class PaymentFactory extends Factory
     {
         return [
             'event_id' => Event::factory(),
+            'package_name' => 'professional',
+            'package_duration_days' => 7,
             'invoice_number' => 'INV-'.now()->year.'-'.fake()->unique()->numerify('###'),
             'midtrans_order_id' => 'ORDER-'.Str::random(12),
             'snap_token' => null,
             'transaction_id' => null,
             'payment_type' => null,
-            'amount' => (int) config('vola.listing_fee', 450000),
+            'amount' => 35_000,
             'status' => PaymentStatus::Pending,
             'paid_at' => null,
             'expired_at' => now()->addHours(24),

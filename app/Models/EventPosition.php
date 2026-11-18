@@ -11,11 +11,18 @@ class EventPosition extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['event_id', 'name', 'description', 'requirements', 'quota'];
+    protected $fillable = [
+        'event_id', 'position_type_id', 'name', 'category', 'description', 'requirements', 'quota',
+    ];
 
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
+    }
+
+    public function positionType(): BelongsTo
+    {
+        return $this->belongsTo(PositionType::class);
     }
 
     public function applications(): HasMany

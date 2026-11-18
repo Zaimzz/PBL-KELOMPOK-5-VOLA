@@ -3,47 +3,52 @@
 namespace App\Http\Controllers\Crew;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class NotificationController extends Controller
 {
-    // Ambil semua notifikasi (untuk polling)
+    // Mengambil daftar notifikasi
     public function index()
     {
         $user = Auth::user();
-        $notifications = $user->notifications()->take(10)->get()->map(function ($notification) {
+
+        // Ambil 20 notifikasi terbaru dari tabel 'notifications' milik user ini
+        $notifications = $user->notifications()->latest()->take(20)->get()->map(function ($notif) {
             return [
-                'id' => $notification->id,
-                'type' => $notification->data['type'],
-                'title' => $notification->data['title'],
-                'message' => $notification->data['message'],
-                'link' => $notification->data['link'],
-                'time' => $notification->data['time'],
-                'read' => !is_null($notification->read_at),
+                'id' => $notif->id,
+                'type' => $notif->data['type'] ?? 'info',
+                'title' => $notif->data['title'] ?? 'Notifikasi',
+                'message' => $notif->data['message'] ?? '',
+                'time' => $notif->created_at->diffForHumans(), // "2 jam yang lalu"
+                'read' => ! is_null($notif->read_at), // true jika sudah dibaca
+                'link' => $notif->data['link'] ?? '#',
             ];
         });
 
-        return response()->json([
-            'notifications' => $notifications,
-            'unreadCount' => $user->unreadNotifications()->count()
-        ]);
+        return response()->json($notifications);
     }
 
-    // Tandai 1 notifikasi sebagai dibaca
+    // Menandai satu notifikasi sebagai sudah dibaca
     public function markAsRead($id)
     {
-        $notification = Auth::user()->notifications()->find($id);
-        if ($notification) {
-            $notification->markAsRead();
-        }
+        $user = Auth::user();
+        $notification = $user->notifications()->findOrFail($id);
+        $notification->markAsRead();
+
+        Cache::forget('crew_unread_notifs_'.$user->id);
+
         return response()->json(['success' => true]);
     }
 
-    // Tandai SEMUA notifikasi sebagai dibaca
+    // Menandai semua notifikasi sebagai sudah dibaca
     public function markAllAsRead()
     {
-        Auth::user()->unreadNotifications->markAsRead();
+        $user = Auth::user();
+        $user->unreadNotifications()->update(['read_at' => now()]);
+
+        Cache::forget('crew_unread_notifs_'.$user->id);
+
         return response()->json(['success' => true]);
     }
 }

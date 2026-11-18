@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <div class="w-full bg-white/90 backdrop-blur-xl rounded-[28px] shadow-[0_20px_50px_rgba(69,52,230,0.08)] hover:shadow-[0_25px_60px_rgba(69,52,230,0.12)] p-7 sm:p-10 z-10 border border-white/80 transition-all duration-300 animate-card-entry">
+    <div class="w-full bg-white/90 backdrop-blur-xl rounded-[28px] shadow-[0_20px_50px_rgba(69,52,230,0.08)] hover:shadow-[0_25px_60px_rgba(69,52,230,0.12)] p-6 sm:p-10 z-10 border border-white/80 transition-all duration-300 animate-card-entry">
         
         <div class="flex justify-center items-center mb-5 animate-stagger-item delay-50">
             <div class="flex items-center space-x-1.5">
@@ -8,20 +8,21 @@
         </div>
 
         <div class="text-center mb-7 animate-stagger-item delay-100">
-            <h2 class="text-[26px] sm:text-[28px] font-bold text-gray-900 tracking-tight">Portal Administrator</h2>
+            <h2 class="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight">Portal Administrator</h2>
             <p class="mt-1.5 text-sm text-gray-500 font-medium">Gunakan kredensial Anda untuk mengakses panel admin.</p>
         </div>
 
-        <x-auth-session-status class="mb-4 animate-stagger-item delay-100" :status="session('status')" />
+        <x-auth-session-status class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-sm text-center mb-5 font-medium animate-stagger-item delay-100" :status="session('status')" />
 
         <form method="POST" action="{{ route('admin.login') }}" class="space-y-5" x-data="{ 
-            email: '{{ old('email') }}',
+            email: @js(old('email', '')),
             password: '',
+            remember: {{ old('remember') ? 'true' : 'false' }},
             showPassword: false,
             isSubmitting: false,
             errors: {
-                email: '{{ $errors->first('email') }}',
-                password: '{{ $errors->first('password') }}'
+                email: @js($errors->first('email')),
+                password: @js($errors->first('password'))
             },
             validate() {
                 this.errors.email = '';
@@ -29,10 +30,10 @@
                 
                 let isValid = true;
                 
-                if (!this.email) {
+                if (!this.email || !this.email.trim()) {
                     this.errors.email = 'Email wajib diisi.';
                     isValid = false;
-                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim())) {
                     this.errors.email = 'Format email tidak valid.';
                     isValid = false;
                 }
@@ -45,11 +46,29 @@
                 return isValid;
             },
             handleAdminSubmit(event) {
+                if (this.isSubmitting) {
+                    event.preventDefault();
+                    return;
+                }
+
                 if (!this.validate()) {
                     event.preventDefault();
                     return;
                 }
+
                 this.isSubmitting = true;
+
+                if (this.remember) {
+                    localStorage.setItem('vola_remember', 'true');
+                    sessionStorage.removeItem('vola_session_active');
+                    document.cookie = 'vola_remember=1; path=/; max-age=157680000; SameSite=Lax';
+                    document.cookie = 'vola_session_active=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+                } else {
+                    localStorage.removeItem('vola_remember');
+                    sessionStorage.setItem('vola_session_active', 'true');
+                    document.cookie = 'vola_session_active=1; path=/; SameSite=Lax';
+                    document.cookie = 'vola_remember=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+                }
             }
         }" @submit="handleAdminSubmit($event)" novalidate>
             @csrf
@@ -119,6 +138,8 @@
                     <input id="remember_me" 
                            name="remember" 
                            type="checkbox" 
+                           value="1"
+                           x-model="remember"
                            class="h-4 w-4 text-[#4534E6] focus:ring-[#4534E6] border-gray-300 rounded cursor-pointer transition-transform duration-150 active:scale-95">
                     <label for="remember_me" class="ml-2 block text-sm font-medium text-gray-600 cursor-pointer select-none hover:text-gray-900 transition-colors">Ingat saya</label>
                 </div>

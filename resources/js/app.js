@@ -1,5 +1,3 @@
-
-
 import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
@@ -19,17 +17,17 @@ window.Alpine = Alpine;
     });
 
     const isRemembered = localStorage.getItem('vola_remember') === 'true';
+    const hasSessionCookie = document.cookie
+        .split('; ')
+        .some((cookie) => cookie.trim() === 'vola_session_active=1');
 
     if (isRemembered) {
         // Persistent cookie for 'Ingat saya'
         document.cookie = 'vola_remember=1; path=/; max-age=157680000; SameSite=Lax';
-    } else if (sessionStorage.getItem('vola_session_active') === 'true') {
-        // Session cookie for active tab session
+    } else if (hasSessionCookie || sessionStorage.getItem('vola_session_active') === 'true') {
+        // Session cookie for active browser session (keep sessionStorage synced across tabs)
+        sessionStorage.setItem('vola_session_active', 'true');
         document.cookie = 'vola_session_active=1; path=/; SameSite=Lax';
-    } else {
-        // Tab or browser was closed and reopened without 'Ingat saya'
-        // Clear active cookie so backend middleware knows the session is closed
-        document.cookie = 'vola_session_active=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
     }
 })();
 

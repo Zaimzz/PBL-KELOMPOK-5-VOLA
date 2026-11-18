@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Notifications\EventApprovedNotification;
 use App\Notifications\EventRejectedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -157,8 +158,7 @@ class ReviewEventTest extends TestCase
         $response->assertSessionHas('success');
 
         $this->pendingEvent->refresh();
-        $this->assertEquals(EventStatus::Active, $this->pendingEvent->status);
-        $this->assertNotNull($this->pendingEvent->published_at);
+        $this->assertEquals(EventStatus::AwaitingPayment, $this->pendingEvent->status);
         $this->assertEquals($this->admin->id, $this->pendingEvent->reviewed_by);
         $this->assertNotNull($this->pendingEvent->reviewed_at);
 
@@ -241,5 +241,86 @@ class ReviewEventTest extends TestCase
         $responseAll->assertSee('Indonesia Comic & Pop Culture Con 2025');
         $responseAll->assertDontSee('Event Draft Rahasia');
         $responseAll->assertDontSee('Event Sudah Selesai');
+    }
+
+    public function test_default_filter_is_all_and_reset_button_behavior()
+    {
+        // Active event
+        $activeEvent = Event::factory()->create([
+            'organizer_id' => $this->organizer->id,
+            'title' => 'Active Event Ready',
+            'status' => EventStatus::Active,
+        ]);
+
+        // 1. Tanpa query string ?status= -> default all, munculkan event pending dan active
+        $responseDefault = $this->actingAs($this->admin)->get(route('admin.review-events.index'));
+        $responseDefault->assertStatus(200);
+        $responseDefault->assertSee('Indonesia Comic & Pop Culture Con 2025');
+        $responseDefault->assertSee('Active Event Ready');
+        // Reset button harus tersembunyi
+        $responseDefault->assertDontSee('<span>Reset</span>', false);
+
+        // 2. Dengan status=all dan search kosong -> Reset button tetap tersembunyi
+        $responseAll = $this->actingAs($this->admin)->get(route('admin.review-events.index', ['status' => 'all']));
+        $responseAll->assertStatus(200);
+        $responseAll->assertDontSee('<span>Reset</span>', false);
+
+        // 3. Dengan status=pending_review -> Reset button harus muncul
+        $responsePending = $this->actingAs($this->admin)->get(route('admin.review-events.index', ['status' => 'pending_review']));
+        $responsePending->assertStatus(200);
+        $responsePending->assertSee('<span>Reset</span>', false);
+
+        // 4. Dengan search aktif -> Reset button harus muncul
+        $responseSearch = $this->actingAs($this->admin)->get(route('admin.review-events.index', ['search' => 'Comic']));
+        $responseSearch->assertStatus(200);
+        $responseSearch->assertSee('<span>Reset</span>', false);
+    }
+
+    public function test_pagination_is_five_items_per_page_with_query_string()
+    {
+        Event::factory()->count(6)->create([
+            'organizer_id' => $this->organizer->id,
+            'status' => EventStatus::PendingReview,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.review-events.index', [
+            'status' => 'pending_review',
+        ]));
+        $response->assertStatus(200);
+
+        /** @var LengthAwarePaginator $events */
+        $events = $response->viewData('events');
+        $this->assertEquals(5, $events->perPage());
+        $this->assertEquals(7, $events->total()); // 1 pending di setUp + 6 baru
+        $this->assertCount(5, $events->items());
+    }
+
+    public function test_poster_url_synchronization_uses_valid_event_poster_url()
+    {
+        $eventWithPoster = Event::factory()->create([
+            'organizer_id' => $this->organizer->id,
+            'title' => 'Senam Pagi Bersama',
+            'poster_path' => 'posters/senam-sample.jpg',
+            'status' => EventStatus::PendingReview,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.review-events.index', [
+            'selected' => $eventWithPoster->id,
+        ]));
+        $response->assertStatus(200);
+
+        $selectedEvent = $response->viewData('selectedEvent');
+        $this->assertNotNull($selectedEvent);
+        $this->assertTrue($selectedEvent['has_poster']);
+        $this->assertEquals($eventWithPoster->poster_url, $selectedEvent['poster_url']);
+        $this->assertStringNotContainsString('/storage/posters/senam-sample.jpg', $selectedEvent['poster_url']);
+
+        // Uji endpoint show JSON
+        $showResponse = $this->actingAs($this->admin)->getJson(route('admin.review-events.show', $eventWithPoster));
+        $showResponse->assertStatus(200);
+        $showResponse->assertJson([
+            'has_poster' => true,
+            'poster_url' => $eventWithPoster->poster_url,
+        ]);
     }
 }

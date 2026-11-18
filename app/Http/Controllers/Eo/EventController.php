@@ -3,14 +3,16 @@
 namespace App\Http\Controllers\Eo;
 
 use App\Enums\EventStatus;
-use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Eo\StoreEventRequest;
 use App\Http\Requests\Eo\UpdateEventRequest;
 use App\Models\Event;
 use App\Models\EventCategory;
+use App\Models\PositionType;
+use App\Support\MediaStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -49,13 +51,25 @@ class EventController extends Controller
     }
 
     /**
+     * Display a read-only detail page for the EO's event.
+     */
+    public function show(Request $request, Event $event): View
+    {
+        Gate::authorize('view', $event);
+
+        $event->load(['category', 'positions']);
+
+        return view('eo.events.show', compact('event'));
+    }
+
+    /**
      * Show the form for creating a new event.
      */
     public function create(Request $request): View
     {
         Gate::authorize('create', Event::class);
 
-        $categories = EventCategory::orderBy('name')->get();
+        $categories = EventCategory::hydrate(Cache::remember('ref_event_categories', 3600, fn () => EventCategory::orderBy('name')->get()->map(fn (EventCategory $category): array => $category->getRawOriginal())->all()));
 
         return view('eo.events.create', compact('categories'));
     }
@@ -116,6 +130,8 @@ class EventController extends Controller
             'status' => $status,
         ]);
 
+        Cache::forget('eo_dashboard_'.$organizerProfile->id);
+
         return redirect()->route('eo.events.edit', $event)
             ->with('success', 'Event berhasil disimpan sebagai draft. Tambahkan posisi untuk melengkapi event Anda.');
     }
@@ -127,10 +143,29 @@ class EventController extends Controller
     {
         Gate::authorize('update', $event);
 
-        $categories = EventCategory::orderBy('name')->get();
+        $categories = EventCategory::hydrate(Cache::remember('ref_event_categories', 3600, fn () => EventCategory::orderBy('name')->get()->map(fn (EventCategory $category): array => $category->getRawOriginal())->all()));
         $event->load('positions');
 
-        return view('eo.events.edit', compact('event', 'categories'));
+        $positionCatalog = Cache::remember('ref_position_type_catalog', 3600, function (): array {
+            return PositionType::active()
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get()
+                ->groupBy('category')
+                ->map(fn ($types, $category): array => [
+                    'name' => $category,
+                    'positions' => $types->map(fn (PositionType $type): array => [
+                        'id' => $type->id,
+                        'name' => $type->name,
+                        'description' => (string) $type->default_description,
+                        'requirements' => (string) $type->default_requirements,
+                    ])->values()->all(),
+                ])
+                ->values()
+                ->all();
+        });
+
+        return view('eo.events.edit', compact('event', 'categories', 'positionCatalog'));
     }
 
     /**
@@ -146,7 +181,7 @@ class EventController extends Controller
         if ($request->hasFile('poster')) {
             // Delete old poster if exists
             if ($event->poster_path) {
-                Storage::disk('public')->delete($event->poster_path);
+                MediaStorage::deleteSafe($event->poster_path);
             }
             $data['poster_path'] = $request->file('poster')->store('posters', 'public');
         }
@@ -167,6 +202,8 @@ class EventController extends Controller
 
         $event->update($data);
 
+        Cache::forget('eo_dashboard_'.$event->organizer_id);
+
         return redirect()->route('eo.events.edit', $event)
             ->with('success', 'Event berhasil diperbarui.');
     }
@@ -178,15 +215,47 @@ class EventController extends Controller
     {
         Gate::authorize('delete', $event);
 
-        // Delete poster if exists
+        // Delete poster if exists secara aman
         if ($event->poster_path) {
-            Storage::disk('public')->delete($event->poster_path);
+            MediaStorage::deleteSafe($event->poster_path);
         }
 
         $event->delete();
 
+        Cache::forget('eo_dashboard_'.$event->organizer_id);
+
         return redirect()->route('eo.events.index')
             ->with('success', 'Event berhasil dihapus.');
+    }
+
+    /**
+     * Close event registration.
+     * Transitions: active → closed
+     */
+    public function close(Event $event): RedirectResponse
+    {
+        Gate::authorize('close', $event);
+
+        $event->update(['status' => EventStatus::Closed]);
+
+        Cache::forget('eo_dashboard_'.$event->organizer_id);
+
+        return back()->with('success', 'Pendaftaran event berhasil ditutup.');
+    }
+
+    /**
+     * Mark the event as finished.
+     * Transitions: active|closed → finished
+     */
+    public function finish(Event $event): RedirectResponse
+    {
+        Gate::authorize('finish', $event);
+
+        $event->update(['status' => EventStatus::Finished]);
+
+        Cache::forget('eo_dashboard_'.$event->organizer_id);
+
+        return back()->with('success', 'Event berhasil ditandai selesai.');
     }
 
     /**
@@ -196,20 +265,6 @@ class EventController extends Controller
     public function submit(Request $request, Event $event): RedirectResponse
     {
         Gate::authorize('submit', $event);
-
-        $user = $request->user();
-        $organizerProfile = $user->organizerProfile;
-
-        // Check EO verification status
-        if (
-            ! $organizerProfile ||
-            $organizerProfile->verification_status !== VerificationStatus::Verified
-        ) {
-            return back()->with(
-                'error',
-                'Akun Anda belum terverifikasi oleh admin. Anda tidak dapat mengirim event untuk direview.'
-            );
-        }
 
         // Validate event status
         if (! in_array($event->status, [EventStatus::Draft, EventStatus::Rejected], true)) {
@@ -257,6 +312,8 @@ class EventController extends Controller
 
         // Transition to pending_review
         $event->update(['status' => EventStatus::PendingReview]);
+
+        Cache::forget('eo_dashboard_'.$event->organizer_id);
 
         return redirect()->route('eo.events.index')
             ->with('success', 'Event berhasil diajukan untuk review admin. Kami akan menghubungi Anda setelah proses review selesai.');

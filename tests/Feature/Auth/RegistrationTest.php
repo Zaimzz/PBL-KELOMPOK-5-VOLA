@@ -29,6 +29,7 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertCookie('vola_session_active');
 
         $user = User::where('email', 'crew@example.com')->first();
         $this->assertEquals(UserRole::Volunteer, $user->role);
@@ -48,6 +49,7 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('eo.dashboard', absolute: false));
+        $response->assertCookie('vola_session_active');
 
         $user = User::where('email', 'eo@example.com')->first();
         $this->assertEquals(UserRole::Eo, $user->role);
@@ -65,6 +67,57 @@ class RegistrationTest extends TestCase
         ]);
 
         $response->assertInvalid(['role']);
+        $this->assertGuest();
+    }
+
+    public function test_registration_rejects_duplicate_email_case_insensitively(): void
+    {
+        User::factory()->create([
+            'email' => 'existing@example.com',
+        ]);
+
+        $response = $this->post('/register', [
+            'name' => 'Duplicate User',
+            'email' => '  EXISTING@EXAMPLE.COM  ',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role' => 'volunteer',
+        ]);
+
+        $response->assertSessionHasErrors([
+            'email' => 'Email sudah terdaftar.',
+        ]);
+        $this->assertGuest();
+        $this->assertSame(1, User::count());
+    }
+
+    public function test_registration_validates_required_fields_and_password_rules(): void
+    {
+        $emptyResponse = $this->post('/register', []);
+        $emptyResponse->assertSessionHasErrors(['name', 'email', 'password', 'role']);
+
+        $weakPasswordResponse = $this->post('/register', [
+            'name' => 'Weak Pass',
+            'email' => 'weak@example.com',
+            'password' => 'short',
+            'password_confirmation' => 'short',
+            'role' => 'volunteer',
+        ]);
+        $weakPasswordResponse->assertSessionHasErrors([
+            'password' => 'Kata sandi harus minimal 8 karakter dan mengandung huruf serta angka.',
+        ]);
+
+        $mismatchResponse = $this->post('/register', [
+            'name' => 'Mismatch Pass',
+            'email' => 'mismatch@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'different123',
+            'role' => 'volunteer',
+        ]);
+        $mismatchResponse->assertSessionHasErrors([
+            'password' => 'Konfirmasi kata sandi tidak sesuai.',
+        ]);
+
         $this->assertGuest();
     }
 }

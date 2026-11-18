@@ -2,114 +2,119 @@
 
 namespace App\Http\Controllers\Crew;
 
-use App\Http\Controllers\Controller;
+use App\Enums\ApplicationStatus;
 use App\Enums\EventStatus;
 use App\Enums\VerificationStatus;
-use App\Models\Application;
+use App\Http\Controllers\Controller;
 use App\Models\Event;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class CrewDashboardController extends Controller
 {
-    public function index(Request $request): View
+    private const CATEGORY_IMAGES = [
+        'festival' => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800',
+        'seminar' => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
+        'musik' => 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800',
+        'olahraga' => 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
+        'sosial' => 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800',
+        'kampus' => 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800',
+        'komunitas' => 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800',
+        'umum' => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800',
+    ];
+
+    private function getImageByCategory(?string $category): string
     {
-        $user = Auth::user();
-        $profile = $user->volunteerProfile;
+        $key = strtolower(trim($category ?? 'umum'));
 
-        $userName = $user?->name ?? 'Crew';
-        $firstName = explode(' ', trim($userName))[0];
+        return self::CATEGORY_IMAGES[$key] ?? self::CATEGORY_IMAGES['umum'];
+    }
 
-        $applications = Application::query()
-            ->when(
-                $profile,
-                fn ($query) => $query->where(
-                    'volunteer_profile_id',
-                    $profile->id
-                ),
-                fn ($query) => $query->whereRaw('1 = 0')
-            );
+    public function index(): View
+    {
+        $authUser = auth()->user();
+        $firstName = explode(' ', $authUser->name)[0] ?? 'Crew';
+        $volunteerProfile = $authUser->volunteerProfile;
 
-        $activeApplicationsCount = (clone $applications)->count();
+        $activeApplicationsCount = 0;
+        $pendingReviewCount = 0;
+        $acceptedCount = 0;
 
-        $pendingReviewCount = (clone $applications)
-            ->where('status', 'pending')
-            ->count();
-
-        $acceptedCount = (clone $applications)
-            ->where('status', 'accepted')
-            ->count();
-
-        $categories = [
-            'Semua',
-            'Festival',
-            'Seminar',
-            'Sosial',
-            'Kampus',
-            'Komunitas',
-            'Olahraga',
-        ];
-
-        $eventsQuery = Event::query()
-            ->with(['category', 'organizer', 'positions'])
-            ->where('status', EventStatus::Active)
-            ->whereDate('registration_deadline', '>=', today())
-            ->whereHas('organizer', function ($query) {
-                $query->where(
-                    'verification_status',
-                    VerificationStatus::Verified
-                );
-            });
-
-        if ($request->filled('category')) {
-            $eventsQuery->whereHas('category', function ($query) use ($request) {
-                $query->where('slug', $request->input('category'));
-            });
+        if ($volunteerProfile !== null) {
+            $applications = $volunteerProfile->applications;
+            $activeApplicationsCount = $applications
+                ->whereNotIn('status', [ApplicationStatus::Withdrawn, ApplicationStatus::Rejected])
+                ->count();
+            $pendingReviewCount = $applications
+                ->where('status', ApplicationStatus::Pending)
+                ->count();
+            $acceptedCount = $applications
+                ->where('status', ApplicationStatus::Accepted)
+                ->count();
         }
 
-        $events = $eventsQuery
-            ->orderBy('start_date')
-            ->get();
+        $recommendedEvents = Cache::remember('crew_recommended_events', 30, function (): array {
+            $dbEvents = Event::query()
+                ->with(['category', 'organizer', 'positions'])
+                ->where('status', EventStatus::Active)
+                ->whereNotNull('published_at')
+                ->whereDate('registration_deadline', '>=', now()->toDateString())
+                ->latest('published_at')
+                ->take(8)
+                ->get();
 
-        $recommendedEvents = $events->map(function ($event) {
-            $categoryName = $event->category?->name ?? 'Lainnya';
+            return $dbEvents->map(function (Event $event): array {
+                $positionNames = $event->positions->pluck('name');
+                $positionsText = $positionNames->take(3)->implode(', ');
+                if ($positionNames->count() > 3) {
+                    $positionsText .= '... ('.$positionNames->count().' posisi)';
+                }
 
-            return [
-                'id' => $event->id,
-                'title' => $event->title,
-                'category' => $categoryName,
-                'filter_category' => $categoryName,
-                'organizer' => $event->organizer?->organization_name
-                    ?? 'Penyelenggara',
-                'is_verified' => true,
-                'status_badge' => 'Pendaftaran Buka',
-                'status_badge_type' => 'success',
-                'date' => $event->start_date
-                    ? $event->start_date->translatedFormat('d M Y')
-                    : '-',
-                'location' => $event->location ?: ($event->city ?? '-'),
-                'positions' => $event->positions
-                    ->pluck('name')
-                    ->filter()
-                    ->implode(', '),
-                'image' => $event->poster_path
-                    ? asset('storage/' . $event->poster_path)
-                    : asset('images/dashboard-crew/tech-summit.jpg'),
-                'is_active' => true,
-                'deadline' => $event->registration_deadline?->format('Y-m-d'),
-            ];
-        })->values()->all();
+                $startDate = $event->start_date?->translatedFormat('d M Y');
+                $endDate = $event->end_date?->translatedFormat('d M Y');
+                $dateFormatted = $endDate && $endDate !== $startDate
+                    ? $startDate.' – '.$endDate
+                    : ($startDate ?? '-');
+
+                $imageUrl = $event->poster_url;
+
+                $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
+
+                return [
+                    'id' => $event->id,
+                    'title' => $event->title,
+                    'category' => $event->category?->name ?? 'Umum',
+                    'filter_category' => strtolower($event->category?->name ?? 'umum'),
+                    'organizer' => $event->organizer?->organization_name ?? '-',
+                    'organizer_verified' => $isVerified,
+                    'location' => trim(($event->location ?? '').($event->city ? ', '.$event->city : ''), ', '),
+                    'date' => $dateFormatted,
+                    'status' => 'Open Volunteer',
+                    'status_badge_type' => 'success',
+                    'image' => $imageUrl,
+                    'positions_list' => $positionsText ?: 'Belum ada posisi',
+                ];
+            })->values()->all();
+        });
+
+        $categories = [
+            ['slug' => 'all', 'name' => 'Semua'],
+            ['slug' => 'festival', 'name' => 'Festival'],
+            ['slug' => 'seminar', 'name' => 'Seminar'],
+            ['slug' => 'musik', 'name' => 'Musik'],
+            ['slug' => 'olahraga', 'name' => 'Olahraga'],
+            ['slug' => 'sosial', 'name' => 'Sosial'],
+            ['slug' => 'kampus', 'name' => 'Kampus'],
+            ['slug' => 'komunitas', 'name' => 'Komunitas'],
+        ];
 
         return view('crew.dashboard', compact(
-            'user',
-            'profile',
             'firstName',
+            'recommendedEvents',
             'activeApplicationsCount',
-            'pendingReviewCount',
             'acceptedCount',
-            'categories',
-            'recommendedEvents'
+            'pendingReviewCount',
+            'categories'
         ));
     }
 }

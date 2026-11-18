@@ -10,6 +10,7 @@ use App\Models\Report;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -38,17 +39,20 @@ class ReportController extends Controller
 
         // Filter Pencarian
         if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('ticket_number', 'like', "%{$search}%")
-                    ->orWhere('reason', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhereHas('reporter', function ($rq) use ($search) {
-                        $rq->where('name', 'like', "%{$search}%")
-                            ->orWhere('email', 'like', "%{$search}%");
+            $cleanSearch = ltrim($search, '#');
+            $query->where(function ($q) use ($search, $cleanSearch) {
+                $operator = $q->getConnection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
+                $q->where('ticket_number', $operator, "%{$cleanSearch}%")
+                    ->orWhere('ticket_number', $operator, "%{$search}%")
+                    ->orWhere('reason', $operator, "%{$search}%")
+                    ->orWhere('description', $operator, "%{$search}%")
+                    ->orWhereHas('reporter', function ($rq) use ($search, $operator) {
+                        $rq->where('name', $operator, "%{$search}%")
+                            ->orWhere('email', $operator, "%{$search}%");
                     })
-                    ->orWhereHas('reported', function ($tq) use ($search) {
-                        $tq->where('name', 'like', "%{$search}%")
-                            ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhereHas('reported', function ($tq) use ($search, $operator) {
+                        $tq->where('name', $operator, "%{$search}%")
+                            ->orWhere('email', $operator, "%{$search}%");
                     });
             });
         }
@@ -97,7 +101,8 @@ class ReportController extends Controller
                 },
                 'action_taken' => $report->action_taken,
                 'admin_notes' => $report->admin_notes,
-                'evidence_url' => $report->evidence_path ? Storage::url($report->evidence_path) : null,
+                'evidence_url' => $report->evidence_url,
+                'evidence_is_image' => $report->evidence_is_image,
                 'created_at' => $report->created_at->translatedFormat('d F Y, H:i'),
                 'resolved_at' => $report->resolved_at?->translatedFormat('d F Y, H:i'),
                 'resolved_by' => $report->resolvedBy?->name,
@@ -195,6 +200,8 @@ class ReportController extends Controller
 
             $report->save();
         });
+
+        Cache::forget('admin_dashboard_stats_'.(int) $request->user()?->id);
 
         $message = "Tindakan pada laporan #{$report->ticket_number} berhasil diproses.";
 

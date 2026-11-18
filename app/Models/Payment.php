@@ -12,7 +12,8 @@ class Payment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'event_id', 'invoice_number', 'midtrans_order_id', 'snap_token',
+        'event_id', 'package_name', 'package_duration_days',
+        'invoice_number', 'midtrans_order_id', 'snap_token',
         'transaction_id', 'payment_type', 'amount', 'status',
         'paid_at', 'expired_at', 'payload',
     ];

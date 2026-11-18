@@ -49,7 +49,7 @@
         <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">
             Selamat Datang, {{ auth()->user()->name }} 👋
         </h1>
-        <p class="mt-1 text-gray-500">Kelola rekrutmen relawan, seleksi kru, dan kelancaran publikasi event Anda.</p>
+        <p class="mt-1 text-gray-500">Kelola rekrutmen Crew, seleksi Crew, dan kelancaran publikasi event Anda.</p>
     </div>
 
     {{-- No Organizer Profile Warning --}}
@@ -64,7 +64,7 @@
     @endif
 
     {{-- Stats Cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <x-card padding="p-5">
             <p class="text-xs text-gray-500 mb-1">Total Event</p>
             <p class="text-3xl font-bold text-gray-900">{{ $totalEvents }}</p>
@@ -95,6 +95,17 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 Dalam antrian review
+            </div>
+        </x-card>
+
+        <x-card padding="p-5">
+            <p class="text-xs text-gray-500 mb-1">Menunggu Pembayaran</p>
+            <p class="text-3xl font-bold text-orange-500">{{ $awaitingPaymentCount }}</p>
+            <div class="mt-2 flex items-center gap-1.5 text-xs text-gray-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                Perlu pembayaran
             </div>
         </x-card>
 
@@ -176,7 +187,7 @@
                             {{-- Poster --}}
                             <div class="w-28 sm:w-36 shrink-0 bg-gray-100 rounded-l-xl overflow-hidden">
                                 @if ($event->poster_path)
-                                    <img src="{{ Storage::url($event->poster_path) }}"
+                                    <img src="{{ $event->poster_url }}"
                                          alt="Poster {{ $event->title }}"
                                          class="w-full h-full object-cover">
                                 @else
@@ -229,6 +240,15 @@
                                         <a href="{{ route('eo.events.edit', $event) }}"
                                            class="text-xs px-3 py-1.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors">
                                             Kelola Event
+                                        </a>
+                                    @elseif ($event->status->value === 'awaiting_payment' && Route::has('eo.billing.index'))
+                                        <a href="{{ route('eo.billing.index', ['event_id' => $event->id]) }}"
+                                           class="text-xs px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
+                                            Bayar Sekarang
+                                        </a>
+                                        <a href="{{ route('eo.events.edit', $event) }}"
+                                           class="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                                            Lihat Detail
                                         </a>
                                     @else
                                         <a href="{{ route('eo.events.edit', $event) }}"

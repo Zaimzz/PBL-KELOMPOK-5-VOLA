@@ -3,120 +3,221 @@
 namespace App\Http\Controllers\Crew;
 
 use App\Http\Controllers\Controller;
+use App\Models\Application;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class HistoryController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $histories = [
-            [
-                'id' => 1,
-                'event_title' => 'Java Jazz Festival 2024',
-                'organizer' => 'PT Java Festival Production',
-                'position' => 'Liaison Officer (LO) Artis Internasional',
-                'date' => '24 – 26 Mei 2024',
-                'location' => 'JIExpo Kemayoran, Jakarta',
-                'category' => 'Musik & Festival',
-                'status' => 'completed',
-                'status_label' => 'Selesai',
-                'certificate_url' => '#',
-            ],
-            [
-                'id' => 2,
-                'event_title' => 'Bandung Creative Tech Summit 2024',
-                'organizer' => 'Bandung Digital Hub & Diskominfo Jabar',
-                'position' => 'Usher & FoH Coordinator',
-                'date' => '12 – 13 Oktober 2024',
-                'location' => 'Sasana Budaya Ganesha (Sabuga), Bandung',
-                'category' => 'Konferensi & Teknologi',
-                'status' => 'completed',
-                'status_label' => 'Selesai',
-                'certificate_url' => '#',
-            ],
-            [
-                'id' => 3,
-                'event_title' => 'Jakarta Marathon 2024',
-                'organizer' => 'Yayasan Bumi Lestari & PASI',
-                'position' => 'Water Station & Medical Marshal',
-                'date' => '18 Agustus 2024',
-                'location' => 'GBK Senayan, Jakarta',
-                'category' => 'Sosial & Olahraga',
-                'status' => 'completed',
-                'status_label' => 'Selesai',
-                'certificate_url' => '#',
-            ],
-            [
-                'id' => 4,
-                'event_title' => 'Indonesia Comic Con 2023',
-                'organizer' => 'Panorama Media',
-                'position' => 'Ticketing & Registration Crew',
-                'date' => '4 – 5 November 2023',
-                'location' => 'Jakarta Convention Center (JCC)',
-                'category' => 'Musik & Festival',
-                'status' => 'completed',
-                'status_label' => 'Selesai',
-                'certificate_url' => '#',
-            ],
-            [
-                'id' => 5,
-                'event_title' => 'Surabaya Music Fest 2023',
-                'organizer' => 'East Java Entertainment',
-                'position' => 'Stage Crew & Sound Assistant',
-                'date' => '15 – 17 September 2023',
-                'location' => 'Grand City Convention Hall, Surabaya',
-                'category' => 'Musik & Festival',
-                'status' => 'completed',
-                'status_label' => 'Selesai',
-                'certificate_url' => '#',
-            ],
-            [
-                'id' => 6,
-                'event_title' => 'AI & Future Tech Conference 2023',
-                'organizer' => 'Nusantara Tech Community',
-                'position' => 'Registration & Info Desk',
-                'date' => '20 – 21 Juli 2023',
-                'location' => 'Menara Mandiri, Jakarta',
-                'category' => 'Konferensi & Teknologi',
-                'status' => 'completed',
-                'status_label' => 'Selesai',
-                'certificate_url' => '#',
-            ],
-            [
-                'id' => 7,
-                'event_title' => 'Green Earth Run 2023',
-                'organizer' => 'Yayasan Hijau Indonesia',
-                'position' => 'Route Marshal & First Aid',
-                'date' => '5 Juni 2023',
-                'location' => 'Taman Monas, Jakarta',
-                'category' => 'Sosial & Olahraga',
-                'status' => 'completed',
-                'status_label' => 'Selesai',
-                'certificate_url' => '#',
-            ],
-            [
-                'id' => 8,
-                'event_title' => 'Startup Summit Indonesia 2023',
-                'organizer' => 'Indonesia Startup Forum',
-                'position' => 'VIP Handler & Documentation',
-                'date' => '10 – 12 Maret 2023',
-                'location' => 'ICE BSD, Tangerang',
-                'category' => 'Konferensi & Teknologi',
-                'status' => 'completed',
-                'status_label' => 'Selesai',
-                'certificate_url' => '#',
-            ],
+        $user = Auth::user();
+        $profile = $user?->volunteerProfile;
+
+        if (! $profile) {
+            return view('crew.history', [
+                'paginatedHistories' => collect([]),
+                'counts' => ['all' => 0, 'festival' => 0, 'seminar' => 0, 'sosial' => 0, 'kampus' => 0, 'komunitas' => 0, 'olahraga' => 0, 'musik' => 0],
+                'totalCertificates' => 0,
+                'activeCategory' => $request->input('category', 'all'),
+                'totalPages' => 0,
+                'currentPage' => 1,
+            ]);
+        }
+
+        $activeCategory = $request->input('category', 'all');
+
+        $query = Application::where('volunteer_profile_id', $profile->id)
+            ->whereIn('status', ['accepted', 'rejected'])
+            ->with(['position.event.category', 'position.event.organizer']);
+
+        if ($activeCategory !== 'all') {
+            $query->whereHas('position.event.category', function ($q) use ($activeCategory) {
+
+                $q->where('name', $activeCategory);
+            });
+        }
+
+        [$counts, $totalCertificates] = Cache::remember('crew_history_counts_'.$profile->id, 60, function () use ($profile): array {
+            $totalCertificates = Application::where('volunteer_profile_id', $profile->id)
+                ->where('status', 'accepted')
+                ->count();
+
+            $baseQueryAll = Application::where('volunteer_profile_id', $profile->id)
+                ->whereIn('status', ['accepted', 'rejected']);
+
+            $counts = [
+                'all' => (clone $baseQueryAll)->count(),
+                'festival' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Festival'))->count(),
+                'seminar' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Seminar'))->count(),
+                'sosial' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Sosial'))->count(),
+                'kampus' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Kampus'))->count(),
+                'komunitas' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Komunitas'))->count(),
+                'olahraga' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Olahraga'))->count(),
+                'musik' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Musik'))->count(),
+            ];
+
+            return [$counts, $totalCertificates];
+        });
+
+        $perPage = 4;
+        $paginatedApps = $query->orderByDesc('applied_at')->paginate($perPage);
+
+        $histories = $paginatedApps->getCollection()->map(function ($app) {
+            $event = $app->position?->event;
+
+            $startDate = $event?->start_date?->translatedFormat('d M Y');
+            $endDate = $event?->end_date?->translatedFormat('d M Y');
+            $dateFormatted = $startDate;
+            if ($endDate && $endDate !== $startDate) {
+                $dateFormatted .= ' – '.$endDate;
+            }
+
+            $location = trim(($event?->location ?? '').', '.($event?->city ?? ''));
+
+            return [
+                'id' => $app->id,
+                'event_id' => $event?->id,
+                'organizer_user_id' => $event?->organizer?->user_id,
+                'event_title' => $event?->title ?? 'Event Tidak Ditemukan',
+                'organizer' => $event?->organizer?->organization_name ?? '-',
+                'position' => $app->position?->name ?? '-',
+                'date' => $dateFormatted ?: '-',
+                'location' => $location ?: '-',
+                'category' => $event?->category?->name ?? 'Umum',
+                'hours' => 0,
+                'status_label' => $app->status === 'accepted' ? 'Selesai' : 'Ditolak',
+                'status' => $app->status,
+            ];
+        });
+
+        $result = new LengthAwarePaginator(
+            $histories,
+            $paginatedApps->total(),
+            $perPage,
+            $paginatedApps->currentPage(),
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        return view('crew.history', [
+            'paginatedHistories' => $result,
+            'counts' => $counts,
+            'totalCertificates' => $totalCertificates,
+            'activeCategory' => $activeCategory,
+            'totalPages' => $result->lastPage(),
+            'currentPage' => $result->currentPage(),
+            'perPage' => $perPage,
+        ]);
+    }
+
+    public function downloadCertificate(int $id)
+    {
+        $user = Auth::user();
+        $profile = $user?->volunteerProfile;
+
+        if (! $profile) {
+            abort(403);
+        }
+
+        $app = Application::where('volunteer_profile_id', $profile->id)
+            ->where('id', $id)
+            ->with(['position.event.category', 'position.event.organizer'])
+            ->firstOrFail();
+
+        $event = $app->position?->event;
+
+        if (! $event || $app->status !== 'accepted') {
+            abort(404, 'Sertifikat tidak tersedia untuk lamaran ini.');
+        }
+
+        $displayName = $user->name ?? 'Volunteer';
+
+        $startDate = $event->start_date?->translatedFormat('d M Y');
+        $endDate = $event->end_date?->translatedFormat('d M Y');
+        $dateFormatted = $startDate;
+        if ($endDate && $endDate !== $startDate) {
+            $dateFormatted .= ' – '.$endDate;
+        }
+
+        $eventData = [
+            'id' => $app->id,
+            'event_title' => $event->title,
+            'organizer' => $event->organizer?->organization_name ?? '-',
+            'position' => $app->position?->name ?? '-',
+            'location' => trim(($event->location ?? '').', '.($event->city ?? '')),
+            'date' => $dateFormatted,
+            'category' => $event->category?->name ?? 'Umum',
         ];
 
-        $counts = [
-            'all' => count($histories),
-            'musik' => count(array_filter($histories, fn($h) => $h['category'] === 'Musik & Festival')),
-            'tech' => count(array_filter($histories, fn($h) => $h['category'] === 'Konferensi & Teknologi')),
-            'olahraga' => count(array_filter($histories, fn($h) => $h['category'] === 'Sosial & Olahraga')),
-        ];
+        $pdf = Pdf::loadView('crew.certificate-pdf', compact('eventData', 'displayName'));
+        $pdf->setPaper('A4', 'landscape');
 
-        $totalCertificates = count($histories);
+        $filename = 'Sertifikat-'.str_replace(' ', '-', $event->title).'-'.str_replace(' ', '-', $displayName).'.pdf';
 
-        return view('crew.history', compact('histories', 'counts', 'totalCertificates'));
+        return $pdf->download($filename);
+    }
+
+    public function downloadPdf()
+    {
+        $user = Auth::user();
+        $profile = $user?->volunteerProfile;
+
+        if (! $profile) {
+            abort(403);
+        }
+
+        $apps = Application::where('volunteer_profile_id', $profile->id)
+            ->whereIn('status', ['accepted', 'rejected'])
+            ->with(['position.event.category', 'position.event.organizer'])
+            ->orderByDesc('applied_at')
+            ->get();
+
+        $displayName = $user->name ?? 'Volunteer';
+        $displayEmail = $user->email ?? '-';
+        $displayCity = $user->city ?? '-';
+
+        $totalEvents = $apps->count();
+        $totalHours = 0;
+        $totalCategories = $apps->pluck('position.event.category.name')->unique()->filter()->count();
+
+        $histories = $apps->map(function ($app) {
+            $event = $app->position?->event;
+            $startDate = $event?->start_date?->translatedFormat('d M Y');
+            $endDate = $event?->end_date?->translatedFormat('d M Y');
+            $dateFormatted = $startDate;
+            if ($endDate && $endDate !== $startDate) {
+                $dateFormatted .= ' – '.$endDate;
+            }
+
+            return [
+                'event_title' => $event?->title ?? '-',
+                'organizer' => $event?->organizer?->organization_name ?? '-',
+                'position' => $app->position?->name ?? '-',
+                'date' => $dateFormatted ?: '-',
+                'location' => trim(($event?->location ?? '').', '.($event?->city ?? '')),
+                'category' => $event?->category?->name ?? 'Umum',
+                'hours' => 0,
+                'status_label' => $app->status === 'accepted' ? 'Selesai' : 'Ditolak',
+            ];
+        });
+
+        $pdf = Pdf::loadView('crew.history-pdf', compact(
+            'displayName',
+            'displayEmail',
+            'displayCity',
+            'totalEvents',
+            'totalHours',
+            'totalCategories',
+            'histories'
+        ));
+
+        $pdf->setPaper('A4', 'portrait');
+        $filename = 'Riwayat-Pengalaman-'.str_replace(' ', '-', $displayName).'.pdf';
+
+        return $pdf->download($filename);
     }
 }

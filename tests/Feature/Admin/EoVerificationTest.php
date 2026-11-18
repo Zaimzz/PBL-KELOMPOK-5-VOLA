@@ -143,6 +143,25 @@ class EoVerificationTest extends TestCase
         $response->assertStatus(403);
     }
 
+    public function test_admin_can_preview_document_inline_and_download_with_param()
+    {
+        Storage::fake('public');
+        $file = UploadedFile::fake()->createWithContent('document.pdf', "%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF");
+        $path = $file->store('organizer-documents', 'public');
+
+        $this->profile->update(['document_path' => $path]);
+
+        // Preview inline (tanpa ?download=1)
+        $previewResponse = $this->actingAs($this->admin)->get(route('admin.eo-verifications.document', $this->profile));
+        $previewResponse->assertStatus(200);
+        $this->assertStringContainsString('inline', (string) $previewResponse->headers->get('content-disposition', 'inline'));
+
+        // Download attachment (dengan ?download=1)
+        $downloadResponse = $this->actingAs($this->admin)->get(route('admin.eo-verifications.document', ['organizer' => $this->profile, 'download' => 1]));
+        $downloadResponse->assertStatus(200);
+        $this->assertStringContainsString('attachment', (string) $downloadResponse->headers->get('content-disposition'));
+    }
+
     public function test_admin_can_download_document_if_exists()
     {
         Storage::fake('local');

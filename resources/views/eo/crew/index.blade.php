@@ -18,7 +18,7 @@
                 </svg>
             </div>
             <h2 class="text-xl font-semibold text-gray-900 mb-2">Profil Organisasi Diperlukan</h2>
-            <p class="text-gray-500 max-w-sm mx-auto mb-6">Lengkapi profil organisasi Anda untuk mulai mengelola crew event.</p>
+            <p class="text-gray-500 max-w-sm mx-auto mb-6">Lengkapi profil organisasi Anda untuk mulai mengelola Crew event.</p>
             <a href="{{ route('eo.organization') }}"
                class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
                 Lengkapi Profil
@@ -30,8 +30,8 @@
     ================================================================ --}}
     @elseif ($events->isEmpty())
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">Koordinasi Crew &amp; Relawan Diterima</h1>
-            <p class="text-gray-500 mt-1">Daftar resmi relawan yang telah lolos seleksi. Hubungi dan koordinasikan jadwal.</p>
+            <h1 class="text-2xl font-bold text-gray-900">Koordinasi Crew Diterima</h1>
+            <p class="text-gray-500 mt-1">Daftar resmi Crew yang telah lolos seleksi. Hubungi dan koordinasikan jadwal.</p>
         </div>
         <x-card>
             <div class="text-center py-16">
@@ -41,7 +41,7 @@
                     </svg>
                 </div>
                 <h2 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Event</h2>
-                <p class="text-gray-500 max-w-sm mx-auto mb-6">Buat event terlebih dahulu agar volunteer dapat mendaftar dan crew dapat dikelola di sini.</p>
+                <p class="text-gray-500 max-w-sm mx-auto mb-6">Buat event terlebih dahulu agar Crew dapat mendaftar dan Crew dapat dikelola di sini.</p>
                 <a href="{{ route('eo.events.create') }}"
                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,9 +61,9 @@
         <div class="mb-6">
             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Koordinasi Crew &amp; Relawan Diterima</h1>
+                    <h1 class="text-2xl font-bold text-gray-900">Koordinasi Crew Diterima</h1>
                     <p class="text-gray-500 mt-1">
-                        Daftar resmi relawan yang telah lolos seleksi. Hubungi dan koordinasikan jadwal.
+                        Daftar resmi Crew yang telah lolos seleksi. Hubungi dan koordinasikan jadwal.
                         @if ($selectedEvent)
                             Event: <span class="font-semibold text-gray-700">{{ $selectedEvent->title }}</span>
                         @endif
@@ -105,9 +105,9 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Total Relawan Diterima</p>
+                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Total Crew Diterima</p>
                         <p class="text-3xl font-bold text-gray-900">{{ number_format($totalAccepted) }}</p>
-                        <p class="text-xs text-gray-400">Relawan</p>
+                        <p class="text-xs text-gray-400">Crew</p>
                     </div>
                 </div>
 
@@ -150,7 +150,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                             </svg>
-                            Unduh Data Relawan (CSV)
+                            Unduh Data Crew (CSV)
                         </a>
                     @else
                         <button disabled
@@ -158,7 +158,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                             </svg>
-                            Unduh Data Relawan (CSV)
+                            Unduh Data Crew (CSV)
                         </button>
                     @endif
                 </div>
@@ -188,7 +188,7 @@
         @endif
 
         {{-- ================================================================
-             STATE 3a: Belum ada crew yang diterima (no accepted yet)
+             STATE 3a: Belum ada Crew yang diterima (no accepted yet)
         ================================================================ --}}
         @if ($crewByPosition->isEmpty())
             <x-card>
@@ -202,7 +202,7 @@
                         </div>
                         <h3 class="text-xl font-semibold text-gray-900 mb-2">Tidak Ada Crew pada Divisi Ini</h3>
                         <p class="text-gray-500 max-w-sm mx-auto mb-6">
-                            Belum ada relawan yang diterima untuk divisi yang dipilih.
+                            Belum ada Crew yang diterima untuk divisi yang dipilih.
                         </p>
                         <a href="{{ route('eo.crew.index', array_filter(['event_id' => $selectedEvent?->id])) }}"
                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
@@ -223,7 +223,7 @@
                         </div>
                         <h3 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Crew yang Diterima</h3>
                         <p class="text-gray-500 max-w-sm mx-auto mb-6">
-                            Volunteer yang berhasil lolos seleksi untuk event ini akan muncul di halaman Koordinasi Crew.
+                            Crew yang berhasil lolos seleksi untuk event ini akan muncul di halaman Koordinasi Crew.
                         </p>
                         <a href="{{ route('eo.applicants.index', array_filter(['event_id' => $selectedEvent?->id])) }}"
                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
@@ -268,7 +268,7 @@
                             <span class="w-2 h-2 rounded-full bg-brand-500 inline-block"></span>
                             <h2 class="text-base font-semibold text-gray-900">
                                 {{ $position?->name ?? 'Posisi Tidak Diketahui' }}
-                                <span class="text-gray-400 font-normal text-sm">— {{ $acceptedInPos }} Relawan Diterima</span>
+                                <span class="text-gray-400 font-normal text-sm">— {{ $acceptedInPos }} Crew Diterima</span>
                             </h2>
                         </div>
                         @if ($quota !== null)

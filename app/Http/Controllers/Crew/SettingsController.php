@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Crew;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class SettingsController extends Controller
@@ -12,77 +14,43 @@ class SettingsController extends Controller
     public function index(): View
     {
         $user = Auth::user();
-        $profile = $user->volunteerProfile;
 
-        $availableCategories = [
-            ['id' => 'festival', 'name' => 'Festival & Seni'],
-            ['id' => 'seminar', 'name' => 'Seminar & Teknologi'],
-            ['id' => 'kepanitiaan', 'name' => 'Kepanitiaan Kampus'],
-            ['id' => 'sosial', 'name' => 'Kegiatan Sosial'],
-            ['id' => 'olahraga', 'name' => 'Olahraga & Marathon'],
-            ['id' => 'musik', 'name' => 'Musik & Konser'],
-        ];
-
-        // Ambil skills dengan aman
-        $rawSkills = $profile?->skills;
-        if (is_array($rawSkills)) {
-            $selectedSkills = $rawSkills;
-        } elseif (is_string($rawSkills)) {
-            $decoded = json_decode($rawSkills, true);
-            $selectedSkills = is_array($decoded) ? $decoded : [];
-        } else {
-            $selectedSkills = [];
-        }
-
-        $preferredCity = $profile?->city ?? '';
-
-        return view('crew.settings', compact(
-            'user',
-            'availableCategories',
-            'selectedSkills',
-            'preferredCity'
-        ));
+        return view('crew.settings', compact('user'));
     }
 
-    public function updateProfile(Request $request)
+    public function updateEmail(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|unique:users,email,'.Auth::id(),
-            'phone' => 'nullable|string|max:20',
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.Auth::id()],
         ]);
 
-        $user = Auth::user();
-        $user->update($request->only('email', 'phone'));
+        Auth::user()->update(['email' => $request->email]);
 
-        return back()->with('status', 'Profil berhasil diperbarui.');
+        return back()->with('status', 'Alamat email berhasil diperbarui.');
     }
 
-    public function updatePreferences(Request $request)
+    public function updatePhone(Request $request)
     {
         $request->validate([
-            'skills' => 'nullable|array',
-            'skills.*' => 'string',
-            'city' => 'nullable|string|max:255',
+            'phone' => ['required', 'string', 'max:20'],
         ]);
 
-        $user = Auth::user();
-        $skillsData = $request->input('skills', []);
-        $cityData = $request->input('city');
+        Auth::user()->update(['phone' => $request->phone]);
 
-        $profile = $user->volunteerProfile;
+        return back()->with('status', 'Nomor WhatsApp berhasil diperbarui.');
+    }
 
-        if ($profile) {
-            $profile->update([
-                'skills' => $skillsData,
-                'city' => $cityData,
-            ]);
-        } else {
-            $user->volunteerProfile()->create([
-                'skills' => $skillsData,
-                'city' => $cityData,
-            ]);
-        }
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', Password::defaults(), 'confirmed'],
+        ]);
 
-        return back()->with('preferences_saved', true);
+        Auth::user()->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return back()->with('status', 'Kata sandi berhasil diperbarui.');
     }
 }

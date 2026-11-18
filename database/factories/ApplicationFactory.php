@@ -47,4 +47,13 @@ class ApplicationFactory extends Factory
             'decision_note' => 'Kuota posisi sudah terpenuhi.',
         ]);
     }
+
+    public function withdrawn(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => ApplicationStatus::Withdrawn,
+            'decided_at' => null,
+            'decision_note' => 'Dibatalkan oleh pemohon.',
+        ]);
+    }
 }

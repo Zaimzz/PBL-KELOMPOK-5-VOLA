@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <div class="w-full bg-white/90 backdrop-blur-xl rounded-[28px] shadow-[0_20px_50px_rgba(69,52,230,0.08)] hover:shadow-[0_25px_60px_rgba(69,52,230,0.12)] p-7 sm:p-10 z-10 border border-white/80 transition-all duration-300 animate-card-entry">
+    <div class="w-full bg-white/90 backdrop-blur-xl rounded-[28px] shadow-[0_20px_50px_rgba(69,52,230,0.08)] hover:shadow-[0_25px_60px_rgba(69,52,230,0.12)] p-6 sm:p-10 z-10 border border-white/80 transition-all duration-300 animate-card-entry">
         
         <div class="flex justify-center mb-5 animate-stagger-item delay-50">
             <div class="flex items-center justify-center w-14 h-14 bg-indigo-50/90 rounded-2xl text-[#4534E6] shadow-sm border border-indigo-100/50">
@@ -13,30 +13,31 @@
         </div>
 
         <div class="text-center mb-7 animate-stagger-item delay-100">
-            <h2 class="text-[26px] sm:text-[28px] font-bold text-gray-900 tracking-tight">Lupa Kata Sandi?</h2>
-            <p class="mt-1.5 text-sm text-gray-500 font-medium px-4">Masukkan email terdaftar dan buat kata sandi baru untuk akunmu.</p>
+            <h2 class="text-2xl sm:text-[28px] font-bold text-gray-900 tracking-tight">Lupa Kata Sandi?</h2>
+            <p class="mt-1.5 text-sm text-gray-500 font-medium px-2 sm:px-4">Masukkan email terdaftar dan buat kata sandi baru untuk akunmu.</p>
         </div>
 
         <!-- Session Status -->
-        <x-auth-session-status class="bg-emerald-50 border border-emerald-200 text-emerald-600 px-4 py-3 rounded-xl text-sm text-center mb-6 font-medium animate-stagger-item delay-100" :status="session('status')" />
+        <x-auth-session-status class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-sm text-center mb-6 font-medium animate-stagger-item delay-100" :status="session('status')" />
 
         <form method="POST" action="{{ route('password.email') }}" class="space-y-5" x-data="{ 
-            role: '{{ old('role', 'volunteer') }}',
-            email: '{{ old('email') }}',
+            role: @js(old('role', 'volunteer')),
+            email: @js(old('email', '')),
             isSubmitting: false,
             errors: {
-                role: '{{ $errors->first('role') }}',
-                email: '{{ $errors->first('email') }}'
+                role: @js($errors->first('role')),
+                email: @js($errors->first('email'))
             },
             validate() {
+                this.errors.role = '';
                 this.errors.email = '';
                 
                 let isValid = true;
                 
-                if (!this.email) {
+                if (!this.email || !this.email.trim()) {
                     this.errors.email = 'Email wajib diisi.';
                     isValid = false;
-                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim())) {
                     this.errors.email = 'Format email tidak valid.';
                     isValid = false;
                 }
@@ -44,10 +45,16 @@
                 return isValid;
             },
             handleForgotSubmit(event) {
+                if (this.isSubmitting) {
+                    event.preventDefault();
+                    return;
+                }
+
                 if (!this.validate()) {
                     event.preventDefault();
                     return;
                 }
+
                 this.isSubmitting = true;
             }
         }" @submit="handleForgotSubmit($event)" novalidate>
@@ -65,10 +72,10 @@
 
                     <!-- Crew -->
                     <label class="relative z-10 flex-1 cursor-pointer select-none">
-                        <input type="radio" name="role" value="volunteer" x-model="role" class="sr-only" {{ old('role', 'volunteer') === 'volunteer' ? 'checked' : '' }}>
-                        <div class="flex items-center justify-center py-2.5 px-3 rounded-xl transition-all duration-200"
+                        <input type="radio" name="role" value="volunteer" x-model="role" @change="errors.role = ''; errors.email = ''" class="sr-only" {{ old('role', 'volunteer') === 'volunteer' ? 'checked' : '' }}>
+                        <div class="flex items-center justify-center py-2.5 px-2 sm:px-3 rounded-xl transition-all duration-200"
                              :class="role === 'volunteer' ? 'text-indigo-600 font-semibold' : 'text-gray-500 hover:text-gray-800 font-medium'">
-                            <svg class="w-4 h-4 mr-2 transition-transform duration-200" :class="role === 'volunteer' ? 'scale-110 text-indigo-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 mr-1.5 sm:mr-2 shrink-0 transition-transform duration-200" :class="role === 'volunteer' ? 'scale-110 text-indigo-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
                             <span class="text-xs">Crew</span>
@@ -77,13 +84,13 @@
 
                     <!-- EO -->
                     <label class="relative z-10 flex-1 cursor-pointer select-none">
-                        <input type="radio" name="role" value="eo" x-model="role" class="sr-only" {{ old('role') === 'eo' ? 'checked' : '' }}>
-                        <div class="flex items-center justify-center py-2.5 px-3 rounded-xl transition-all duration-200"
+                        <input type="radio" name="role" value="eo" x-model="role" @change="errors.role = ''; errors.email = ''" class="sr-only" {{ old('role') === 'eo' ? 'checked' : '' }}>
+                        <div class="flex items-center justify-center py-2.5 px-2 sm:px-3 rounded-xl transition-all duration-200"
                              :class="role === 'eo' ? 'text-indigo-600 font-semibold' : 'text-gray-500 hover:text-gray-800 font-medium'">
-                            <svg class="w-4 h-4 mr-2 transition-transform duration-200" :class="role === 'eo' ? 'scale-110 text-indigo-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 mr-1.5 sm:mr-2 shrink-0 transition-transform duration-200" :class="role === 'eo' ? 'scale-110 text-indigo-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
                             </svg>
-                            <span class="text-xs whitespace-nowrap">Event Organizer</span>
+                            <span class="text-xs truncate">Event Organizer</span>
                         </div>
                     </label>
                 </div>

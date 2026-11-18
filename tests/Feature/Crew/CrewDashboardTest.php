@@ -48,7 +48,6 @@ class CrewDashboardTest extends TestCase
         Application::factory()->create(['volunteer_profile_id' => $profile->id, 'position_id' => $positions[1]->id, 'status' => 'pending']);
         Application::factory()->create(['volunteer_profile_id' => $profile->id, 'position_id' => $positions[2]->id, 'status' => 'accepted']);
 
-        // Lamaran volunteer lain tidak boleh ikut terhitung
         Application::factory()->create(['volunteer_profile_id' => $otherProfile->id, 'position_id' => $positions[0]->id, 'status' => 'accepted']);
 
         $this->actingAs($user)->get('/dashboard')

@@ -141,6 +141,7 @@ test('gagal update profil tanpa nama organisasi', function () {
 
 test('eo bisa upload dokumen legal yang valid (PDF)', function () {
     Storage::fake('local');
+    Storage::fake('public');
 
     $eo = User::factory()->eo()->create();
 
@@ -158,7 +159,7 @@ test('eo bisa upload dokumen legal yang valid (PDF)', function () {
 
     $profile = $eo->fresh()->organizerProfile;
     $this->assertNotNull($profile->document_path);
-    Storage::disk('local')->assertExists($profile->document_path);
+    Storage::disk('public')->assertExists($profile->document_path);
 });
 
 test('eo bisa upload dokumen legal yang valid (JPG)', function () {
@@ -417,15 +418,17 @@ test('eo dengan status rejected tidak bisa submit event', function () {
 test('eo tanpa profil sama sekali tidak bisa submit event', function () {
     $eo = User::factory()->eo()->create(); // tanpa profil
 
-    // Buat event milik profil lain — EventPolicy akan return 403
     $otherProfile = OrganizerProfile::factory()->create();
 
     $event = Event::factory()
         ->for($otherProfile, 'organizer')
         ->create(['status' => EventStatus::Draft]);
 
-    // EO tanpa profil tidak punya relasi ke event ini → EventPolicy 403
+    // Middleware eo.verified mencegat lebih dulu → redirect ke dashboard dengan error
     $this->actingAs($eo)
         ->post(route('eo.events.submit', $event))
-        ->assertForbidden();
+        ->assertRedirect(route('eo.dashboard'))
+        ->assertSessionHas('error');
+
+    expect($event->fresh()->status)->toBe(EventStatus::Draft);
 });

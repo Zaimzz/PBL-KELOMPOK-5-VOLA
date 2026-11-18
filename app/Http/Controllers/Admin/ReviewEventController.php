@@ -9,7 +9,7 @@ use App\Models\Event;
 use App\Notifications\EventApprovedNotification;
 use App\Notifications\EventRejectedNotification;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class ReviewEventController extends Controller
 {
@@ -20,51 +20,61 @@ class ReviewEventController extends Controller
     {
         $query = Event::with(['organizer.user', 'category', 'positions']);
 
-        // Search by event title or organizer/pic name
+        // Search by event title, location, organizer/pic name, category
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $operator = $q->getConnection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
                 $q->where('title', $operator, '%'.$search.'%')
+                    ->orWhere('city', $operator, '%'.$search.'%')
+                    ->orWhere('location', $operator, '%'.$search.'%')
+                    ->orWhere('pic_name', $operator, '%'.$search.'%')
                     ->orWhereHas('organizer', function ($oq) use ($search, $operator) {
                         $oq->where('organization_name', $operator, '%'.$search.'%')
-                            ->orWhere('pic_name', $operator, '%'.$search.'%');
+                            ->orWhere('pic_name', $operator, '%'.$search.'%')
+                            ->orWhere('city', $operator, '%'.$search.'%');
+                    })
+                    ->orWhereHas('category', function ($cq) use ($search, $operator) {
+                        $cq->where('name', $operator, '%'.$search.'%');
                     });
             });
         }
 
-        // PERBAIKAN: Batasi ruang lingkup hanya untuk event di tahap kurasi
+        // Ruang lingkup untuk event di tahap kurasi & pasca-kurasi
         $curationStatuses = [
             EventStatus::PendingReview,
+            EventStatus::AwaitingPayment,
             EventStatus::Active,
             EventStatus::Rejected,
-            // EventStatus::AwaitingPayment // Buka komentar ini jika status ini dianggap masuk panel kurasi
         ];
 
-        // Status filter
-        if ($request->filled('status')) {
-            if ($request->status === 'all') {
-                // Jangan biarkan kosong. Kunci query HANYA pada status kurasi.
-                $query->whereIn('status', $curationStatuses);
-            } else {
-                $query->where('status', $request->status);
-            }
-        } else {
-            // Default queue shows pending review events
+        // Status filter (default: 'all')
+        $status = $request->input('status', 'all');
+
+        if ($status === 'all' || blank($status)) {
+            $query->whereIn('status', $curationStatuses);
+        } elseif ($status === 'active' || $status === 'approved') {
+            // Event disetujui mencakup yang siap tayang maupun yang sedang menunggu pembayaran EO
+            $query->whereIn('status', [EventStatus::Active, EventStatus::AwaitingPayment]);
+        } elseif ($status === 'pending_review' || $status === 'pending') {
             $query->where('status', EventStatus::PendingReview);
+        } elseif ($status === 'rejected') {
+            $query->where('status', EventStatus::Rejected);
+        } else {
+            $query->where('status', $status);
         }
 
-        $events = $query->latest()->paginate(10)->withQueryString();
+        $events = $query->latest()->paginate(5)->withQueryString();
 
         // Metrics for header
         $stats = [
             'pending' => Event::where('status', EventStatus::PendingReview)->count(),
-            'approved_this_month' => Event::where('status', EventStatus::Active)
+            'approved_this_month' => Event::whereIn('status', [EventStatus::Active, EventStatus::AwaitingPayment])
                 ->where(function ($q) {
-                    $q->whereMonth('published_at', now()->month)
-                        ->whereYear('published_at', now()->year)
+                    $q->whereMonth('reviewed_at', now()->month)
+                        ->whereYear('reviewed_at', now()->year)
                         ->orWhere(function ($sq) {
-                            $sq->whereNull('published_at')
+                            $sq->whereNull('reviewed_at')
                                 ->whereMonth('updated_at', now()->month)
                                 ->whereYear('updated_at', now()->year);
                         });
@@ -109,7 +119,7 @@ class ReviewEventController extends Controller
         }
 
         return view('admin.review-event.index', [
-            'events' => Event::with(['organizer.user', 'category', 'positions'])->where('status', EventStatus::PendingReview)->latest()->paginate(10),
+            'events' => Event::with(['organizer.user', 'category', 'positions'])->where('status', EventStatus::PendingReview)->latest()->paginate(5)->withQueryString(),
             'stats' => [
                 'pending' => Event::where('status', EventStatus::PendingReview)->count(),
                 'approved_this_month' => Event::where('status', EventStatus::Active)->count(),
@@ -124,13 +134,18 @@ class ReviewEventController extends Controller
      */
     public function approve(Request $request, Event $event)
     {
+        // After admin approval, event moves to awaiting_payment so the EO
+        // must pay the publication fee before the event goes live for crew.
         $event->update([
-            'status' => EventStatus::Active,
-            'published_at' => now(),
+            'status' => EventStatus::AwaitingPayment,
             'reviewed_by' => $request->user()?->id,
             'reviewed_at' => now(),
             'rejection_reason' => null,
         ]);
+
+        Cache::forget('admin_dashboard_stats_'.(int) $request->user()?->id);
+        Cache::forget('crew_recommended_events');
+        Cache::forget('eo_dashboard_'.$event->organizer_id);
 
         if ($event->organizer && $event->organizer->user) {
             $event->organizer->user->notify(new EventApprovedNotification($event));
@@ -139,13 +154,13 @@ class ReviewEventController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Event berhasil disetujui dan siap tayang ke publik.',
+                'message' => 'Event berhasil disetujui. EO perlu melakukan pembayaran untuk mempublikasikan event.',
                 'event' => $event,
             ]);
         }
 
         return redirect()->route('admin.review-events.index')
-            ->with('success', 'Event "'.$event->title.'" berhasil disetujui dan kini siap tayang secara publik.');
+            ->with('success', 'Event "'.$event->title.'" berhasil disetujui. EO perlu melakukan pembayaran publikasi.');
     }
 
     /**
@@ -176,6 +191,10 @@ class ReviewEventController extends Controller
             'reviewed_at' => now(),
             'published_at' => null,
         ]);
+
+        Cache::forget('admin_dashboard_stats_'.(int) $request->user()?->id);
+        Cache::forget('crew_recommended_events');
+        Cache::forget('eo_dashboard_'.$event->organizer_id);
 
         if ($event->organizer && $event->organizer->user) {
             $event->organizer->user->notify(new EventRejectedNotification($event, $reason));
@@ -250,7 +269,9 @@ class ReviewEventController extends Controller
                 ];
             })->values()->all(),
             'total_quota' => $totalQuota,
-            'poster_url' => $event->poster_path ? Storage::url($event->poster_path) : null,
+            'poster_path' => $event->poster_path,
+            'has_poster' => ! empty($event->poster_path),
+            'poster_url' => ! empty($event->poster_path) ? $event->poster_url : null,
             'submitted_date_formatted' => 'Diajukan '.($event->created_at ? $event->created_at->translatedFormat('d M Y') : '-'),
             'rejection_reason' => $event->rejection_reason,
             'approve_url' => route('admin.review-events.approve', $event),

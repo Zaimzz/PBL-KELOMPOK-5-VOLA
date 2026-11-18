@@ -23,7 +23,7 @@
 
                 <div class="flex items-center gap-3">
                     @auth
-                        <a href="{{ route('dashboard') }}" class="text-sm font-medium text-brand-600">Dashboard</a>
+                        <a href="{{ match(auth()->user()->role) { \App\Enums\UserRole::Admin => route('admin.dashboard'), \App\Enums\UserRole::Eo => route('eo.dashboard'), default => route('dashboard') } }}" class="text-sm font-medium text-brand-600">Dashboard</a>
                     @else
                         <a href="{{ route('login') }}" class="text-sm text-gray-600 hover:text-brand-600">Masuk</a>
                         <a href="{{ route('register') }}" class="text-sm px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700">

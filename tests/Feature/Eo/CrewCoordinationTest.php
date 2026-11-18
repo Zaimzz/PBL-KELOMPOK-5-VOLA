@@ -573,6 +573,5 @@ test('ekspor event milik eo lain ditolak', function () {
 
     $this->actingAs($eo)
         ->get(route('eo.crew.export', ['event_id' => $otherEvent->id]))
-        ->assertRedirect(route('eo.crew.index'))
-        ->assertSessionHas('error');
+        ->assertForbidden();
 });
