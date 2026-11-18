@@ -9,6 +9,7 @@ use App\Models\Application;
 use App\Models\Event;
 use App\Models\EventCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class ActiveEventController extends Controller
@@ -126,7 +127,7 @@ class ActiveEventController extends Controller
             },
         ])->latest('published_at')->latest('id')->paginate(5)->withQueryString();
 
-        $categories = EventCategory::orderBy('name')->get();
+        $categories = EventCategory::hydrate(Cache::remember('ref_event_categories', 3600, fn () => EventCategory::orderBy('name')->get()->map(fn (EventCategory $category): array => $category->getRawOriginal())->all()));
 
         return view('admin.active-events.index', compact('events', 'stats', 'categories'));
     }

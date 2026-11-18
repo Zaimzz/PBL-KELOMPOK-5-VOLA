@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -106,19 +107,19 @@ class BillingController extends Controller
 
             $payments = $query->paginate(10)->withQueryString();
 
-            // Financial summary scoped to this EO
-            $totalPaid = Payment::whereIn('event_id', $eoEventIds)
-                ->where('status', PaymentStatus::Paid)
-                ->sum('amount');
-            $paidCount = Payment::whereIn('event_id', $eoEventIds)
-                ->where('status', PaymentStatus::Paid)
-                ->count();
-            $pendingAmount = Payment::whereIn('event_id', $eoEventIds)
-                ->where('status', PaymentStatus::Pending)
-                ->sum('amount');
-            $pendingCount = Payment::whereIn('event_id', $eoEventIds)
-                ->where('status', PaymentStatus::Pending)
-                ->count();
+            // Financial summary scoped to this EO (single grouped query)
+            $summaryRows = DB::table('payments')
+                ->whereIn('event_id', $eoEventIds)
+                ->whereIn('status', [PaymentStatus::Paid->value, PaymentStatus::Pending->value])
+                ->selectRaw('status, COUNT(*) as cnt, COALESCE(SUM(amount), 0) as total')
+                ->groupBy('status')
+                ->get()
+                ->keyBy('status');
+
+            $totalPaid = (int) ($summaryRows->get(PaymentStatus::Paid->value)?->total ?? 0);
+            $paidCount = (int) ($summaryRows->get(PaymentStatus::Paid->value)?->cnt ?? 0);
+            $pendingAmount = (int) ($summaryRows->get(PaymentStatus::Pending->value)?->total ?? 0);
+            $pendingCount = (int) ($summaryRows->get(PaymentStatus::Pending->value)?->cnt ?? 0);
         }
 
         return view('eo.billing.index', compact(
@@ -462,6 +463,9 @@ class BillingController extends Controller
             'status' => EventStatus::Active,
             'published_at' => $event->published_at ?? now(),
         ]);
+
+        Cache::forget('eo_dashboard_'.$event->organizer_id);
+        Cache::forget('crew_recommended_events');
     }
 
     /**

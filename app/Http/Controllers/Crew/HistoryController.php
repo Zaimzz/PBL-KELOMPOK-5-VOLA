@@ -8,6 +8,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class HistoryController extends Controller
@@ -41,23 +42,27 @@ class HistoryController extends Controller
             });
         }
 
-        $totalCertificates = Application::where('volunteer_profile_id', $profile->id)
-            ->where('status', 'accepted')
-            ->count();
+        [$counts, $totalCertificates] = Cache::remember('crew_history_counts_'.$profile->id, 60, function () use ($profile): array {
+            $totalCertificates = Application::where('volunteer_profile_id', $profile->id)
+                ->where('status', 'accepted')
+                ->count();
 
-        $baseQueryAll = Application::where('volunteer_profile_id', $profile->id)
-            ->whereIn('status', ['accepted', 'rejected']);
+            $baseQueryAll = Application::where('volunteer_profile_id', $profile->id)
+                ->whereIn('status', ['accepted', 'rejected']);
 
-        $counts = [
-            'all' => (clone $baseQueryAll)->count(),
-            'festival' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Festival'))->count(),
-            'seminar' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Seminar'))->count(),
-            'sosial' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Sosial'))->count(),
-            'kampus' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Kampus'))->count(),
-            'komunitas' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Komunitas'))->count(),
-            'olahraga' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Olahraga'))->count(),
-            'musik' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Musik'))->count(),
-        ];
+            $counts = [
+                'all' => (clone $baseQueryAll)->count(),
+                'festival' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Festival'))->count(),
+                'seminar' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Seminar'))->count(),
+                'sosial' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Sosial'))->count(),
+                'kampus' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Kampus'))->count(),
+                'komunitas' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Komunitas'))->count(),
+                'olahraga' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Olahraga'))->count(),
+                'musik' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Musik'))->count(),
+            ];
+
+            return [$counts, $totalCertificates];
+        });
 
         $perPage = 4;
         $paginatedApps = $query->orderByDesc('applied_at')->paginate($perPage);

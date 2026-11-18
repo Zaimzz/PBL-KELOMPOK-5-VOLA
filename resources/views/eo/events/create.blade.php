@@ -11,8 +11,8 @@
 
     {{-- Page Header --}}
     <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-900">Buat Event & Rekrutmen Kru Baru</h1>
-        <p class="text-gray-500 mt-1">Lengkapi informasi kegiatan dan tentukan divisi relawan yang dibutuhkan.</p>
+        <h1 class="text-2xl font-bold text-gray-900">Buat Event & Rekrutmen Crew Baru</h1>
+        <p class="text-gray-500 mt-1">Lengkapi informasi kegiatan dan tentukan divisi Crew yang dibutuhkan.</p>
     </div>
 
     <form action="{{ route('eo.events.store') }}" method="POST" enctype="multipart/form-data"
@@ -221,7 +221,7 @@
                         <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Singkat Acara</label>
                         <textarea name="description" id="description"
                                   rows="4"
-                                  placeholder="Jelaskan ringkasan agenda acara, target pengunjung, serta gambaran keterlibatan kru/relawan secara umum..."
+                                  placeholder="Jelaskan ringkasan agenda acara, target pengunjung, serta gambaran keterlibatan Crew secara umum..."
                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm @error('description') border-red-300 @enderror">{{ old('description') }}</textarea>
                         @error('description')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -258,12 +258,12 @@
             <x-card>
                 <div class="flex items-center gap-3 mb-6">
                     <div class="w-8 h-8 bg-brand-100 text-brand-700 rounded-full flex items-center justify-center text-sm font-bold">2</div>
-                    <h2 class="text-base font-semibold text-gray-900">Fasilitas & Benefit Relawan</h2>
+                    <h2 class="text-base font-semibold text-gray-900">Fasilitas & Benefit Crew</h2>
                 </div>
 
                 {{-- Benefits section punya Alpine scope sendiri, tidak nested di eventForm() --}}
                 <div x-data="benefitsForm({{ json_encode(old('benefits', [])) }})" class="space-y-4">
-                    <p class="text-sm text-gray-500">Pilih benefit yang akan diterima relawan:</p>
+                    <p class="text-sm text-gray-500">Pilih benefit yang akan diterima Crew:</p>
 
                     {{-- Preset benefits checkboxes --}}
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">

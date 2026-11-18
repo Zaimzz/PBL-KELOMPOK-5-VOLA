@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Crew;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class NotificationController extends Controller
 {
@@ -12,17 +12,16 @@ class NotificationController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
-        // Ambil semua notifikasi dari tabel 'notifications' milik user ini
-        // Urutkan dari yang terbaru
-        $notifications = $user->notifications()->latest()->get()->map(function ($notif) {
+
+        // Ambil 20 notifikasi terbaru dari tabel 'notifications' milik user ini
+        $notifications = $user->notifications()->latest()->take(20)->get()->map(function ($notif) {
             return [
                 'id' => $notif->id,
                 'type' => $notif->data['type'] ?? 'info',
                 'title' => $notif->data['title'] ?? 'Notifikasi',
                 'message' => $notif->data['message'] ?? '',
                 'time' => $notif->created_at->diffForHumans(), // "2 jam yang lalu"
-                'read' => !is_null($notif->read_at), // true jika sudah dibaca
+                'read' => ! is_null($notif->read_at), // true jika sudah dibaca
                 'link' => $notif->data['link'] ?? '#',
             ];
         });
@@ -37,6 +36,8 @@ class NotificationController extends Controller
         $notification = $user->notifications()->findOrFail($id);
         $notification->markAsRead();
 
+        Cache::forget('crew_unread_notifs_'.$user->id);
+
         return response()->json(['success' => true]);
     }
 
@@ -44,7 +45,9 @@ class NotificationController extends Controller
     public function markAllAsRead()
     {
         $user = Auth::user();
-        $user->unreadNotifications->markAsRead();
+        $user->unreadNotifications()->update(['read_at' => now()]);
+
+        Cache::forget('crew_unread_notifs_'.$user->id);
 
         return response()->json(['success' => true]);
     }

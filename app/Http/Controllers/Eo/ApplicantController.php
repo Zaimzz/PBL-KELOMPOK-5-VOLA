@@ -10,6 +10,7 @@ use App\Models\EventPosition;
 use App\Notifications\ApplicationDecided;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -92,12 +93,16 @@ class ApplicantController extends Controller
         }
 
         // Statistics for selected event (always based on full event, ignoring search/filters)
-        $statsQuery = Application::query()
-            ->whereHas('position', fn ($q) => $q->where('event_id', $selectedEvent->id));
+        $statRows = DB::table('applications')
+            ->join('event_positions', 'applications.position_id', '=', 'event_positions.id')
+            ->where('event_positions.event_id', $selectedEvent->id)
+            ->selectRaw('applications.status, COUNT(*) as aggregate')
+            ->groupBy('applications.status')
+            ->pluck('aggregate', 'applications.status');
 
-        $totalCount = (clone $statsQuery)->count();
-        $pendingCount = (clone $statsQuery)->where('status', ApplicationStatus::Pending)->count();
-        $acceptedCount = (clone $statsQuery)->where('status', ApplicationStatus::Accepted)->count();
+        $totalCount = (int) $statRows->sum();
+        $pendingCount = (int) ($statRows[ApplicationStatus::Pending->value] ?? 0);
+        $acceptedCount = (int) ($statRows[ApplicationStatus::Accepted->value] ?? 0);
 
         $applications = $query->orderByDesc('applied_at')->paginate(10)->withQueryString();
 
@@ -164,6 +169,9 @@ class ApplicantController extends Controller
         $volunteer = $application->fresh()->volunteerProfile?->user;
         if ($volunteer) {
             $volunteer->notify(new ApplicationDecided($application, 'accepted'));
+            Cache::forget('crew_application_counts_'.$application->volunteer_profile_id);
+            Cache::forget('crew_unread_notifs_'.$volunteer->id);
+            Cache::forget('crew_history_counts_'.$application->volunteer_profile_id);
         }
 
         return back()->with('success', 'Pendaftar berhasil diterima.');
@@ -195,6 +203,9 @@ class ApplicantController extends Controller
         $volunteer = $application->volunteerProfile?->user;
         if ($volunteer) {
             $volunteer->notify(new ApplicationDecided($application, 'rejected'));
+            Cache::forget('crew_application_counts_'.$application->volunteer_profile_id);
+            Cache::forget('crew_unread_notifs_'.$volunteer->id);
+            Cache::forget('crew_history_counts_'.$application->volunteer_profile_id);
         }
 
         return back()->with('success', 'Pendaftar berhasil ditolak.');

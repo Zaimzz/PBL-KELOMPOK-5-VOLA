@@ -26,7 +26,7 @@
             <div class="flex items-start gap-3">
                 <div class="w-8 h-8 bg-brand-100 text-brand-700 rounded-full flex items-center justify-center text-sm font-bold shrink-0">3</div>
                 <div>
-                    <h2 class="text-base font-semibold text-gray-900">Posisi Volunteer yang Dibutuhkan</h2>
+                    <h2 class="text-base font-semibold text-gray-900">Posisi Crew yang Dibutuhkan</h2>
                     <p class="text-sm text-gray-500 mt-0.5">Pilih posisi dari katalog atau tambahkan posisi sendiri. Keduanya bisa dipakai bersamaan dalam satu event.</p>
                 </div>
             </div>
@@ -35,7 +35,7 @@
                     <span x-text="staged.length"></span> posisi dipilih
                 </span>
                 <span class="font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
-                    Total <span x-text="totalQuota"></span> volunteer
+                    Total <span x-text="totalQuota"></span> Crew
                 </span>
             </div>
         </div>
@@ -204,7 +204,7 @@
             <div class="border-t border-gray-100 pt-5">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="text-sm font-semibold text-gray-900">Posisi yang Akan Ditambahkan</h3>
-                    <span class="text-xs text-gray-500"><span x-text="staged.length"></span> posisi &middot; <span x-text="totalQuota"></span> volunteer</span>
+                    <span class="text-xs text-gray-500"><span x-text="staged.length"></span> posisi &middot; <span x-text="totalQuota"></span> Crew</span>
                 </div>
 
                 <div x-show="staged.length === 0" class="text-center py-8 border border-dashed border-gray-200 rounded-xl">

@@ -115,11 +115,15 @@ class EventDetailController extends Controller
                 ->all()
             : [];
 
-        $positions = $model->positions->map(function ($pos) use ($appliedPositionIds) {
+        $filledByPosition = Application::whereIn('position_id', $model->positions->pluck('id')->all())
+            ->whereIn('status', ['pending', 'processing', 'accepted'])
+            ->selectRaw('position_id, COUNT(*) as aggregate')
+            ->groupBy('position_id')
+            ->pluck('aggregate', 'position_id');
+
+        $positions = $model->positions->map(function ($pos) use ($appliedPositionIds, $filledByPosition) {
             $quota = (int) ($pos->quota ?? 0);
-            $filled = Application::where('position_id', $pos->id)
-                ->whereIn('status', ['pending', 'processing', 'accepted'])
-                ->count();
+            $filled = (int) ($filledByPosition[$pos->id] ?? 0);
             $sisaKursi = max(0, $quota - $filled);
             $pct = $quota > 0 ? min(100, (int) round(($filled / $quota) * 100)) : 0;
 

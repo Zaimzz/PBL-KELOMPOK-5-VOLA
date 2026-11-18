@@ -94,7 +94,7 @@
 
             <x-card>
                 <div class="flex items-center justify-between gap-3 mb-3">
-                    <h2 class="text-base font-semibold text-gray-900">Posisi Relawan</h2>
+                    <h2 class="text-base font-semibold text-gray-900">Posisi Crew</h2>
                     <span class="text-xs text-gray-500">{{ $event->positions->count() }} posisi</span>
                 </div>
 
@@ -175,7 +175,7 @@
 
             @if ($event->benefits)
                 <x-card>
-                    <h2 class="text-base font-semibold text-gray-900 mb-3">Benefit Relawan</h2>
+                    <h2 class="text-base font-semibold text-gray-900 mb-3">Benefit Crew</h2>
                     <ul class="space-y-1.5 text-sm text-gray-700">
                         @foreach ($event->benefits as $benefit)
                             <li class="flex items-start gap-2">

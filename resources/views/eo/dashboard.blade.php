@@ -49,7 +49,7 @@
         <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">
             Selamat Datang, {{ auth()->user()->name }} 👋
         </h1>
-        <p class="mt-1 text-gray-500">Kelola rekrutmen relawan, seleksi kru, dan kelancaran publikasi event Anda.</p>
+        <p class="mt-1 text-gray-500">Kelola rekrutmen Crew, seleksi Crew, dan kelancaran publikasi event Anda.</p>
     </div>
 
     {{-- No Organizer Profile Warning --}}

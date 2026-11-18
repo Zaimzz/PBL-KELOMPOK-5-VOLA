@@ -334,7 +334,7 @@
                         <h2 class="text-sm font-semibold text-gray-900">Posisi yang Sudah Ditambahkan</h2>
                     </div>
                     <span class="text-xs font-medium text-brand-600 bg-brand-50 px-2 py-1 rounded-full">
-                        Total: {{ $event->positions->count() }} Posisi &middot; {{ $event->positions->sum('quota') }} Volunteer
+                        Total: {{ $event->positions->count() }} Posisi &middot; {{ $event->positions->sum('quota') }} Crew
                     </span>
                 </div>
 

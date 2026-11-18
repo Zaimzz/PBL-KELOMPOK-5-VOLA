@@ -10,6 +10,7 @@ use App\Models\Report;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -198,6 +199,8 @@ class ReportController extends Controller
 
             $report->save();
         });
+
+        Cache::forget('admin_dashboard_stats_'.(int) $request->user()?->id);
 
         $message = "Tindakan pada laporan #{$report->ticket_number} berhasil diproses.";
 

@@ -7,6 +7,7 @@ use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -76,51 +77,55 @@ class SearchController extends Controller
             $dbQuery->orderBy('registration_deadline');
         }
 
-        $allDbEvents = $dbQuery->get();
+        $searchCacheKey = 'crew_search_'.md5(json_encode([$query, $category, $location, $position, $sort], JSON_UNESCAPED_UNICODE));
 
-        $allEvents = $allDbEvents->map(function (Event $event) {
-            $positionNames = $event->positions->pluck('name');
-            $positionsText = $positionNames->take(3)->implode(', ');
-            if ($positionNames->count() > 3) {
-                $positionsText .= '... ('.$positionNames->count().' posisi)';
-            }
+        $allEvents = Cache::remember($searchCacheKey, 30, function () use ($dbQuery) {
+            return $dbQuery->get()->map(function (Event $event) {
+                $positionNames = $event->positions->pluck('name');
+                $positionsText = $positionNames->take(3)->implode(', ');
+                if ($positionNames->count() > 3) {
+                    $positionsText .= '... ('.$positionNames->count().' posisi)';
+                }
 
-            $positionCount = $event->positions->count();
-            $daysLeft = (int) now()->startOfDay()->diffInDays($event->registration_deadline, false);
-            $daysLeft = max(0, $daysLeft);
+                $positionCount = $event->positions->count();
+                $daysLeft = (int) now()->startOfDay()->diffInDays($event->registration_deadline, false);
+                $daysLeft = max(0, $daysLeft);
 
-            if ($daysLeft <= 7) {
-                $slotType = 'urgent';
-                $slotLabel = 'Sisa '.$daysLeft.' Hari';
-            } elseif ($positionCount > 0) {
-                $slotType = 'position';
-                $slotLabel = $positionCount.' Posisi Dibuka';
-            } else {
-                $slotType = 'interview';
-                $slotLabel = 'Seleksi Interview';
-            }
+                if ($daysLeft <= 7) {
+                    $slotType = 'urgent';
+                    $slotLabel = 'Sisa '.$daysLeft.' Hari';
+                } elseif ($positionCount > 0) {
+                    $slotType = 'position';
+                    $slotLabel = $positionCount.' Posisi Dibuka';
+                } else {
+                    $slotType = 'interview';
+                    $slotLabel = 'Seleksi Interview';
+                }
 
-            $startDate = $event->start_date?->translatedFormat('d M Y');
-            $endDate = $event->end_date?->translatedFormat('d M Y');
-            $dateFormatted = $endDate && $endDate !== $startDate ? $startDate.' – '.$endDate : ($startDate ?? '-');
+                $startDate = $event->start_date?->translatedFormat('d M Y');
+                $endDate = $event->end_date?->translatedFormat('d M Y');
+                $dateFormatted = $endDate && $endDate !== $startDate ? $startDate.' – '.$endDate : ($startDate ?? '-');
 
-            $categoryName = $event->category?->name ?? 'Umum';
+                $categoryName = $event->category?->name ?? 'Umum';
 
-            $imageUrl = $event->poster_path
-                ? Storage::disk('public')->url($event->poster_path)
-                : $this->getImageByCategory($categoryName);
+                $imageUrl = $event->poster_path
+                    ? Storage::disk('public')->url($event->poster_path)
+                    : $this->getImageByCategory($categoryName);
 
-            $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
+                $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
 
-            return [
-                'id' => $event->id, 'title' => $event->title, 'category' => $event->category?->name ?? 'Umum',
-                'filter_category' => strtolower($event->category?->name ?? 'umum'), 'organizer' => $event->organizer?->organization_name ?? '-',
-                'is_verified' => $isVerified, 'status_badge' => 'Open Volunteer', 'status_badge_type' => 'success',
-                'date' => $dateFormatted, 'location' => trim(($event->location ?? '').($event->city ? ', '.$event->city : ''), ', '),
-                'positions' => $positionsText ?: 'Belum ada posisi', 'days_left' => $daysLeft, 'position_count' => $positionCount,
-                'slot_label' => $slotLabel, 'slot_type' => $slotType, 'image' => $imageUrl,
-            ];
+                return [
+                    'id' => $event->id, 'title' => $event->title, 'category' => $event->category?->name ?? 'Umum',
+                    'filter_category' => strtolower($event->category?->name ?? 'umum'), 'organizer' => $event->organizer?->organization_name ?? '-',
+                    'is_verified' => $isVerified, 'status_badge' => 'Open Volunteer', 'status_badge_type' => 'success',
+                    'date' => $dateFormatted, 'location' => trim(($event->location ?? '').($event->city ? ', '.$event->city : ''), ', '),
+                    'positions' => $positionsText ?: 'Belum ada posisi', 'days_left' => $daysLeft, 'position_count' => $positionCount,
+                    'slot_label' => $slotLabel, 'slot_type' => $slotType, 'image' => $imageUrl,
+                ];
+            })->values()->all();
         });
+
+        $allEvents = collect($allEvents);
 
         $totalEvents = $allEvents->count();
         $totalPages = (int) ceil($totalEvents / $perPage);

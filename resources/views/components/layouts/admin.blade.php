@@ -16,8 +16,20 @@
         }
     </style>
 
+    @php
+        $adminUnreadInitial = \Illuminate\Support\Facades\Cache::remember(
+            'admin_nav_unread_'.(auth()->id() ?? 0),
+            30,
+            fn () => \Illuminate\Support\Facades\DB::table('notifications')
+                ->where('notifiable_type', \App\Models\User::class)
+                ->where('notifiable_id', auth()->id())
+                ->whereNull('read_at')
+                ->count()
+        );
+    @endphp
+
     <script>
-        function adminNavbar() {
+        function adminNavbar(initialUnread = 0) {
             return {
                 sidebarOpen: false,
 
@@ -34,17 +46,13 @@
                 notifOpen: false,
                 notifTab: 'all',
                 notifications: [],
-                unreadCount: 0,
+                unreadCount: initialUnread,
                 totalCount: 0,
                 loadingNotifs: false,
 
                 // Profile Dropdown State
                 profileOpen: false,
                 logoutModalOpen: false,
-
-                init() {
-                    this.fetchNotifications();
-                },
 
                 // Search Methods
                 handleSearchInput() {
@@ -103,7 +111,7 @@
                                 this.isSearching = false;
                             }
                         });
-                    }, 200);
+                    }, 350);
                 },
 
                 clearSearch() {
@@ -202,7 +210,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="antialiased bg-gray-50 text-gray-900 font-sans overscroll-none" x-data="adminNavbar()" :class="{ 'overflow-hidden': sidebarOpen || logoutModalOpen }">
+<body class="antialiased bg-gray-50 text-gray-900 font-sans overscroll-none" x-data="adminNavbar({{ $adminUnreadInitial }})" :class="{ 'overflow-hidden': sidebarOpen || logoutModalOpen }">
 
     {{-- Tailwind compiler safelist for dynamic notification & search badge classes --}}
     <div class="hidden bg-emerald-50 bg-emerald-100 text-emerald-600 text-emerald-700 border-emerald-200 bg-indigo-50 bg-indigo-100 text-indigo-600 text-indigo-700 border-indigo-200 bg-purple-50 bg-purple-100 text-purple-600 text-purple-700 border-purple-200 bg-sky-50 bg-sky-100 text-sky-600 text-sky-700 border-sky-200 bg-rose-50 bg-rose-100 text-rose-600 text-rose-700 border-rose-200 bg-amber-50 bg-amber-100 text-amber-600 text-amber-700 border-amber-200"></div>

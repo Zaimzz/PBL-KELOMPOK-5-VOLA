@@ -124,7 +124,7 @@
                                 </p>
                                 <p class="text-xs text-gray-400 mt-0.5">
                                     @if ($payment->package_duration_days)
-                                        Durasi publikasi {{ $payment->package_duration_days }} hari — termasuk penayangan publik, sistem seleksi relawan, dan analitik penerimaan.
+                                        Durasi publikasi {{ $payment->package_duration_days }} hari — termasuk penayangan publik, sistem seleksi Crew, dan analitik penerimaan.
                                     @else
                                         Biaya layanan publikasi & kurasi event VOLA.
                                     @endif

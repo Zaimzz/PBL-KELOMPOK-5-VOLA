@@ -7,6 +7,7 @@ use App\Enums\EventStatus;
 use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -53,49 +54,51 @@ class CrewDashboardController extends Controller
                 ->count();
         }
 
-        $dbEvents = Event::query()
-            ->with(['category', 'organizer', 'positions'])
-            ->where('status', EventStatus::Active)
-            ->whereNotNull('published_at')
-            ->whereDate('registration_deadline', '>=', now()->toDateString())
-            ->latest('published_at')
-            ->take(8)
-            ->get();
+        $recommendedEvents = Cache::remember('crew_recommended_events', 30, function (): array {
+            $dbEvents = Event::query()
+                ->with(['category', 'organizer', 'positions'])
+                ->where('status', EventStatus::Active)
+                ->whereNotNull('published_at')
+                ->whereDate('registration_deadline', '>=', now()->toDateString())
+                ->latest('published_at')
+                ->take(8)
+                ->get();
 
-        $recommendedEvents = $dbEvents->map(function (Event $event): array {
-            $positionNames = $event->positions->pluck('name');
-            $positionsText = $positionNames->take(3)->implode(', ');
-            if ($positionNames->count() > 3) {
-                $positionsText .= '... ('.$positionNames->count().' posisi)';
-            }
+            return $dbEvents->map(function (Event $event): array {
+                $positionNames = $event->positions->pluck('name');
+                $positionsText = $positionNames->take(3)->implode(', ');
+                if ($positionNames->count() > 3) {
+                    $positionsText .= '... ('.$positionNames->count().' posisi)';
+                }
 
-            $startDate = $event->start_date?->translatedFormat('d M Y');
-            $endDate = $event->end_date?->translatedFormat('d M Y');
-            $dateFormatted = $endDate && $endDate !== $startDate
-                ? $startDate.' – '.$endDate
-                : ($startDate ?? '-');
+                $startDate = $event->start_date?->translatedFormat('d M Y');
+                $endDate = $event->end_date?->translatedFormat('d M Y');
+                $dateFormatted = $endDate && $endDate !== $startDate
+                    ? $startDate.' – '.$endDate
+                    : ($startDate ?? '-');
 
-            $imageUrl = $event->poster_path
-                ? Storage::disk('public')->url($event->poster_path)
-                : asset('images/event-placeholder.svg');
+                $imageUrl = $event->poster_path
+                    ? Storage::disk('public')->url($event->poster_path)
+                    : asset('images/event-placeholder.svg');
 
-            $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
+                $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
 
-            return [
-                'id' => $event->id,
-                'title' => $event->title,
-                'category' => $event->category?->name ?? 'Umum',
-                'filter_category' => strtolower($event->category?->name ?? 'umum'),
-                'organizer' => $event->organizer?->organization_name ?? '-',
-                'organizer_verified' => $isVerified,
-                'location' => trim(($event->location ?? '').($event->city ? ', '.$event->city : ''), ', '),
-                'date' => $dateFormatted,
-                'status' => 'Open Volunteer',
-                'status_badge_type' => 'success',
-                'image' => $imageUrl,
-                'positions_list' => $positionsText ?: 'Belum ada posisi',
-            ];
-        })->values()->all();
+                return [
+                    'id' => $event->id,
+                    'title' => $event->title,
+                    'category' => $event->category?->name ?? 'Umum',
+                    'filter_category' => strtolower($event->category?->name ?? 'umum'),
+                    'organizer' => $event->organizer?->organization_name ?? '-',
+                    'organizer_verified' => $isVerified,
+                    'location' => trim(($event->location ?? '').($event->city ? ', '.$event->city : ''), ', '),
+                    'date' => $dateFormatted,
+                    'status' => 'Open Volunteer',
+                    'status_badge_type' => 'success',
+                    'image' => $imageUrl,
+                    'positions_list' => $positionsText ?: 'Belum ada posisi',
+                ];
+            })->values()->all();
+        });
 
         $categories = [
             ['slug' => 'all', 'name' => 'Semua'],

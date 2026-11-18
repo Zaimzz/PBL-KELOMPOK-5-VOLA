@@ -16,6 +16,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -96,8 +97,12 @@ class AdminNavbarController extends Controller
 
         // 2. Kategori: Verifikasi EO
         // Kolom diuji: organization_name, pic_name, city, organization_type, user.name, user.email, nib/legal_number
-        $hasNibColumn = Schema::hasColumn('organizer_profiles', 'nib');
-        $hasLegalNumColumn = Schema::hasColumn('organizer_profiles', 'legal_number');
+        [$hasNibColumn, $hasLegalNumColumn] = Cache::remember('admin_search_schema_columns', 3600, function () {
+            return [
+                Schema::hasColumn('organizer_profiles', 'nib'),
+                Schema::hasColumn('organizer_profiles', 'legal_number'),
+            ];
+        });
 
         $eoProfiles = OrganizerProfile::query()
             ->with('user')
@@ -431,44 +436,48 @@ class AdminNavbarController extends Controller
     {
         $admin = auth()->user();
 
-        // Pastikan ada notifikasi aktif di database, jika belum ada, sinkronkan dari aktivitas sistem nyata
-        $this->ensureAdminNotifications($admin);
+        $payload = Cache::remember('admin_nav_notifications_'.$admin->id, 30, function () use ($admin) {
+            // Pastikan ada notifikasi aktif di database, jika belum ada, sinkronkan dari aktivitas sistem nyata
+            $this->ensureAdminNotifications($admin);
 
-        // Ambil semua notifikasi milik admin
-        $dbNotifications = DB::table('notifications')
-            ->where('notifiable_type', User::class)
-            ->where('notifiable_id', $admin->id)
-            ->orderByDesc('created_at')
-            ->take(15)
-            ->get();
+            // Ambil semua notifikasi milik admin
+            $dbNotifications = DB::table('notifications')
+                ->where('notifiable_type', User::class)
+                ->where('notifiable_id', $admin->id)
+                ->orderByDesc('created_at')
+                ->take(15)
+                ->get();
 
-        $notifications = $dbNotifications->map(function ($item) {
-            $data = json_decode($item->data, true) ?: [];
-            $createdAt = Carbon::parse($item->created_at);
+            $notifications = $dbNotifications->map(function ($item) {
+                $data = json_decode($item->data, true) ?: [];
+                $createdAt = Carbon::parse($item->created_at);
+
+                return [
+                    'id' => $item->id,
+                    'category' => $data['category'] ?? 'system',
+                    'title' => $data['title'] ?? 'Pemberitahuan Sistem',
+                    'description' => $data['description'] ?? '',
+                    'url' => $data['url'] ?? route('admin.dashboard'),
+                    'icon' => $data['icon'] ?? 'bell',
+                    'icon_bg' => $data['icon_bg'] ?? 'bg-indigo-100 text-indigo-600',
+                    'is_read' => $item->read_at !== null,
+                    'created_at_human' => $createdAt->diffForHumans(),
+                    'created_at_raw' => $item->created_at,
+                ];
+            });
+
+            $unreadCount = $notifications->where('is_read', false)->count();
+            $totalCount = $notifications->count();
 
             return [
-                'id' => $item->id,
-                'category' => $data['category'] ?? 'system',
-                'title' => $data['title'] ?? 'Pemberitahuan Sistem',
-                'description' => $data['description'] ?? '',
-                'url' => $data['url'] ?? route('admin.dashboard'),
-                'icon' => $data['icon'] ?? 'bell',
-                'icon_bg' => $data['icon_bg'] ?? 'bg-indigo-100 text-indigo-600',
-                'is_read' => $item->read_at !== null,
-                'created_at_human' => $createdAt->diffForHumans(),
-                'created_at_raw' => $item->created_at,
+                'success' => true,
+                'unread_count' => $unreadCount,
+                'total_count' => $totalCount,
+                'notifications' => $notifications->values()->all(),
             ];
         });
 
-        $unreadCount = $notifications->where('is_read', false)->count();
-        $totalCount = $notifications->count();
-
-        return response()->json([
-            'success' => true,
-            'unread_count' => $unreadCount,
-            'total_count' => $totalCount,
-            'notifications' => $notifications->values(),
-        ]);
+        return response()->json($payload);
     }
 
     /**
@@ -498,6 +507,9 @@ class AdminNavbarController extends Controller
                 'updated_at' => now(),
             ]);
 
+        Cache::forget('admin_nav_notifications_'.$admin->id);
+        Cache::forget('admin_nav_unread_'.$admin->id);
+
         $data = json_decode($notification->data, true) ?: [];
 
         return response()->json([
@@ -521,6 +533,9 @@ class AdminNavbarController extends Controller
                 'read_at' => now(),
                 'updated_at' => now(),
             ]);
+
+        Cache::forget('admin_nav_notifications_'.$admin->id);
+        Cache::forget('admin_nav_unread_'.$admin->id);
 
         return response()->json([
             'success' => true,

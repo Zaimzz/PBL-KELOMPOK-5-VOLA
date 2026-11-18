@@ -9,6 +9,7 @@ use App\Models\Event;
 use App\Notifications\EventApprovedNotification;
 use App\Notifications\EventRejectedNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class ReviewEventController extends Controller
@@ -142,6 +143,10 @@ class ReviewEventController extends Controller
             'rejection_reason' => null,
         ]);
 
+        Cache::forget('admin_dashboard_stats_'.(int) $request->user()?->id);
+        Cache::forget('crew_recommended_events');
+        Cache::forget('eo_dashboard_'.$event->organizer_id);
+
         if ($event->organizer && $event->organizer->user) {
             $event->organizer->user->notify(new EventApprovedNotification($event));
         }
@@ -186,6 +191,10 @@ class ReviewEventController extends Controller
             'reviewed_at' => now(),
             'published_at' => null,
         ]);
+
+        Cache::forget('admin_dashboard_stats_'.(int) $request->user()?->id);
+        Cache::forget('crew_recommended_events');
+        Cache::forget('eo_dashboard_'.$event->organizer_id);
 
         if ($event->organizer && $event->organizer->user) {
             $event->organizer->user->notify(new EventRejectedNotification($event, $reason));

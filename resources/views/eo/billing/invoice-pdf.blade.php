@@ -66,7 +66,7 @@
         <tr>
             <td>
                 <div class="logo">VOLA<span>.</span></div>
-                <div class="logo-sub">Platform Kolaborasi Relawan &amp; Event Indonesia</div>
+                <div class="logo-sub">Platform Kolaborasi Crew &amp; Event Indonesia</div>
             </td>
             <td class="invoice-title">
                 <h1>INVOICE RESMI</h1>
@@ -113,7 +113,7 @@
             <tr>
                 <td>
                     <strong>Paket Publikasi {{ $package['name'] ?? ucfirst(str_replace('_', ' ', $payment->package_name ?? 'Layanan Vola')) }}</strong>
-                    <div class="item-note">Termasuk penayangan publik, sistem seleksi relawan, dan analitik penerimaan.</div>
+                    <div class="item-note">Termasuk penayangan publik, sistem seleksi Crew, dan analitik penerimaan.</div>
                 </td>
                 <td>{{ $payment->event?->title ?? '—' }}</td>
                 <td class="center">
@@ -140,7 +140,7 @@
     </table>
 
     <div class="footer">
-        Dokumen ini dibuat otomatis secara digital oleh VOLA Platform Relawan Indonesia dan sah tanpa tanda tangan basah.<br>
+        Dokumen ini dibuat otomatis secara digital oleh VOLA Platform Crew Indonesia dan sah tanpa tanda tangan basah.<br>
         &copy; {{ date('Y') }} VOLA Platform. All rights reserved.
     </div>
 

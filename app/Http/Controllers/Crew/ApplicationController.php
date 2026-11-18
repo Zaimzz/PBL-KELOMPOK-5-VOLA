@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class ApplicationController extends Controller
@@ -162,6 +163,8 @@ class ApplicationController extends Controller
             'cover_letter' => $request->motivation,
             'applied_at' => now(),
         ]);
+
+        Cache::forget('crew_application_counts_'.$profile->id);
 
         $successMsg = 'Lamaran berhasil diajukan! Silakan pantau status di menu "Lamaran Saya".';
         if ($request->expectsJson()) {

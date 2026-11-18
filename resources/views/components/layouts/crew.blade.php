@@ -15,15 +15,25 @@
     
     $displayCity = $profile?->city ?? 'Indonesia';
     
-    $unreadNotifs = $authUser?->unreadNotifications?->count() ?? 0;
+    $unreadNotifs = \Illuminate\Support\Facades\Cache::remember(
+        'crew_unread_notifs_'.($authUser?->id ?? 0),
+        30,
+        fn () => $authUser ? $authUser->unreadNotifications()->count() : 0
+    );
 
     $totalApplications = 0;
     $acceptedCount = 0;
     
     if ($profile) {
-        $totalApplications = \App\Models\Application::where('volunteer_profile_id', $profile->id)->count();
-        $acceptedCount = \App\Models\Application::where('volunteer_profile_id', $profile->id)
-            ->where('status', 'accepted')->count();
+        [$totalApplications, $acceptedCount] = \Illuminate\Support\Facades\Cache::remember(
+            'crew_application_counts_'.$profile->id,
+            30,
+            fn () => [
+                \App\Models\Application::where('volunteer_profile_id', $profile->id)->count(),
+                \App\Models\Application::where('volunteer_profile_id', $profile->id)
+                    ->where('status', 'accepted')->count(),
+            ]
+        );
     }
 
     $displayAvatar = null;
@@ -130,11 +140,9 @@
                         open: false, 
                         activeTab: 'all',
                         notifications: [], 
-                        isLoading: true, 
-                        
-                        async init() {
-                            await this.fetchNotifications();
-                        },
+                        isLoading: false, 
+                        loaded: false,
+                        initialUnread: {{ $unreadNotifs }},
 
                         async fetchNotifications() {
                             this.isLoading = true; 
@@ -146,11 +154,15 @@
                             } catch (err) {
                                 console.error('Gagal memuat notifikasi:', err);
                             } finally {
+                                this.loaded = true;
                                 this.isLoading = false; 
                             }
                         },
 
                         get unreadCount() { 
+                            if (! this.loaded) {
+                                return this.initialUnread;
+                            }
                             return this.notifications.filter(n => !n.read).length; 
                         },
                         get hasVisibleNotifications() { 
@@ -205,10 +217,9 @@
                             }
                         }
                      }" 
-                     x-init="init()" 
                      class="relative" @click.outside="open = false">
                    
-                    <button @click="open = !open" class="relative p-2 text-gray-500 hover:text-[#4F46E5] hover:bg-indigo-50 rounded-full transition">
+                    <button @click="if (! open) { fetchNotifications(); } open = ! open" class="relative p-2 text-gray-500 hover:text-[#4F46E5] hover:bg-indigo-50 rounded-full transition">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                         </svg>

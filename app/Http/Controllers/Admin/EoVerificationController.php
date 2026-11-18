@@ -6,6 +6,7 @@ use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\OrganizerProfile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
@@ -108,6 +109,8 @@ class EoVerificationController extends Controller
             'rejection_reason' => null,
         ]);
 
+        Cache::forget('admin_dashboard_stats_'.(int) $request->user()->id);
+
         return back()->with('success', 'Akun EO berhasil disetujui.');
     }
 
@@ -137,6 +140,8 @@ class EoVerificationController extends Controller
             'verified_by' => null,
             'verified_at' => null,
         ]);
+
+        Cache::forget('admin_dashboard_stats_'.(int) $request->user()->id);
 
         return back()->with('success', 'Akun EO berhasil ditolak.');
     }
