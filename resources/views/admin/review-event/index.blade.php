@@ -280,7 +280,7 @@
                 </div>
 
                 <!-- Pagination Bar -->
-                @if ($events->hasPages())
+                @if ($events->total() > 0)
                     <div class="bg-white border border-gray-100 rounded-2xl px-4 py-3 shadow-xs">
                         {{ $events->withQueryString()->links('components.pagination') }}
                     </div>
@@ -507,11 +507,33 @@
             <form method="POST" 
                   :action="selectedEvent ? selectedEvent.reject_url : ''" 
                   class="p-5 flex flex-col space-y-3"
-                  x-data="{ reason: '', hasError: false }"
-                  @submit.prevent="reason.trim() === '' ? hasError = true : $el.submit()">
+                  x-data="{
+                      reason: '',
+                      hasError: false,
+                      handleSubmit(e) {
+                          if (this.reason.trim() === '') {
+                              e.preventDefault();
+                              this.hasError = true;
+                              return false;
+                          }
+                          this.hasError = false;
+                      },
+                      resetForm() {
+                          this.reason = '';
+                          this.hasError = false;
+                          this.$el.querySelectorAll('.text-red-600').forEach(el => el.style.display = 'none');
+                          const btn = this.$el.querySelector('button[type=submit]');
+                          if (btn && window.unlockAdminButton) {
+                              window.unlockAdminButton(btn);
+                          }
+                      }
+                  }"
+                  @open-modal.window="if ($event.detail === 'reject-event-modal') resetForm()"
+                  @modal-closed.window="if ($event.detail === 'reject-event-modal') resetForm()"
+                  @submit="handleSubmit($event)">
                 @csrf
 
-                <div class="flex items-start gap-3">
+                <div class="flex items-start gap-3 min-w-0">
                     <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
@@ -521,7 +543,7 @@
                         <h2 class="text-base font-extrabold text-gray-900 truncate">
                             Tolak Pengajuan Event?
                         </h2>
-                        <p class="text-xs text-gray-500 truncate" x-text="selectedEvent ? selectedEvent.title : ''"></p>
+                        <p class="text-xs text-gray-500 font-medium truncate mt-0.5" x-text="selectedEvent ? selectedEvent.title : ''"></p>
                     </div>
                 </div>
 
@@ -549,10 +571,10 @@
                 </div>
 
                 <div class="pt-2 flex justify-end gap-2 border-t border-gray-100">
-                    <x-secondary-button x-on:click="$dispatch('close')">
-                        Batal
+                    <x-secondary-button type="button" @click="resetForm(); show = false; $dispatch('close')">
+                        BATAL
                     </x-secondary-button>
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors">
+                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer">
                         Kirim Penolakan
                     </button>
                 </div>
@@ -566,7 +588,7 @@
             <form method="POST" :action="selectedEvent ? selectedEvent.approve_url : ''" class="p-5 flex flex-col space-y-3">
                 @csrf
 
-                <div class="flex items-start gap-3">
+                <div class="flex items-start gap-3 min-w-0">
                     <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
@@ -576,7 +598,7 @@
                         <h2 class="text-base font-extrabold text-gray-900 truncate">
                             Setujui Pengajuan Event?
                         </h2>
-                        <p class="text-xs text-gray-500 truncate" x-text="selectedEvent ? selectedEvent.title : ''"></p>
+                        <p class="text-xs text-gray-500 font-medium truncate mt-0.5" x-text="selectedEvent ? selectedEvent.title : ''"></p>
                     </div>
                 </div>
 
@@ -585,11 +607,11 @@
                 </p>
 
                 <div class="pt-2 flex justify-end gap-2 border-t border-gray-100">
-                    <x-secondary-button x-on:click="$dispatch('close')">
-                        Batal
+                    <x-secondary-button type="button" @click="show = false; $dispatch('close')">
+                        BATAL
                     </x-secondary-button>
                     <button type="submit"
-                            class="inline-flex items-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors">
+                            class="inline-flex items-center px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer">
                         Setujui & Publikasikan
                     </button>
                 </div>
