@@ -228,16 +228,22 @@
                             <div>
                                 <label for="start_time" class="block text-sm font-medium text-gray-700 mb-1">Waktu Mulai</label>
                                 <input type="time" name="start_time" id="start_time"
-                                       value="{{ old('start_time', $event->start_time) }}"
+                                       value="{{ old('start_time', $event->start_time ? date('H:i', strtotime((string) $event->start_time)) : '') }}"
                                        {{ $isLocked ? 'disabled' : '' }}
-                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm {{ $isLocked ? 'bg-gray-50 text-gray-500' : '' }}">
+                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm {{ $isLocked ? 'bg-gray-50 text-gray-500' : '' }} @error('start_time') border-red-300 @enderror">
+                                @error('start_time')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div>
                                 <label for="end_time" class="block text-sm font-medium text-gray-700 mb-1">Waktu Selesai</label>
                                 <input type="time" name="end_time" id="end_time"
-                                       value="{{ old('end_time', $event->end_time) }}"
+                                       value="{{ old('end_time', $event->end_time ? date('H:i', strtotime((string) $event->end_time)) : '') }}"
                                        {{ $isLocked ? 'disabled' : '' }}
-                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm {{ $isLocked ? 'bg-gray-50 text-gray-500' : '' }}">
+                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm {{ $isLocked ? 'bg-gray-50 text-gray-500' : '' }} @error('end_time') border-red-300 @enderror">
+                                @error('end_time')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
 
