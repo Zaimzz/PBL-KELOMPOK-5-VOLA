@@ -1,6 +1,10 @@
 <?php
 
 use App\Enums\EventStatus;
+use App\Enums\UserRole;
+use App\Enums\UserStatus;
+use App\Enums\VerificationStatus;
+use App\Models\EventCategory;
 use App\Http\Controllers\Admin\ActiveEventController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminNavbarController;
@@ -30,30 +34,55 @@ use App\Http\Controllers\MidtransWebhookController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicEventController;
 use App\Models\Event;
+use App\Models\OrganizerProfile;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    $events = Event::query()
-        ->with(['category', 'organizer'])
+    $availableEvents = Event::query()
         ->where('status', EventStatus::Active)
         ->whereNotNull('published_at')
-        ->whereDate('registration_deadline', '>=', now()->toDateString())
+        ->whereDate('registration_deadline', '>=', now()->toDateString());
+
+    $events = (clone $availableEvents)
+        ->with(['category', 'organizer'])
         ->latest('published_at')
         ->take(3)
         ->get();
 
-    return view('welcome', compact('events'));
+    // Data kategori untuk marquee pada landing page.
+    $eventCategories = EventCategory::query()
+        ->orderBy('name')
+        ->get();
+
+    $landingStats = [
+        'events' => (clone $availableEvents)->count(),
+        'volunteers' => User::query()
+            ->where('role', UserRole::Volunteer)
+            ->where('status', UserStatus::Active)
+            ->count(),
+        'organizers' => OrganizerProfile::query()
+            ->where('verification_status', VerificationStatus::Verified)
+            ->count(),
+    ];
+
+    return view('welcome', compact(
+        'events',
+        'eventCategories',
+        'landingStats'
+    ));
 })->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+// Pengaturan profil umum untuk akun non-volunteer.
+Route::middleware(['auth', 'verified'])->prefix('account')->name('profile.')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
+        ->name('edit');
 
     Route::patch('/profile', [ProfileController::class, 'update'])
-        ->name('profile.update');
+        ->name('update');
 
     Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
+        ->name('destroy');
 });
 
 // Route Crew (Volunteer)
@@ -63,22 +92,22 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
 
     // Route Profil Volunteer
     Route::get('/profile', [CrewProfileController::class, 'show'])
-        ->name('profile.show');
+        ->name('crew.profile.show');
 
     Route::get('/profile/edit', [CrewProfileController::class, 'edit'])
-        ->name('profile.edit');
+        ->name('crew.profile.edit');
 
     Route::put('/profile', [CrewProfileController::class, 'update'])
-        ->name('profile.update');
+        ->name('crew.profile.update');
 
     Route::put('/profile/skills', [CrewProfileController::class, 'updateSkills'])
-        ->name('profile.update.skills');
+        ->name('crew.profile.update.skills');
 
     Route::post('/profile/documents/upload', [CrewProfileController::class, 'uploadDocument'])
-        ->name('profile.documents.upload');
+        ->name('crew.profile.documents.upload');
 
     Route::delete('/profile/documents/{type}', [CrewProfileController::class, 'deleteDocument'])
-        ->name('profile.documents.delete');
+        ->name('crew.profile.documents.delete');
 
     // Route Settings
     Route::get('/settings', [SettingsController::class, 'index'])
@@ -93,11 +122,6 @@ Route::middleware(['auth', 'verified', 'role:volunteer'])->group(function () {
     Route::put('/settings/password', [SettingsController::class, 'updatePassword'])
         ->name('settings.update.password');
 
-    // Settings
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-    Route::put('/settings/email', [SettingsController::class, 'updateEmail'])->name('settings.update.email');
-    Route::put('/settings/phone', [SettingsController::class, 'updatePhone'])->name('settings.update.phone');
-    Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.update.password');
     // Route Pencarian dan Detail Event
     Route::get('/search', [SearchController::class, 'index'])
         ->name('search.index');
@@ -336,7 +360,6 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('/reports-list', [ReportController::class, 'index'])
             ->name('reports');
 
-        // Transactions
         // Transactions
         Route::get('/transactions', [TransactionController::class, 'index'])
             ->name('transactions.index');

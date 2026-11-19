@@ -99,7 +99,7 @@
             </a>
 
             <p class="px-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-8">Akun</p>
-            <a href="{{ route('profile.show') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl {{ request()->routeIs('profile.*') ? 'bg-indigo-50 text-[#4F46E5]' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition">
+            <a href="{{ route('crew.profile.show') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl {{ request()->routeIs('crew.profile.*') ? 'bg-indigo-50 text-[#4F46E5]' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 Profil Saya
             </a>           
@@ -299,8 +299,7 @@
                             <p class="text-xs font-bold text-gray-900 tracking-wide">Masuk sebagai</p>
                             <p class="text-xs text-gray-500 truncate mt-0.5">{{ $authUser->email }}</p>
                         </div>
-                        <a href="{{ route('profile.show') }}" class="flex items-center gap-3 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition group">
-                            <svg class="w-5 h-5 text-gray-400 group-hover:text-[#4F46E5] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        <a href="{{ route('crew.profile.show') }}" class="flex items-center gap-3 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition group">                            <svg class="w-5 h-5 text-gray-400 group-hover:text-[#4F46E5] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                             <span>Lihat Profil</span>
                         </a>
                         <a href="{{ route('settings.index') }}" class="flex items-center gap-3 px-5 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-[#4F46E5] transition group">

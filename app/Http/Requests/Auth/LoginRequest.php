@@ -110,14 +110,12 @@ class LoginRequest extends FormRequest
         $selectedRole = $this->role ?: 'volunteer';
 
         // Kredensial benar, tetapi role yang dipilih tidak sesuai.
-        // Gunakan pesan umum agar informasi role akun tidak bocor.
         if ($user->role->value !== $selectedRole) {
             Auth::logout();
             RateLimiter::clear($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => $invalidCredentialsMessage,
-                'password' => $invalidCredentialsMessage,
+                'auth' => 'Role akun tidak sesuai dengan pilihan login.',
             ]);
         }
 
@@ -127,7 +125,7 @@ class LoginRequest extends FormRequest
             RateLimiter::clear($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'auth' => 'Akun tidak dapat diakses saat ini. Silakan hubungi administrator.',
+                'auth' => 'Akun ini ditangguhkan. Silakan hubungi administrator untuk informasi lebih lanjut.',
             ]);
         }
 

@@ -41,7 +41,7 @@
                 formData.append('_token', '{{ csrf_token() }}');
 
                 try {
-                    const res = await fetch('{{ route("profile.documents.upload") }}', {
+                    const res = await fetch('{{ route("crew.profile.documents.upload") }}', {
                         method: 'POST',
                         body: formData
                     });
@@ -258,7 +258,7 @@
                                 <span class="px-3 py-1.5 text-xs font-bold text-gray-400 cursor-not-allowed">Hapus File</span>
                             </template>
                          
-                            <form id="delete-form-cv_path" action="{{ route('profile.documents.delete', 'cv_path') }}" method="POST" class="hidden">
+                            <form id="delete-form-cv_path" action="{{ route('crew.profile.documents.delete', 'cv_path') }}" method="POST" class="hidden">
                                 @csrf @method('DELETE')
                             </form>
                         </div>
@@ -306,7 +306,7 @@
                                 <span class="px-3 py-1.5 text-xs font-bold text-gray-400 cursor-not-allowed">Hapus File</span>
                             </template>
 
-                            <form id="delete-form-portfolio_path" action="{{ route('profile.documents.delete', 'portfolio_path') }}" method="POST" class="hidden">
+                            <form id="delete-form-portfolio_path" action="{{ route('crew.profile.documents.delete', 'portfolio_path') }}" method="POST" class="hidden">
                                 @csrf @method('DELETE')
                             </form>
                         </div>
@@ -381,7 +381,7 @@
                     </button>
                 </div>
                 
-                <form action="{{ route('profile.update.skills') }}" method="POST">
+                <form action="{{ route('crew.profile.update.skills') }}" method="POST">
                     @csrf
                     @method('PUT')
                     
