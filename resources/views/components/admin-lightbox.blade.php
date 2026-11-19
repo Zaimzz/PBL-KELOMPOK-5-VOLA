@@ -2,10 +2,12 @@
 <div x-data="adminLightbox()"
      x-cloak
      x-show="open"
+     data-admin-lightbox
+     :data-open="open ? 'true' : 'false'"
      x-on:open-admin-lightbox.window="openModal($event.detail)"
-     x-on:keydown.escape.window="if(open) close()"
-     style="z-index: 99999;"
-     class="relative"
+     x-on:keydown.escape.window="if(open) { close(); $event.stopPropagation(); $event.stopImmediatePropagation(); }"
+     style="z-index: 60;"
+     class="relative z-[60]"
      aria-labelledby="lightbox-title"
      role="dialog"
      aria-modal="true">
@@ -18,11 +20,13 @@
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         x-on:click="close()"
-         class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"></div>
+         x-on:click.stop="close()"
+         x-on:mousedown.stop
+         class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity z-[60]"
+         style="z-index: 60;"></div>
 
     <!-- Modal Layout Container -->
-    <div class="fixed inset-0 z-10 flex flex-col justify-between p-3 sm:p-5 pointer-events-none">
+    <div class="fixed inset-0 z-[60] flex flex-col justify-between p-3 sm:p-5 pointer-events-none" style="z-index: 60;">
         
         <!-- Lightbox Header / Controls Bar -->
         <div class="w-full flex items-center justify-between gap-3 bg-white/95 border border-slate-200/80 text-slate-800 px-4 py-2.5 rounded-2xl shadow-xl backdrop-blur-md pointer-events-auto shrink-0 z-20">
@@ -103,7 +107,9 @@
 
         <!-- Lightbox Content Viewer (Full center viewport) -->
         <div class="relative flex-1 flex items-center justify-center p-2 sm:p-4 min-h-0 overflow-auto pointer-events-auto cursor-pointer"
-             x-on:click.self="close()">
+             x-on:click.self="close()"
+             x-on:click.stop
+             x-on:mousedown.stop>
             <!-- Loading Indicator Overlay -->
             <div x-show="loading"
                  class="absolute inset-0 z-10 flex flex-col items-center justify-center text-center pointer-events-none">
@@ -208,10 +214,14 @@
 
                 this.zoom = 1;
                 this.open = true;
+                window.adminLightboxOpen = true;
             },
 
             close() {
                 this.open = false;
+                setTimeout(() => {
+                    window.adminLightboxOpen = false;
+                }, 50);
                 this.loading = false;
                 this.hasError = false;
                 this.zoom = 1;
@@ -237,6 +247,7 @@
     }
 
     // Global JavaScript Helper Accessible Everywhere
+    window.adminLightboxOpen = false;
     window.openAdminLightbox = function(src, title, caption, type) {
         if (!src || src === '#' || src === 'null' || src === 'undefined') return;
         window.dispatchEvent(new CustomEvent('open-admin-lightbox', {

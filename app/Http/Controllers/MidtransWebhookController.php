@@ -141,6 +141,12 @@ class MidtransWebhookController extends Controller
             return;
         }
 
+        // Cancel any lingering pending payments for this same event to maintain 1 Event = 1 Invoice
+        Payment::where('event_id', $payment->event_id)
+            ->where('id', '!=', $payment->id)
+            ->where('status', PaymentStatus::Pending)
+            ->update(['status' => PaymentStatus::Cancelled]);
+
         // Only activate if the event is awaiting payment or already active
         // (do not accidentally re-activate a closed/finished/rejected event)
         $activatableStatuses = [

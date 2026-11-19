@@ -19,10 +19,24 @@ class TransactionController extends Controller
     {
         $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
-            'status' => ['nullable', 'string', 'in:all,paid,pending,failed,expired,cancelled,lunas,menunggu'],
+            'status' => ['nullable', 'string', 'in:all,paid,pending,failed,expired,cancelled,lunas,menunggu,dibatalkan,gagal'],
             'period' => ['nullable', 'string', 'max:50'],
             'month' => ['nullable', 'string', 'max:20'],
+            'selected' => ['nullable', 'integer'],
         ]);
+
+        // Auto-expire invoice 'Menunggu Pembayaran' yang sudah lewat batas waktu (expired_at < now() atau > 24 jam)
+        Payment::where('status', PaymentStatus::Pending)
+            ->where(function ($q) {
+                $q->where(function ($sq) {
+                    $sq->whereNotNull('expired_at')
+                        ->where('expired_at', '<', now());
+                })->orWhere(function ($sq) {
+                    $sq->whereNull('expired_at')
+                        ->where('created_at', '<', now()->subHours(24));
+                });
+            })
+            ->update(['status' => PaymentStatus::Expired]);
 
         $query = Payment::query()->with(['event.organizer', 'event.category']);
 
@@ -44,13 +58,15 @@ class TransactionController extends Controller
             });
         }
 
-        // Status Filter: Pill Buttons (all, paid/lunas, pending/menunggu)
+        // Status Filter: Pill Buttons (all, paid/lunas, pending/menunggu, dibatalkan/failed)
         if ($request->filled('status') && $request->status !== 'all') {
             $status = $request->status;
             if ($status === 'lunas' || $status === 'paid') {
                 $query->where('status', PaymentStatus::Paid);
             } elseif ($status === 'menunggu' || $status === 'pending') {
                 $query->where('status', PaymentStatus::Pending);
+            } elseif ($status === 'dibatalkan' || $status === 'failed' || $status === 'cancelled' || $status === 'expired' || $status === 'gagal') {
+                $query->whereIn('status', [PaymentStatus::Failed, PaymentStatus::Cancelled, PaymentStatus::Expired]);
             } else {
                 $query->where('status', $status);
             }
@@ -116,6 +132,11 @@ class TransactionController extends Controller
             'pending_count' => $pendingCount,
         ];
 
+        // Prioritaskan transaksi yang diklik dari Aktivitas Terkini ke urutan paling atas
+        if ($request->filled('selected')) {
+            $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [(int) $request->selected]);
+        }
+
         // Eager load and paginate
         $transactions = $query->latest('created_at')->paginate(10)->withQueryString();
 
@@ -127,6 +148,15 @@ class TransactionController extends Controller
      */
     public function show(Request $request, Payment $payment)
     {
+        if ($payment->status === PaymentStatus::Pending) {
+            $isExpired = ($payment->expired_at && $payment->expired_at->isPast())
+                || (! $payment->expired_at && $payment->created_at->addHours(24)->isPast());
+            if ($isExpired) {
+                $payment->update(['status' => PaymentStatus::Expired]);
+                $payment->refresh();
+            }
+        }
+
         $payment->load(['event.organizer', 'event.category']);
 
         $statusValue = $payment->status instanceof PaymentStatus ? $payment->status->value : (string) $payment->status;

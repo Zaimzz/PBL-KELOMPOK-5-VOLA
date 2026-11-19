@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\OrganizerProfile;
+use App\Support\MediaStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class EoVerificationController extends Controller
 {
@@ -49,10 +51,14 @@ class EoVerificationController extends Controller
             $query->where('verification_status', $request->status);
         }
 
+        $selectedId = $request->filled('selected') ? (int) $request->selected : null;
+        if ($selectedId) {
+            $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$selectedId]);
+        }
+
         $organizers = $query->latest()->paginate(5)->withQueryString();
 
-        if ($request->filled('selected')) {
-            $selectedId = (int) $request->selected;
+        if ($selectedId) {
             if (! $organizers->getCollection()->contains('id', $selectedId)) {
                 $targetEo = OrganizerProfile::with('user')->find($selectedId);
                 if ($targetEo) {
@@ -113,6 +119,7 @@ class EoVerificationController extends Controller
         ]);
 
         Cache::forget('admin_dashboard_stats_'.(int) $request->user()->id);
+        Cache::forget('admin_dashboard_stats_v2_'.(int) $request->user()->id);
 
         return back()->with('success', 'Akun EO "'.$organizer->organization_name.'" berhasil disetujui dan diverifikasi.');
     }
@@ -145,6 +152,7 @@ class EoVerificationController extends Controller
         ]);
 
         Cache::forget('admin_dashboard_stats_'.(int) $request->user()->id);
+        Cache::forget('admin_dashboard_stats_v2_'.(int) $request->user()->id);
 
         return back()->with('success', 'Pengajuan akun EO "'.$organizer->organization_name.'" telah ditolak.');
     }

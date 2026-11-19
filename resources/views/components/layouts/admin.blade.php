@@ -733,12 +733,12 @@
     <!-- MODAL KONFIRMASI LOGOUT ADMINISTRATOR          -->
     <!-- ============================================== -->
     <div x-show="logoutModalOpen" 
-         x-on:keydown.escape.window="logoutModalOpen = false"
-         class="fixed inset-0 z-[9999] overflow-y-auto overscroll-y-contain"
-         style="display: none;"
+         x-on:keydown.escape.window="if (!window.adminLightboxOpen && !document.querySelector('[data-admin-lightbox][data-open=\'true\']')) logoutModalOpen = false"
+         class="fixed inset-0 z-40 overflow-y-auto overscroll-y-contain"
+         style="z-index: 40; display: none;"
          x-cloak>
         
-        <!-- Backdrop Overlay with subtle blur: WAJIB menutupi 100% seluruh layar termasuk Top Navbar dan Sidebar kiri -->
+        <!-- Backdrop Overlay with subtle blur: Menutupi seluruh layar -->
         <div x-show="logoutModalOpen"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
@@ -746,12 +746,16 @@
              x-transition:leave="transition ease-in duration-150"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999]"
-             x-on:click="logoutModalOpen = false"></div>
+             class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40"
+             style="z-index: 40;"
+             x-on:click="if (window.adminLightboxOpen || document.querySelector('[data-admin-lightbox][data-open=\'true\']')) return; logoutModalOpen = false"
+             x-on:mousedown.self="if (window.adminLightboxOpen || document.querySelector('[data-admin-lightbox][data-open=\'true\']')) return;"></div>
 
         <!-- Modal Dialog Content: Full viewport centering dengan safe padding -->
-        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-6 sm:p-8 lg:pl-64"
-             x-on:click.self="logoutModalOpen = false">
+        <div class="fixed inset-0 z-40 flex items-center justify-center p-6 sm:p-8 lg:pl-64"
+             style="z-index: 40;"
+             x-on:click.self="if (window.adminLightboxOpen || document.querySelector('[data-admin-lightbox][data-open=\'true\']')) return; logoutModalOpen = false"
+             x-on:mousedown.self="if (window.adminLightboxOpen || document.querySelector('[data-admin-lightbox][data-open=\'true\']')) return;">
             <div x-show="logoutModalOpen"
                  x-transition:enter="transition ease-out duration-200"
                  x-transition:enter-start="opacity-0 scale-95 translate-y-2"
@@ -760,7 +764,7 @@
                  x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                  x-transition:leave-end="opacity-0 scale-95 translate-y-2"
                  x-on:click.stop
-                 @click.outside="logoutModalOpen = false"
+                 @click.outside="if (window.adminLightboxOpen || document.querySelector('[data-admin-lightbox][data-open=\'true\']')) return; logoutModalOpen = false"
                  class="w-full max-w-md bg-white rounded-2xl p-5 shadow-2xl border border-gray-100 text-left relative z-10 overflow-hidden my-auto flex flex-col space-y-3.5">
                 
                 <div class="flex items-start gap-3.5">

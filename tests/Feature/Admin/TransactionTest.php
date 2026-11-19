@@ -98,6 +98,13 @@ class TransactionTest extends TestCase
             'status' => PaymentStatus::Pending,
         ]);
 
+        $cancelledTx = Payment::factory()->create([
+            'event_id' => $otherEvent->id,
+            'invoice_number' => 'INV-2025-080',
+            'amount' => 300000,
+            'status' => PaymentStatus::Cancelled,
+        ]);
+
         // Search by invoice number
         $responseSearch = $this->actingAs($this->admin)->get(route('admin.transactions.index', [
             'search' => 'INV-2025-084',
@@ -121,6 +128,15 @@ class TransactionTest extends TestCase
         $responsePending->assertStatus(200);
         $responsePending->assertSee('INV-2025-082');
         $responsePending->assertDontSee('INV-2025-084');
+
+        // Filter by pill status 'dibatalkan'
+        $responseCancelled = $this->actingAs($this->admin)->get(route('admin.transactions.index', [
+            'status' => 'dibatalkan',
+        ]));
+        $responseCancelled->assertStatus(200);
+        $responseCancelled->assertSee('INV-2025-080');
+        $responseCancelled->assertDontSee('INV-2025-084');
+        $responseCancelled->assertDontSee('INV-2025-082');
     }
 
     public function test_metrics_header_calculated_accurately(): void
