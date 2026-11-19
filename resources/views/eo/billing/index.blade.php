@@ -390,8 +390,9 @@
          ALPINE.JS COMPONENT + MIDTRANS SNAP
     ================================================================ --}}
     @push('scripts')
-        {{-- Midtrans Snap.js — only the CLIENT key is exposed to the browser --}}
-        <script src="https://app.sandbox.midtrans.com/snap/snap.js"
+        {{-- Midtrans Snap.js — only the CLIENT key is exposed to the browser.
+             defer: snap hanya dipakai di dalam handler klik, tidak perlu memblokir parsing. --}}
+        <script src="https://app.sandbox.midtrans.com/snap/snap.js" defer
                 data-client-key="{{ config('services.midtrans.client_key') }}"></script>
 
         <script>

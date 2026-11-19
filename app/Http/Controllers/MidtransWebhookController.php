@@ -7,6 +7,7 @@ use App\Enums\PaymentStatus;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class MidtransWebhookController extends Controller
@@ -159,6 +160,9 @@ class MidtransWebhookController extends Controller
             'status' => EventStatus::Active,
             'published_at' => $event->published_at ?? now(),
         ]);
+
+        Cache::forget('eo_dashboard_'.$event->organizer_id);
+        Cache::forget('crew_recommended_events');
 
         Log::info('Midtrans webhook: event publication activated', [
             'event_id' => $event->id,

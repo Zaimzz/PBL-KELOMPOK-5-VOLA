@@ -65,7 +65,9 @@ class BillingController extends Controller
         $search = $request->query('search', '');
 
         if ($organizerProfile) {
+            // Only id/title are rendered (dropdown + counter)
             $events = Event::where('organizer_id', $organizerProfile->id)
+                ->select(['id', 'title'])
                 ->orderByDesc('created_at')
                 ->get();
 
@@ -334,35 +336,7 @@ class BillingController extends Controller
             try {
                 $result = Transaction::status($payment->midtrans_order_id);
 
-                $transactionStatus = $result->transaction_status ?? $redirectStatus;
-                $fraudStatus = $result->fraud_status ?? null;
-
-                $newStatus = match (true) {
-                    $transactionStatus === 'capture' && $fraudStatus === 'accept' => PaymentStatus::Paid,
-                    $transactionStatus === 'settlement' => PaymentStatus::Paid,
-                    // If the API still says "pending" but Midtrans redirect params say success,
-                    // trust the redirect params (Sandbox race condition / GoPay settlement lag).
-                    $transactionStatus === 'pending' && in_array($redirectStatus, ['capture', 'settlement'], true) => PaymentStatus::Paid,
-                    $transactionStatus === 'pending' && $redirectStatusCode === '200' => PaymentStatus::Paid,
-                    $transactionStatus === 'deny' => PaymentStatus::Failed,
-                    $transactionStatus === 'expire' => PaymentStatus::Expired,
-                    $transactionStatus === 'cancel' => PaymentStatus::Cancelled,
-                    default => PaymentStatus::Pending,
-                };
-
-                $updateData = ['status' => $newStatus];
-
-                if ($newStatus === PaymentStatus::Paid && ! $payment->paid_at) {
-                    $updateData['paid_at'] = now();
-                    $updateData['payment_type'] = $result->payment_type ?? null;
-                    $updateData['transaction_id'] = $result->transaction_id ?? null;
-                }
-
-                $payment->update($updateData);
-
-                if ($newStatus === PaymentStatus::Paid) {
-                    $this->activateEventPublication($payment);
-                }
+                $this->applyMidtransResult($payment, $result, $redirectStatus, $redirectStatusCode);
             } catch (\Exception $e) {
                 report($e);
 
@@ -400,32 +374,7 @@ class BillingController extends Controller
         try {
             $result = Transaction::status($payment->midtrans_order_id);
 
-            $transactionStatus = $result->transaction_status ?? null;
-            $fraudStatus = $result->fraud_status ?? null;
-
-            $newStatus = match (true) {
-                $transactionStatus === 'capture' && $fraudStatus === 'accept' => PaymentStatus::Paid,
-                $transactionStatus === 'settlement' => PaymentStatus::Paid,
-                $transactionStatus === 'pending' => PaymentStatus::Pending,
-                $transactionStatus === 'deny' => PaymentStatus::Failed,
-                $transactionStatus === 'expire' => PaymentStatus::Expired,
-                $transactionStatus === 'cancel' => PaymentStatus::Cancelled,
-                default => PaymentStatus::Pending,
-            };
-
-            $updateData = ['status' => $newStatus];
-
-            if ($newStatus === PaymentStatus::Paid && ! $payment->paid_at) {
-                $updateData['paid_at'] = now();
-                $updateData['payment_type'] = $result->payment_type ?? null;
-                $updateData['transaction_id'] = $result->transaction_id ?? null;
-            }
-
-            $payment->update($updateData);
-
-            if ($newStatus === PaymentStatus::Paid) {
-                $this->activateEventPublication($payment);
-            }
+            $newStatus = $this->applyMidtransResult($payment, $result);
 
             return response()->json(['status' => $newStatus->value]);
         } catch (\Exception $e) {
@@ -433,6 +382,45 @@ class BillingController extends Controller
 
             return response()->json(['status' => $payment->status->value]);
         }
+    }
+
+    /**
+     * Map a Midtrans API result (plus optional finish-redirect params) to a PaymentStatus,
+     * persist it on the payment, and activate publication when the payment is settled.
+     */
+    private function applyMidtransResult(Payment $payment, object $result, ?string $redirectStatus = null, ?string $redirectStatusCode = null): PaymentStatus
+    {
+        $transactionStatus = $result->transaction_status ?? $redirectStatus;
+        $fraudStatus = $result->fraud_status ?? null;
+
+        $newStatus = match (true) {
+            $transactionStatus === 'capture' && $fraudStatus === 'accept' => PaymentStatus::Paid,
+            $transactionStatus === 'settlement' => PaymentStatus::Paid,
+            // If the API still says "pending" but Midtrans redirect params say success,
+            // trust the redirect params (Sandbox race condition / GoPay settlement lag).
+            $transactionStatus === 'pending' && in_array($redirectStatus, ['capture', 'settlement'], true) => PaymentStatus::Paid,
+            $transactionStatus === 'pending' && $redirectStatusCode === '200' => PaymentStatus::Paid,
+            $transactionStatus === 'deny' => PaymentStatus::Failed,
+            $transactionStatus === 'expire' => PaymentStatus::Expired,
+            $transactionStatus === 'cancel' => PaymentStatus::Cancelled,
+            default => PaymentStatus::Pending,
+        };
+
+        $updateData = ['status' => $newStatus];
+
+        if ($newStatus === PaymentStatus::Paid && ! $payment->paid_at) {
+            $updateData['paid_at'] = now();
+            $updateData['payment_type'] = $result->payment_type ?? null;
+            $updateData['transaction_id'] = $result->transaction_id ?? null;
+        }
+
+        $payment->update($updateData);
+
+        if ($newStatus === PaymentStatus::Paid) {
+            $this->activateEventPublication($payment);
+        }
+
+        return $newStatus;
     }
 
     /**

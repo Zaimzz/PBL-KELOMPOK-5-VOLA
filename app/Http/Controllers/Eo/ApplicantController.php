@@ -37,9 +37,9 @@ class ApplicantController extends Controller
             ]);
         }
 
-        // All events owned by this EO (any status)
+        // All events owned by this EO (any status) — only id/title are rendered
         $events = Event::where('organizer_id', $organizerProfile->id)
-            ->withCount('applications')
+            ->select(['id', 'title'])
             ->orderByDesc('created_at')
             ->get();
 
@@ -66,7 +66,7 @@ class ApplicantController extends Controller
 
         // Build base query for applications on the selected event
         $query = Application::query()
-            ->whereHas('position', fn ($q) => $q->where('event_id', $selectedEvent->id))
+            ->whereIn('position_id', $positions->pluck('id'))
             ->with([
                 'volunteerProfile.user',
                 'position',
@@ -166,7 +166,8 @@ class ApplicantController extends Controller
         }
 
         // Notify volunteer via Laravel notification system
-        $volunteer = $application->fresh()->volunteerProfile?->user;
+        $application->load(['volunteerProfile.user', 'position.event']);
+        $volunteer = $application->volunteerProfile?->user;
         if ($volunteer) {
             $volunteer->notify(new ApplicationDecided($application, 'accepted'));
             Cache::forget('crew_application_counts_'.$application->volunteer_profile_id);
@@ -200,6 +201,7 @@ class ApplicantController extends Controller
         ]);
 
         // Notify volunteer via Laravel notification system
+        $application->load(['volunteerProfile.user', 'position.event']);
         $volunteer = $application->volunteerProfile?->user;
         if ($volunteer) {
             $volunteer->notify(new ApplicationDecided($application, 'rejected'));
@@ -223,9 +225,11 @@ class ApplicantController extends Controller
             abort(403, 'Profil organisasi tidak ditemukan.');
         }
 
-        $eventOwnerId = $application->position?->event?->organizer_id;
+        $ownsApplication = Application::whereKey($application->getKey())
+            ->whereHas('position.event', fn ($q) => $q->where('organizer_id', $organizerProfile->id))
+            ->exists();
 
-        if ($eventOwnerId !== $organizerProfile->id) {
+        if (! $ownsApplication) {
             abort(403, 'Anda tidak memiliki akses untuk mengubah pendaftaran ini.');
         }
     }

@@ -7,7 +7,8 @@
     <title>{{ $title ?? 'Vola' }} — Event Organizer</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700&display=swap" rel="stylesheet" />
+    {{-- Muat CSS font secara non-blocking agar render tidak menunggu server pihak ketiga --}}
+    <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -247,6 +248,38 @@
 
         </div>
     </div>
+
+    {{-- Cegah double-submit pada seluruh form EO: tombol submit dikunci setelah submit valid pertama.
+         Tidak memengaruhi form yang ditangani Alpine (x-on:submit.prevent) atau confirm() yang dibatalkan. --}}
+    <script>
+        (function () {
+            document.addEventListener('submit', function (e) {
+                if (e.defaultPrevented) return;
+
+                var form = e.target;
+                if (!form || form.tagName !== 'FORM') return;
+
+                if (form.dataset.submitting === '1') {
+                    e.preventDefault();
+                    return;
+                }
+
+                form.dataset.submitting = '1';
+                var btn = form.querySelector('button[type="submit"], input[type="submit"]');
+                if (btn) btn.disabled = true;
+            });
+
+            // Pulihkan tombol jika halaman dikembalikan dari bfcache (tombol back/forward)
+            window.addEventListener('pageshow', function () {
+                document.querySelectorAll('form[data-submitting="1"]').forEach(function (form) {
+                    form.dataset.submitting = '0';
+                    form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(function (btn) {
+                        btn.disabled = false;
+                    });
+                });
+            });
+        })();
+    </script>
 
     @stack('scripts')
 </body>

@@ -86,7 +86,7 @@ class CrewCoordinationController extends Controller
 
         // Build accepted applications query
         $query = Application::query()
-            ->whereHas('position', fn ($q) => $q->where('event_id', $selectedEvent->id))
+            ->whereIn('position_id', $positions->pluck('id'))
             ->where('status', ApplicationStatus::Accepted)
             ->with(['volunteerProfile.user', 'position']);
 
