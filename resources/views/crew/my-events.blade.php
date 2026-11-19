@@ -1,35 +1,5 @@
 <x-layouts.crew title="Event Saya - VOLA">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" 
-     x-data="{ 
-        activeTab: 'all',
-        events: @json($events ?? []),
-        
-        get filteredEvents() {
-            if (this.activeTab === 'all') return this.events;
-            return this.events.filter(e => e.status === this.activeTab);
-        },
-        
-        getCounts() {
-            return {
-                all: this.events.length,
-                upcoming: this.events.filter(e => e.status === 'upcoming').length,
-                ongoing: this.events.filter(e => e.status === 'ongoing').length,
-                completed: this.events.filter(e => e.status === 'completed').length
-            };
-        },
-        
-        getStatusBadgeClass(status) {
-            if (status === 'upcoming') return 'bg-blue-50 text-blue-600 border-blue-100';
-            if (status === 'ongoing') return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-            return 'bg-gray-50 text-gray-600 border-gray-100';
-        },
-        
-        getStatusLabel(status) {
-            if (status === 'upcoming') return 'Akan Datang';
-            if (status === 'ongoing') return 'Sedang Berlangsung';
-            return 'Selesai';
-        }
-     }">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" x-data="myEventsData()">
 
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900">Event Saya</h1>
@@ -107,7 +77,7 @@
                                 <p class="text-sm text-gray-600 truncate" x-text="event.location"></p>
                             </div>
 
-                            <a :href="'{{ route("events.detail", ":id") }}'.replace(':id', event.id)" 
+                            <a :href="'/events/' + event.id" 
                                class="block w-full py-2.5 text-center border-2 border-[#4F46E5] text-[#4F46E5] text-sm font-bold rounded-xl hover:bg-[#4F46E5] hover:text-white transition">
                                 Lihat Detail Event
                             </a>
@@ -137,4 +107,39 @@
     </div>
 
 </div>
+
+<script>
+    function myEventsData() {
+        return {
+            activeTab: 'all',
+            events: @json($events ?? []),
+            
+            get filteredEvents() {
+                if (this.activeTab === 'all') return this.events;
+                return this.events.filter(e => e.status === this.activeTab);
+            },
+            
+            getCounts() {
+                return {
+                    all: this.events.length,
+                    upcoming: this.events.filter(e => e.status === 'upcoming').length,
+                    ongoing: this.events.filter(e => e.status === 'ongoing').length,
+                    completed: this.events.filter(e => e.status === 'completed').length
+                };
+            },
+            
+            getStatusBadgeClass(status) {
+                if (status === 'upcoming') return 'bg-blue-50 text-blue-600 border-blue-100';
+                if (status === 'ongoing') return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+                return 'bg-gray-50 text-gray-600 border-gray-100';
+            },
+            
+            getStatusLabel(status) {
+                if (status === 'upcoming') return 'Akan Datang';
+                if (status === 'ongoing') return 'Sedang Berlangsung';
+                return 'Selesai';
+            }
+        };
+    }
+</script>
 </x-layouts.crew>
