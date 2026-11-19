@@ -132,6 +132,7 @@
                     options: {
                         'all': 'Semua Status',
                         'buka_rekrutmen': 'Buka Rekrutmen',
+                        'ditutup': 'Ditutup',
                         'sedang_berjalan': 'Sedang Berjalan',
                         'selesai': 'Selesai'
                     },
@@ -248,7 +249,7 @@
                                     $statusType = 'buka_rekrutmen';
                                     $statusText = 'Buka Rekrutmen';
                                 } elseif ($event->status === \App\Enums\EventStatus::Closed) {
-                                    $statusType = 'closed';
+                                    $statusType = 'ditutup';
                                     $statusText = 'Ditutup';
                                 } else {
                                     $statusType = 'sedang_berjalan';
@@ -262,18 +263,28 @@
                                 <!-- Nama Event & ID -->
                                 <td class="py-4 px-4">
                                     <div class="flex items-center gap-3 min-w-0">
-                                        <div
-                                            class="w-11 h-11 rounded-xl bg-slate-900 overflow-hidden shrink-0 shadow-sm relative">
-                                            @if ($event->poster_path)
+                                        @if ($event->poster_path)
+                                            <button type="button"
+                                                onclick="window.openAdminLightbox('{{ $event->poster_url }}', '{{ addslashes($event->title) }}', 'Poster Event • {{ addslashes($event->organizer->organization_name ?? 'Penyelenggara') }}', 'image')"
+                                                class="w-11 h-11 rounded-xl bg-slate-900 overflow-hidden shrink-0 shadow-xs relative group/poster cursor-pointer ring-1 ring-black/5 hover:ring-2 hover:ring-brand-500 hover:scale-105 transition-all duration-150"
+                                                title="Lihat Poster Event">
                                                 <img src="{{ $event->poster_url }}"
-                                                    alt="{{ $event->title }}" class="w-full h-full object-cover">
-                                            @else
+                                                    alt="{{ $event->title }}" class="w-full h-full object-cover group-hover/poster:brightness-90 transition-all duration-200">
                                                 <div
-                                                    class="w-full h-full bg-gradient-to-br from-indigo-900 to-slate-900 flex items-center justify-center text-brand-300 font-bold text-xs">
-                                                    {{ strtoupper(substr($event->title, 0, 2)) }}
+                                                    class="absolute inset-0 bg-slate-950/20 opacity-0 group-hover/poster:opacity-100 flex items-center justify-center transition-opacity duration-150">
+                                                    <svg class="w-4 h-4 text-white drop-shadow-sm" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0M10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                    </svg>
                                                 </div>
-                                            @endif
-                                        </div>
+                                            </button>
+                                        @else
+                                            <div
+                                                class="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-900 to-slate-900 flex items-center justify-center text-brand-300 font-bold text-xs shrink-0 shadow-xs">
+                                                {{ strtoupper(substr($event->title, 0, 2)) }}
+                                            </div>
+                                        @endif
                                         <div class="min-w-0 flex-1">
                                             <h3 class="font-bold text-gray-900 text-sm leading-snug truncate" title="{{ $event->title }}">
                                                 {{ $event->title }}</h3>
@@ -359,10 +370,10 @@
                                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
                                             Sedang Berjalan
                                         </span>
-                                    @elseif($statusType === 'closed')
+                                    @elseif($statusType === 'ditutup')
                                         <span
-                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/70">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"></span>
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/70">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
                                             Ditutup
                                         </span>
                                     @else
@@ -402,9 +413,11 @@
             </div>
 
             <!-- Pagination Bar -->
-            <div class="px-6 py-4 border-t border-slate-100">
-                {{ $events->withQueryString()->links('components.pagination') }}
-            </div>
+            @if ($events->total() > 0)
+                <div class="px-6 py-4 border-t border-slate-100">
+                    {{ $events->withQueryString()->links('components.pagination') }}
+                </div>
+            @endif
         </div>
 
         <!-- ============================================== -->
@@ -452,18 +465,94 @@
 
                 <template x-if="!loading && !hasError && currentEvent">
                     <div class="flex flex-col flex-1 min-h-0 overflow-hidden">
-                        <!-- Modal Header: px-5 py-3.5 style -->
-                        <div class="pb-3 border-b border-gray-100 shrink-0">
-                            <span class="text-[11px] font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full"
-                                x-text="currentEvent.event_code"></span>
-                            <h2 class="text-base sm:text-lg font-extrabold text-gray-900 mt-1 truncate"
-                                x-text="currentEvent.title"></h2>
-                            <p class="text-xs text-gray-500 truncate"
-                                x-text="'Penyelenggara: ' + currentEvent.organizer_name"></p>
+                        <!-- Modal Header -->
+                        <div class="flex items-start justify-between gap-3 pb-3 border-b border-gray-100 shrink-0">
+                            <div class="min-w-0">
+                                <span class="text-[11px] font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full"
+                                    x-text="currentEvent.event_code"></span>
+                                <h2 class="text-base sm:text-lg font-extrabold text-gray-900 mt-1 truncate"
+                                    x-text="currentEvent.title"></h2>
+                                <p class="text-xs text-gray-500 truncate"
+                                    x-text="'Penyelenggara: ' + currentEvent.organizer_name"></p>
+                            </div>
+                            <button type="button" @click="$dispatch('close')"
+                                class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0"
+                                title="Tutup Modal">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
                         </div>
 
                         <!-- Grid Details (Compact Internal Body) -->
                         <div class="space-y-3 text-xs flex-1 overflow-y-auto overscroll-y-contain min-h-0 py-3 pr-1">
+                            <!-- Pratinjau Poster Event -->
+                            <div class="rounded-xl overflow-hidden border border-gray-200/80 bg-gray-50 shadow-2xs">
+                                <div class="px-3 py-2 bg-gray-50/90 border-b border-gray-100 flex items-center justify-between">
+                                    <span class="text-[11px] font-bold text-gray-600 uppercase tracking-wider flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        Poster Event
+                                    </span>
+                                    <template x-if="currentEvent.has_poster && currentEvent.poster_url && !posterLoadFailed">
+                                        <span class="text-[10px] text-brand-600 font-semibold flex items-center gap-1">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0M10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                                            </svg>
+                                            Klik untuk memperbesar
+                                        </span>
+                                    </template>
+                                </div>
+
+                                <div class="relative h-40 sm:h-48 bg-slate-900 flex items-center justify-center overflow-hidden group/modalposter">
+                                    <!-- Skeleton Loader selagi gambar dimuat -->
+                                    <template x-if="currentEvent.has_poster && currentEvent.poster_url && posterLoading">
+                                        <div class="absolute inset-0 bg-slate-800 animate-pulse flex items-center justify-center z-10">
+                                            <svg class="w-6 h-6 text-slate-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                            </svg>
+                                        </div>
+                                    </template>
+
+                                    <!-- Gambar Poster (Tersedia & Berhasil Dimuat) -->
+                                    <template x-if="currentEvent.has_poster && currentEvent.poster_url && !posterLoadFailed">
+                                        <div class="w-full h-full relative cursor-pointer"
+                                             @click="window.openAdminLightbox(currentEvent.poster_url, currentEvent.title, 'Poster Event • ' + (currentEvent.organizer_name || 'Penyelenggara'), 'image')"
+                                             title="Klik untuk memperbesar poster">
+                                            <img :src="currentEvent.poster_url"
+                                                 :alt="currentEvent.title"
+                                                 x-on:load="posterLoading = false; posterLoadFailed = false"
+                                                 x-on:error="posterLoading = false; posterLoadFailed = true"
+                                                 class="w-full h-full object-cover group-hover/modalposter:scale-105 transition-transform duration-300">
+                                            <!-- Overlay Hover Action -->
+                                            <div class="absolute inset-0 bg-slate-950/30 opacity-0 group-hover/modalposter:opacity-100 transition-opacity flex items-center justify-center z-20">
+                                                <span class="px-3.5 py-1.5 rounded-xl bg-slate-900/75 text-white font-bold text-xs backdrop-blur-md border border-white/20 flex items-center gap-1.5 shadow-lg">
+                                                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0M10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                                                    </svg>
+                                                    Perbesar Poster
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <!-- Fallback Jika Gambar Gagal Dimuat atau Belum Diunggah -->
+                                    <template x-if="!currentEvent.has_poster || !currentEvent.poster_url || posterLoadFailed">
+                                        <div class="w-full h-full bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex flex-col items-center justify-center p-4 text-center">
+                                            <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-slate-400 mb-1.5">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                </svg>
+                                            </div>
+                                            <p class="text-xs font-bold text-slate-200" x-text="posterLoadFailed ? 'Gagal Memuat Poster' : 'Poster Belum Diunggah'"></p>
+                                            <p class="text-[11px] text-slate-400 mt-0.5" x-text="posterLoadFailed ? 'Tautan berkas poster tidak dapat diakses atau rusak.' : 'Pihak EO belum menyertakan berkas visual poster.'"></p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
                             <div
                                 class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-gray-50 p-3 rounded-xl border border-gray-100">
                                 <div>
@@ -546,6 +635,8 @@
                 hasError: false,
                 errorMessage: '',
                 currentEventId: null,
+                posterLoading: false,
+                posterLoadFailed: false,
 
                 async openDetailModal(eventId) {
                     this.currentEventId = eventId;
@@ -553,6 +644,8 @@
                     this.hasError = false;
                     this.errorMessage = '';
                     this.currentEvent = null;
+                    this.posterLoading = true;
+                    this.posterLoadFailed = false;
                     this.$dispatch('open-modal', 'active-event-detail-modal');
 
                     try {
@@ -568,6 +661,7 @@
                         }
 
                         this.currentEvent = await response.json();
+                        this.posterLoading = Boolean(this.currentEvent.has_poster && this.currentEvent.poster_url);
                     } catch (error) {
                         console.error('Gagal memuat detail event aktif:', error);
                         this.hasError = true;

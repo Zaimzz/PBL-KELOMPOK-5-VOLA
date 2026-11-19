@@ -2,7 +2,7 @@
 
     <!-- Header & Breadcrumb -->
     <div class="mb-6 relative z-10 opacity-100">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
             <div>
                 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border mb-2.5 bg-indigo-50 text-indigo-700 border-indigo-200/70">
                     <span class="relative flex h-2 w-2 mr-0.5">
@@ -16,23 +16,23 @@
             </div>
             
             <!-- Header Metrics: 3 Luxury Cards with Micro-interactions -->
-            <div id="admin-metrics-container" class="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full sm:w-auto shrink-0">
+            <div id="admin-metrics-container" class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full xl:w-auto shrink-0">
                 <!-- Menunggu -->
-                <x-metric-card label="Menunggu Verifikasi" :value="number_format($stats['pending'], 0, ',', '.')" bg="bg-amber-100" text="text-amber-700">
+                <x-metric-card label="Menunggu Verifikasi" :value="number_format($stats['pending'], 0, ',', '.')" bg="bg-amber-100" text="text-amber-700" class="w-full sm:min-w-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </x-metric-card>
 
                 <!-- Terverifikasi -->
-                <x-metric-card label="Terverifikasi" :value="number_format($stats['verified'], 0, ',', '.')" bg="bg-emerald-100" text="text-emerald-700">
+                <x-metric-card label="Terverifikasi" :value="number_format($stats['verified'], 0, ',', '.')" bg="bg-emerald-100" text="text-emerald-700" class="w-full sm:min-w-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                     </svg>
                 </x-metric-card>
 
                 <!-- Ditolak -->
-                <x-metric-card label="Ditolak" :value="number_format($stats['rejected'], 0, ',', '.')" bg="bg-rose-100" text="text-rose-700">
+                <x-metric-card label="Ditolak" :value="number_format($stats['rejected'], 0, ',', '.')" bg="bg-rose-100" text="text-rose-700" class="w-full sm:min-w-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -46,8 +46,8 @@
 
         <!-- Filter & Search Bar -->
         <x-card class="p-3">
-            <form action="{{ route('admin.eo-verifications') }}" method="GET" class="flex flex-col sm:flex-row gap-3">
-                <div class="relative flex-1">
+            <form action="{{ route('admin.eo-verifications') }}" method="GET" class="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
+                <div class="relative flex-1 min-w-0">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
@@ -58,7 +58,7 @@
                            class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
                 </div>
                 
-                <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 text-xs">
+                <div class="flex items-center gap-2 overflow-x-auto pb-1.5 lg:pb-0 text-xs shrink-0 max-w-full">
                     <input type="hidden" name="status" id="status_input" value="{{ request('status') }}">
                     
                     <button type="button" onclick="setStatus('')"
@@ -104,17 +104,25 @@
         </x-card>
 
         <!-- Data Table -->
-        <x-card padding="p-0" class="overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+        <x-card padding="p-0" class="overflow-hidden border border-slate-200/90 rounded-2xl w-full min-w-0">
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left border-collapse table-fixed">
+                    <colgroup>
+                        <col class="w-[22%]">
+                        <col class="w-[17%]">
+                        <col class="w-[15%]">
+                        <col class="w-[17%]">
+                        <col class="w-[11%]">
+                        <col class="w-[18%]">
+                    </colgroup>
                     <thead>
                         <tr class="bg-gray-50/70 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                            <th class="px-6 py-4">Nama Organisasi</th>
-                            <th class="px-6 py-4">Penanggung Jawab (PIC)</th>
-                            <th class="px-6 py-4">Tanggal Pengajuan</th>
-                            <th class="px-6 py-4">Dokumen Terlampir</th>
-                            <th class="px-6 py-4 text-center">Status</th>
-                            <th class="px-6 py-4 text-center">Aksi Moderasi</th>
+                            <th class="w-[22%] px-3 sm:px-4 py-3.5 whitespace-nowrap">Nama Organisasi</th>
+                            <th class="w-[17%] px-3 sm:px-4 py-3.5 whitespace-nowrap">Penanggung Jawab (PIC)</th>
+                            <th class="w-[15%] px-3 sm:px-4 py-3.5 whitespace-nowrap">Tanggal Pengajuan</th>
+                            <th class="w-[17%] px-3 sm:px-4 py-3.5 whitespace-nowrap">Dokumen Terlampir</th>
+                            <th class="w-[11%] px-2 sm:px-3 py-3.5 text-center whitespace-nowrap">Status</th>
+                            <th class="w-[18%] px-2 sm:px-3 py-3.5 text-center whitespace-nowrap">Aksi Moderasi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-xs sm:text-sm">
@@ -125,51 +133,51 @@
                             @endphp
                             <tr class="hover:bg-gray-50/60 transition-colors duration-150">
                                 <!-- Organisasi -->
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center shrink-0 text-brand-600 font-extrabold text-sm shadow-xs overflow-hidden relative">
+                                <td class="px-3 sm:px-4 py-3.5">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div class="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center shrink-0 text-brand-600 font-extrabold text-xs shadow-2xs overflow-hidden relative">
                                             @if($organizer->user?->avatar_path)
                                                 <img src="{{ $organizer->user->avatar_url }}" 
                                                      alt="{{ $organizer->organization_name }}"
                                                      class="w-full h-full object-cover"
                                                      onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
-                                                <div class="hidden w-full h-full flex items-center justify-center font-extrabold text-sm text-brand-600">
+                                                <div class="hidden w-full h-full flex items-center justify-center font-extrabold text-xs text-brand-600">
                                                     {{ strtoupper(substr($organizer->organization_name, 0, 2)) }}
                                                 </div>
                                             @else
                                                 {{ strtoupper(substr($organizer->organization_name, 0, 2)) }}
                                             @endif
                                         </div>
-                                        <div>
-                                            <div class="font-bold text-gray-900">{{ $organizer->organization_name }}</div>
-                                            <div class="flex items-center gap-2 mt-0.5">
-                                                <span class="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">{{ $organizer->organization_type ?? 'Organisasi' }}</span>
-                                                <span class="text-[11px] text-gray-400">{{ $organizer->city }}</span>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="font-bold text-gray-900 text-xs sm:text-sm line-clamp-2 leading-tight" title="{{ $organizer->organization_name }}">{{ $organizer->organization_name }}</div>
+                                            <div class="flex items-center gap-1.5 mt-0.5 text-[11px] text-gray-500 flex-wrap">
+                                                <span class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-medium truncate max-w-[100px]">{{ $organizer->organization_type ?? 'Organisasi' }}</span>
+                                                <span class="text-gray-400 truncate max-w-[80px]">{{ $organizer->city }}</span>
                                             </div>
                                         </div>
                                     </div>
                                 </td>
 
                                 <!-- PIC -->
-                                <td class="px-6 py-4">
-                                    <div class="font-semibold text-gray-900">{{ $organizer->pic_name }}</div>
-                                    <div class="text-xs text-emerald-600 font-medium flex items-center gap-1 mt-0.5">
-                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                <td class="px-3 sm:px-4 py-3.5">
+                                    <div class="font-semibold text-gray-900 text-xs sm:text-sm truncate" title="{{ $organizer->pic_name }}">{{ $organizer->pic_name }}</div>
+                                    <div class="text-[11px] text-emerald-600 font-medium flex items-center gap-1 mt-0.5 truncate">
+                                        <svg class="w-3 h-3 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                                         </svg>
-                                        {{ $organizer->pic_phone }}
+                                        <span class="truncate">{{ $organizer->pic_phone }}</span>
                                     </div>
                                 </td>
 
                                 <!-- Tanggal -->
-                                <td class="px-6 py-4">
-                                    <div class="font-medium text-gray-900">{{ $organizer->created_at ? $organizer->created_at->translatedFormat('d M Y') : '-' }}</div>
-                                    <div class="text-xs text-gray-400">{{ $organizer->created_at ? $organizer->created_at->format('H:i').' WIB' : '' }}</div>
+                                <td class="px-3 sm:px-4 py-3.5 whitespace-nowrap">
+                                    <div class="font-medium text-gray-900 text-xs sm:text-sm">{{ $organizer->created_at ? $organizer->created_at->translatedFormat('d M Y') : '-' }}</div>
+                                    <div class="text-[11px] text-gray-400">{{ $organizer->created_at ? $organizer->created_at->format('H:i').' WIB' : '' }}</div>
                                 </td>
 
                                 <!-- Dokumen Terlampir & NIB -->
-                                <td class="px-6 py-4">
-                                    <div class="space-y-1.5">
+                                <td class="px-3 sm:px-4 py-3.5">
+                                    <div class="space-y-1">
                                         @if($hasPhysicalDoc)
                                             @php
                                                 $isImgDoc = preg_match('/\.(jpg|jpeg|png|webp|svg)$/i', $organizer->document_path);
@@ -177,61 +185,62 @@
                                             @endphp
                                             <button type="button"
                                                     onclick="window.openAdminLightbox('{{ $docRoute }}', '{{ addslashes($organizer->organization_name) }}', 'Dokumen Verifikasi: {{ addslashes($organizer->organization_type ?? 'Legalitas') }}', '{{ $isImgDoc ? 'image' : 'pdf' }}')"
-                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-xl hover:bg-blue-100 transition-colors shadow-2xs cursor-pointer">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 text-[11px] font-semibold rounded-lg hover:bg-blue-100 transition-colors shadow-2xs cursor-pointer whitespace-nowrap"
+                                                    title="Lihat Dokumen Legalitas">
+                                                <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                                 </svg>
                                                 <span>Lihat Dokumen</span>
                                             </button>
                                         @else
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-gray-400 bg-gray-100 rounded-lg">
-                                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium text-gray-400 bg-gray-100 rounded whitespace-nowrap">
+                                                <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                                 </svg>
-                                                <span>Dokumen belum diunggah</span>
+                                                <span>Belum diunggah</span>
                                             </span>
                                         @endif
 
                                         @php
                                             $nibNumber = $organizer->nib ?? $organizer->legal_number ?? null;
                                         @endphp
-                                        <div class="flex items-center gap-1.5 pt-0.5" x-data="{ copied: false }">
-                                            <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">NIB/SK:</span>
+                                        <div class="flex items-center gap-1 text-[11px] whitespace-nowrap" x-data="{ copied: false }">
+                                            <span class="text-[10px] uppercase font-bold text-gray-400">NIB:</span>
                                             @if(!empty($nibNumber))
-                                                <code class="px-1.5 py-0.5 bg-gray-100 text-gray-800 rounded text-[11px] font-mono font-semibold">{{ $nibNumber }}</code>
+                                                <code class="px-1 py-0.2 bg-gray-100 text-gray-800 rounded font-mono font-semibold text-[10px] truncate max-w-[85px]" title="{{ $nibNumber }}">{{ $nibNumber }}</code>
                                                 <button type="button"
                                                         @click="navigator.clipboard.writeText('{{ $nibNumber }}'); copied = true; setTimeout(() => copied = false, 1500)"
-                                                        class="text-gray-400 hover:text-brand-600 transition-colors p-0.5"
+                                                        class="text-gray-400 hover:text-brand-600 transition-colors p-0.5 shrink-0"
                                                         :title="copied ? 'Tersalin!' : 'Salin Nomor NIB/SK'">
                                                     <template x-if="!copied">
-                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                                                     </template>
                                                     <template x-if="copied">
-                                                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                        <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                                     </template>
                                                 </button>
                                             @else
-                                                <span class="text-[11px] text-gray-400 italic">Belum dicantumkan</span>
+                                                <span class="text-[10px] text-gray-400 italic">Belum ada</span>
                                             @endif
                                         </div>
                                     </div>
                                 </td>
 
                                 <!-- Status Badge -->
-                                <td class="px-6 py-4 text-center whitespace-nowrap">
+                                <td class="px-2 sm:px-3 py-3.5 text-center whitespace-nowrap">
                                     @if($vStatus === 'pending')
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/70">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/70">
                                             <span class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
                                             Menunggu
                                         </span>
                                     @elseif($vStatus === 'verified')
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
                                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
                                             Terverifikasi
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/70">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200/70">
                                             <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
                                             Ditolak
                                         </span>
@@ -239,68 +248,140 @@
                                 </td>
 
                                 <!-- Tombol Aksi -->
-                                <td class="px-6 py-4 text-center whitespace-nowrap">
-                                    <div class="inline-flex items-center gap-1.5">
-                                        @if($vStatus === 'pending')
-                                            <!-- Tombol Setujui -->
-                                            <form action="{{ route('admin.eo-verifications.approve', $organizer) }}" method="POST" class="inline">
-                                                @csrf
-                                                <button type="submit"
-                                                        class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl transition-all duration-200 shadow-2xs active:scale-95"
+                                <td class="px-2 sm:px-3 py-3.5 text-center">
+                                    @if($vStatus === 'pending')
+                                        <div class="inline-flex flex-col items-center gap-1.5">
+                                            <div class="flex items-center justify-center gap-1.5">
+                                                <!-- Tombol Setujui -->
+                                                <button type="button"
+                                                        x-on:click.prevent="$dispatch('open-modal', 'approve-modal-{{ $organizer->id }}')"
+                                                        class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full transition-colors cursor-pointer whitespace-nowrap"
                                                         title="Setujui Akun Organisasi">
-                                                    <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                                    <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                                     </svg>
                                                     <span>Setujui</span>
                                                 </button>
-                                            </form>
 
-                                            <!-- Tombol Tolak -->
+                                                <!-- Tombol Tolak -->
+                                                <button type="button"
+                                                        x-on:click.prevent="$dispatch('open-modal', 'reject-modal-{{ $organizer->id }}')"
+                                                        class="inline-flex items-center gap-1 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold rounded-full transition-colors cursor-pointer whitespace-nowrap"
+                                                        title="Tolak Pengajuan Organisasi">
+                                                    <svg class="w-3.5 h-3.5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                    <span>Tolak</span>
+                                                </button>
+                                            </div>
+
+                                            <!-- Tombol Detail -->
                                             <button type="button"
-                                                    x-on:click.prevent="$dispatch('open-modal', 'reject-modal-{{ $organizer->id }}')"
-                                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl transition-all duration-200 shadow-2xs active:scale-95"
-                                                    title="Tolak Pengajuan Organisasi">
-                                                <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                                    @click="openDetailModal({{ $organizer->id }})"
+                                                    class="inline-flex items-center gap-1 px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-full transition-colors cursor-pointer whitespace-nowrap"
+                                                    title="Lihat Detail Organisasi">
+                                                <svg class="w-3.5 h-3.5 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                                 </svg>
-                                                <span>Tolak</span>
+                                                <span>Detail</span>
                                             </button>
-                                        @endif
-
-                                        <!-- Tombol Lihat Detail -->
+                                        </div>
+                                    @else
+                                        <!-- Tombol Detail untuk Terverifikasi / Ditolak -->
                                         <button type="button"
                                                 @click="openDetailModal({{ $organizer->id }})"
-                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-brand-700 text-xs font-bold rounded-xl transition-all duration-200 shadow-2xs active:scale-95"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-full transition-colors cursor-pointer whitespace-nowrap"
                                                 title="Lihat Detail Organisasi">
-                                            <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-3.5 h-3.5 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                             </svg>
                                             <span>Detail</span>
                                         </button>
-                                    </div>
+                                    @endif
 
                                     @if($vStatus === 'pending')
+                                        <!-- Modal Konfirmasi Persetujuan -->
+                                        <x-modal name="approve-modal-{{ $organizer->id }}" :show="false" maxWidth="md">
+                                            <form method="POST" action="{{ route('admin.eo-verifications.approve', $organizer) }}" class="p-5 text-left flex flex-col space-y-3">
+                                                @csrf
+                                                
+                                                <div class="flex items-start gap-3 min-w-0">
+                                                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                                        </svg>
+                                                    </div>
+                                                    <div class="min-w-0">
+                                                        <h3 class="text-base font-extrabold text-gray-900 truncate">
+                                                            Setujui Kemitraan EO?
+                                                        </h3>
+                                                        <p class="text-xs text-gray-500 font-medium truncate mt-0.5">{{ $organizer->organization_name }}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <p class="text-xs text-gray-600 leading-relaxed">
+                                                    Organisasi <strong class="text-gray-800 font-bold">{{ $organizer->organization_name }}</strong> akan diverifikasi secara resmi dan mendapatkan akses penuh untuk mempublikasikan event di platform VOLA.
+                                                </p>
+                                                
+                                                <div class="pt-2 flex justify-end gap-2 border-t border-gray-100">
+                                                    <x-secondary-button type="button" @click="show = false; $dispatch('close')">
+                                                        BATAL
+                                                    </x-secondary-button>
+                                                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer">
+                                                        Ya, Setujui
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </x-modal>
+
                                         <!-- Reject Modal per Organizer -->
                                         <x-modal name="reject-modal-{{ $organizer->id }}" :show="false" maxWidth="md">
                                             <form method="POST" action="{{ route('admin.eo-verifications.reject', $organizer) }}" class="p-5 text-left flex flex-col space-y-3"
-                                                  x-data="{ reason: '', hasError: false }"
-                                                  @submit.prevent="reason.trim() === '' ? hasError = true : $el.submit()">
+                                                  x-data="{
+                                                      reason: '',
+                                                      hasError: false,
+                                                      handleSubmit(e) {
+                                                          if (this.reason.trim() === '') {
+                                                              e.preventDefault();
+                                                              this.hasError = true;
+                                                              return false;
+                                                          }
+                                                          this.hasError = false;
+                                                      },
+                                                      resetForm() {
+                                                          this.reason = '';
+                                                          this.hasError = false;
+                                                          this.$el.querySelectorAll('.text-red-600').forEach(el => el.style.display = 'none');
+                                                          const btn = this.$el.querySelector('button[type=submit]');
+                                                          if (btn && window.unlockAdminButton) {
+                                                              window.unlockAdminButton(btn);
+                                                          }
+                                                      }
+                                                  }"
+                                                  @open-modal.window="if ($event.detail === 'reject-modal-{{ $organizer->id }}') resetForm()"
+                                                  @modal-closed.window="if ($event.detail === 'reject-modal-{{ $organizer->id }}') resetForm()"
+                                                  @submit="handleSubmit($event)">
                                                 @csrf
                                                 
-                                                <div class="flex items-start gap-3">
-                                                    <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                                                <div class="flex items-start gap-3 min-w-0">
+                                                    <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
                                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                                                         </svg>
                                                     </div>
                                                     <div class="min-w-0">
                                                         <h3 class="text-base font-extrabold text-gray-900 truncate">
-                                                            Tolak Organisasi {{ $organizer->organization_name }}?
+                                                            Tolak Pengajuan Organisasi?
                                                         </h3>
-                                                        <p class="text-xs text-gray-500 mt-0.5">Berikan catatan penolakan spesifik kepada pihak penyelenggara.</p>
+                                                        <p class="text-xs text-gray-500 font-medium truncate mt-0.5">{{ $organizer->organization_name }}</p>
                                                     </div>
                                                 </div>
+                                                
+                                                <p class="text-xs text-gray-600 leading-relaxed">
+                                                    Berikan alasan penolakan spesifik kepada pihak <strong class="text-gray-800 font-bold">{{ $organizer->organization_name }}</strong> agar dapat memperbaiki berkas pendaftarannya.
+                                                </p>
                                                 
                                                 <div>
                                                     <label for="alasan_{{ $organizer->id }}" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
@@ -322,10 +403,10 @@
                                                 </div>
                                                 
                                                 <div class="pt-2 flex justify-end gap-2 border-t border-gray-100">
-                                                    <x-secondary-button x-on:click="$dispatch('close')">
-                                                        Batal
+                                                    <x-secondary-button type="button" @click="resetForm(); show = false; $dispatch('close')">
+                                                        BATAL
                                                     </x-secondary-button>
-                                                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors">
+                                                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer">
                                                         Kirim Penolakan
                                                     </button>
                                                 </div>
@@ -349,9 +430,11 @@
             </div>
             
             <!-- Pagination Bar -->
-            <div class="p-4 border-t border-gray-100">
-                {{ $organizers->withQueryString()->links('components.pagination') }}
-            </div>
+            @if ($organizers->total() > 0)
+                <div class="p-4 border-t border-gray-100">
+                    {{ $organizers->withQueryString()->links('components.pagination') }}
+                </div>
+            @endif
         </x-card>
 
         <!-- ============================================== -->
@@ -616,15 +699,14 @@
                         <!-- Footer Modal: Only shown when status is pending -->
                         <template x-if="currentOrganizer.status === 'pending'">
                             <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-end gap-2 shrink-0">
-                                <form :action="currentOrganizer.approve_url" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                        </svg>
-                                        Setujui Akun
-                                    </button>
-                                </form>
+                                <button type="button"
+                                        @click="$dispatch('close'); $dispatch('open-modal', 'approve-modal-' + currentOrganizer.id)"
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Setujui Akun
+                                </button>
 
                                 <button type="button"
                                         @click="$dispatch('close'); $dispatch('open-modal', 'reject-modal-' + currentOrganizer.id)"
