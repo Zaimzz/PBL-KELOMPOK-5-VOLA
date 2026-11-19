@@ -64,6 +64,12 @@ class ReviewEventController extends Controller
             $query->where('status', $status);
         }
 
+        // Prioritaskan event yang dipilih dari Dashboard (parameter ?selected=ID) ke urutan paling atas
+        $selectedId = $request->filled('selected') ? (int) $request->selected : null;
+        if ($selectedId) {
+            $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$selectedId]);
+        }
+
         $events = $query->latest()->paginate(5)->withQueryString();
 
         // Metrics for header
@@ -88,10 +94,10 @@ class ReviewEventController extends Controller
 
         // Initially selected event (specific selected item or first item in list)
         $selectedEvent = null;
-        if ($request->filled('selected')) {
-            $selectedEvent = $eventsPayload->firstWhere('id', (int) $request->selected);
+        if ($selectedId) {
+            $selectedEvent = $eventsPayload->firstWhere('id', $selectedId);
             if (! $selectedEvent) {
-                $targetEvent = Event::with(['organizer.user', 'category', 'positions'])->find($request->selected);
+                $targetEvent = Event::with(['organizer.user', 'category', 'positions'])->find($selectedId);
                 if ($targetEvent) {
                     $selectedEvent = $this->transformEvent($targetEvent);
                     $eventsPayload->prepend($selectedEvent);
@@ -144,6 +150,7 @@ class ReviewEventController extends Controller
         ]);
 
         Cache::forget('admin_dashboard_stats_'.(int) $request->user()?->id);
+        Cache::forget('admin_dashboard_stats_v2_'.(int) $request->user()?->id);
         Cache::forget('crew_recommended_events');
         Cache::forget('eo_dashboard_'.$event->organizer_id);
 
@@ -193,6 +200,7 @@ class ReviewEventController extends Controller
         ]);
 
         Cache::forget('admin_dashboard_stats_'.(int) $request->user()?->id);
+        Cache::forget('admin_dashboard_stats_v2_'.(int) $request->user()?->id);
         Cache::forget('crew_recommended_events');
         Cache::forget('eo_dashboard_'.$event->organizer_id);
 
@@ -221,9 +229,8 @@ class ReviewEventController extends Controller
 
         $statusLabel = match ($statusVal) {
             'pending_review' => 'Menunggu Review',
-            'active' => 'Disetujui',
+            'active', 'awaiting_payment' => 'Disetujui',
             'rejected' => 'Ditolak',
-            'awaiting_payment' => 'Menunggu Pembayaran',
             'draft' => 'Draft',
             'closed' => 'Ditutup',
             'finished' => 'Selesai',
@@ -246,6 +253,7 @@ class ReviewEventController extends Controller
             'slug' => $event->slug,
             'status' => $statusVal,
             'status_label' => $statusLabel,
+            'is_awaiting_payment' => $statusVal === 'awaiting_payment',
             'category' => $event->category?->name ?? 'Umum',
             'organizer' => [
                 'id' => $event->organizer?->id,

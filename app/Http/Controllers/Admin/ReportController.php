@@ -24,14 +24,14 @@ class ReportController extends Controller
     {
         $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
-            'status' => ['nullable', 'string', 'in:all,pending,in_review,resolved,rejected'],
+            'status' => ['nullable', 'string', 'in:all,pending,resolved,rejected'],
         ]);
 
-        // 1. Metrik Header
+        // 1. Metrik Header (3 Status: Menunggu, Selesai, Ditolak)
         $stats = [
-            'pending' => Report::where('status', ReportStatus::Pending)->count(),
-            'in_review' => Report::where('status', ReportStatus::InReview)->count(),
+            'pending' => Report::whereIn('status', [ReportStatus::Pending, ReportStatus::InReview])->count(),
             'resolved' => Report::where('status', ReportStatus::Resolved)->count(),
+            'rejected' => Report::where('status', ReportStatus::Rejected)->count(),
         ];
 
         // 2. Query Laporan
@@ -57,19 +57,15 @@ class ReportController extends Controller
             });
         }
 
-        // Filter Status Pills
+        // Filter Status Pills (4 Pilihan: all, pending, resolved, rejected)
         $statusFilter = $request->input('status', 'all');
         if ($statusFilter && $statusFilter !== 'all') {
-            $enumVal = match ($statusFilter) {
-                'pending' => ReportStatus::Pending,
-                'in_review' => ReportStatus::InReview,
-                'resolved' => ReportStatus::Resolved,
-                'rejected' => ReportStatus::Rejected,
-                default => null,
-            };
-
-            if ($enumVal) {
-                $query->where('status', $enumVal);
+            if ($statusFilter === 'pending') {
+                $query->whereIn('status', [ReportStatus::Pending, ReportStatus::InReview]);
+            } elseif ($statusFilter === 'resolved') {
+                $query->where('status', ReportStatus::Resolved);
+            } elseif ($statusFilter === 'rejected') {
+                $query->where('status', ReportStatus::Rejected);
             }
         }
 
@@ -94,10 +90,9 @@ class ReportController extends Controller
                 'description' => $report->description,
                 'status' => $report->status->value,
                 'status_label' => match ($report->status) {
-                    ReportStatus::Pending => 'Menunggu Tindakan',
-                    ReportStatus::InReview => 'Sedang Ditinjau',
-                    ReportStatus::Resolved => 'Laporan Selesai',
-                    ReportStatus::Rejected => 'Laporan Ditolak',
+                    ReportStatus::Pending, ReportStatus::InReview => 'Menunggu',
+                    ReportStatus::Resolved => 'Selesai',
+                    ReportStatus::Rejected => 'Ditolak',
                 },
                 'action_taken' => $report->action_taken,
                 'admin_notes' => $report->admin_notes,
@@ -111,12 +106,14 @@ class ReportController extends Controller
                     'name' => $report->reporter->name,
                     'email' => $report->reporter->email,
                     'role' => $report->reporter->role->value,
+                    'role_label' => $report->reporter->role === UserRole::Eo ? 'Event Organizer' : 'Crew',
                 ],
                 'reported' => [
                     'id' => $report->reported->id,
                     'name' => $report->reported->name,
                     'email' => $report->reported->email,
                     'role' => $report->reported->role->value,
+                    'role_label' => $report->reported->role === UserRole::Eo ? 'Event Organizer' : 'Crew',
                     'status' => $report->reported->status->value,
                 ],
             ],
@@ -129,8 +126,8 @@ class ReportController extends Controller
     public function handleAction(Request $request, Report $report)
     {
         $validated = $request->validate([
-            'action' => ['required', 'string', 'in:in_review,warning,suspend,resolve,reject'],
-            'admin_notes' => ['nullable', 'string', 'max:1000'],
+            'action' => ['required', 'string', 'in:warning,suspend,reject'],
+            'admin_notes' => ['nullable', 'string', 'max:1000', 'required_if:action,warning,reject'],
         ]);
 
         $action = $validated['action'];
@@ -141,11 +138,6 @@ class ReportController extends Controller
             $reportedUser = $report->reported;
 
             switch ($action) {
-                case 'in_review':
-                    $report->status = ReportStatus::InReview;
-                    $report->action_taken = 'Sedang Ditinjau';
-                    break;
-
                 case 'warning':
                     $report->status = ReportStatus::Resolved;
                     $report->action_taken = 'Diberikan Peringatan Resmi';
@@ -179,13 +171,6 @@ class ReportController extends Controller
                     ]);
                     break;
 
-                case 'resolve':
-                    $report->status = ReportStatus::Resolved;
-                    $report->action_taken = 'Diselesaikan';
-                    $report->resolved_by = $admin->id;
-                    $report->resolved_at = now();
-                    break;
-
                 case 'reject':
                     $report->status = ReportStatus::Rejected;
                     $report->action_taken = 'Laporan Ditolak (Tidak Terbukti)';
@@ -194,7 +179,7 @@ class ReportController extends Controller
                     break;
             }
 
-            if ($notes) {
+            if ($notes !== null) {
                 $report->admin_notes = $notes;
             }
 

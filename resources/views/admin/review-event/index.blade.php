@@ -2,7 +2,7 @@
 
     <!-- Header & Breadcrumbs -->
     <div class="mb-6 relative z-10 opacity-100">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
                 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border mb-2.5 bg-amber-50 text-amber-700 border-amber-200/70">
                     <span class="relative flex h-2 w-2 mr-0.5">
@@ -16,9 +16,9 @@
             </div>
 
             <!-- Header Metrics: Luxury Cards -->
-            <div id="admin-metrics-container" class="flex flex-wrap items-center gap-3">
+            <div id="admin-metrics-container" class="w-full lg:w-auto grid grid-cols-2 gap-3 sm:gap-4">
                 <!-- Pengajuan Menunggu -->
-                <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80 flex items-center gap-3">
+                <div class="w-full bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80 flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -31,7 +31,7 @@
                 </div>
 
                 <!-- Disetujui Bulan Ini -->
-                <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80 flex items-center gap-3">
+                <div class="w-full bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-200/80 flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
@@ -59,6 +59,15 @@
 
                 <!-- Header Antrean + Search & Filter dalam Satu Kartu -->
                 <x-card class="p-4 space-y-3.5">
+                    @php
+                        $currentStatus = request('status', 'all');
+                        if (empty($currentStatus)) {
+                            $currentStatus = 'all';
+                        }
+                        $hasActiveFilter = (request('search') && trim(request('search')) !== '')
+                            || (request('status') && request('status') !== 'all');
+                    @endphp
+
                     <!-- Baris Atas: Judul & Badge Jumlah Item -->
                     <div class="flex items-center justify-between gap-3 pb-3 border-b border-gray-100">
                         <div class="flex items-center gap-2.5">
@@ -84,45 +93,35 @@
                                    class="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
                         </div>
 
-                        @php
-                            $currentStatus = request('status', 'all');
-                            if (empty($currentStatus)) {
-                                $currentStatus = 'all';
-                            }
-                        @endphp
-
-                        <!-- Status Filter Buttons -->
-                        <div class="flex items-center gap-2 overflow-x-auto pb-0.5 text-xs">
+                        <!-- Filter Status Pills: 2x2 di mobile dengan Reset di kanan, 1 baris di desktop (Persis Pola Laporan) -->
+                        <div class="flex flex-row items-center justify-between sm:justify-start gap-2.5 w-full shrink-0 transition-all duration-200">
                             <input type="hidden" name="status" id="statusFilterInput" value="{{ $currentStatus }}">
-                            
-                            <button type="submit" onclick="document.getElementById('statusFilterInput').value='all'"
-                                    class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors {{ in_array($currentStatus, ['all', '']) ? 'bg-brand-600 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
-                                Semua Status
-                            </button>
-                            <button type="submit" onclick="document.getElementById('statusFilterInput').value='pending_review'"
-                                    class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors {{ in_array($currentStatus, ['pending_review', 'pending']) ? 'bg-brand-600 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
-                                Menunggu Review
-                            </button>
-                            <button type="submit" onclick="document.getElementById('statusFilterInput').value='active'"
-                                    class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors {{ in_array($currentStatus, ['active', 'approved']) ? 'bg-brand-600 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
-                                Disetujui
-                            </button>
-                            <button type="submit" onclick="document.getElementById('statusFilterInput').value='rejected'"
-                                    class="px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-colors {{ $currentStatus === 'rejected' ? 'bg-brand-600 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
-                                Ditolak
-                            </button>
 
-                            @php
-                                $hasActiveFilter = (request('search') && trim(request('search')) !== '')
-                                    || (request('status') && request('status') !== 'all');
-                            @endphp
+                            <div class="grid grid-cols-2 gap-2 flex-1 sm:flex-initial sm:flex sm:flex-nowrap sm:items-center text-xs">
+                                <button type="submit" onclick="document.getElementById('statusFilterInput').value='all'"
+                                        class="px-3.5 py-1.5 font-bold rounded-xl transition-all whitespace-nowrap justify-center text-center w-full sm:w-auto {{ in_array($currentStatus, ['all', '']) ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                    Semua Status
+                                </button>
+                                <button type="submit" onclick="document.getElementById('statusFilterInput').value='pending_review'"
+                                        class="px-3.5 py-1.5 font-bold rounded-xl transition-all whitespace-nowrap justify-center text-center w-full sm:w-auto {{ in_array($currentStatus, ['pending_review', 'pending']) ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                    Menunggu
+                                </button>
+                                <button type="submit" onclick="document.getElementById('statusFilterInput').value='active'"
+                                        class="px-3.5 py-1.5 font-bold rounded-xl transition-all whitespace-nowrap justify-center text-center w-full sm:w-auto {{ in_array($currentStatus, ['active', 'approved']) ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                    Disetujui
+                                </button>
+                                <button type="submit" onclick="document.getElementById('statusFilterInput').value='rejected'"
+                                        class="px-3.5 py-1.5 font-bold rounded-xl transition-all whitespace-nowrap justify-center text-center w-full sm:w-auto {{ $currentStatus === 'rejected' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                    Ditolak
+                                </button>
+                            </div>
 
                             @if($hasActiveFilter)
                                 <a href="{{ route('admin.review-events.index') }}" 
                                    data-reset="true"
                                    x-data="{ resetting: false }"
                                    @click="resetting = true"
-                                   class="group inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all whitespace-nowrap shrink-0">
+                                   class="group inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all whitespace-nowrap shrink-0 self-center">
                                     <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
                                          :class="{ 'animate-spin text-brand-600': resetting }"
                                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,13 +158,9 @@
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/70">
                                             Menunggu Review
                                         </span>
-                                    @elseif($status === 'active')
+                                    @elseif($status === 'active' || $status === 'awaiting_payment')
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
                                             Disetujui
-                                        </span>
-                                    @elseif($status === 'awaiting_payment')
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/70">
-                                            Menunggu Pembayaran
                                         </span>
                                     @elseif($status === 'rejected')
                                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/70">
@@ -465,9 +460,17 @@
                                         </div>
                                     </template>
 
-                                    <template x-if="selectedEvent.status === 'active'">
-                                        <div class="bg-emerald-50 text-emerald-800 p-3 rounded-xl border border-emerald-200 text-xs text-center font-semibold">
-                                            ✓ Event ini telah disetujui dan saat ini aktif dipublikasikan ke publik.
+                                    <template x-if="selectedEvent.status === 'active' || selectedEvent.status === 'awaiting_payment'">
+                                        <div class="bg-emerald-50 text-emerald-800 p-3.5 rounded-xl border border-emerald-200 text-xs text-center font-semibold space-y-1">
+                                            <div class="flex items-center justify-center gap-1.5">
+                                                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                                <span>✓ Event ini telah disetujui kurasi oleh Admin.</span>
+                                            </div>
+                                            <template x-if="selectedEvent.is_awaiting_payment || selectedEvent.status === 'awaiting_payment'">
+                                                <p class="text-[11px] text-emerald-700/80 font-normal">Penyelenggara (EO) sedang dalam proses penyelesaian pembayaran paket publikasi.</p>
+                                            </template>
                                         </div>
                                     </template>
 
@@ -503,7 +506,7 @@
         <!-- ============================================== -->
         <!-- MODAL TOLAK PENGAJUAN EVENT (COMPACT)          -->
         <!-- ============================================== -->
-        <x-modal name="reject-event-modal" :show="false" maxWidth="md">
+        <x-modal name="reject-event-modal" :show="false" maxWidth="md" zIndex="50">
             <form method="POST" 
                   :action="selectedEvent ? selectedEvent.reject_url : ''" 
                   class="p-5 flex flex-col space-y-3"
@@ -540,10 +543,10 @@
                         </svg>
                     </div>
                     <div class="min-w-0">
-                        <h2 class="text-base font-extrabold text-gray-900 truncate">
+                        <h2 class="text-base font-extrabold text-gray-900 break-words">
                             Tolak Pengajuan Event?
                         </h2>
-                        <p class="text-xs text-gray-500 font-medium truncate mt-0.5" x-text="selectedEvent ? selectedEvent.title : ''"></p>
+                        <p class="text-xs text-gray-500 font-medium break-words mt-0.5" x-text="selectedEvent ? selectedEvent.title : ''"></p>
                     </div>
                 </div>
 
@@ -584,7 +587,7 @@
         <!-- ============================================== -->
         <!-- MODAL KONFIRMASI SETUJUI EVENT (COMPACT)       -->
         <!-- ============================================== -->
-        <x-modal name="approve-event-modal" :show="false" maxWidth="md">
+        <x-modal name="approve-event-modal" :show="false" maxWidth="md" zIndex="50">
             <form method="POST" :action="selectedEvent ? selectedEvent.approve_url : ''" class="p-5 flex flex-col space-y-3">
                 @csrf
 
@@ -595,10 +598,10 @@
                         </svg>
                     </div>
                     <div class="min-w-0">
-                        <h2 class="text-base font-extrabold text-gray-900 truncate">
+                        <h2 class="text-base font-extrabold text-gray-900 break-words">
                             Setujui Pengajuan Event?
                         </h2>
-                        <p class="text-xs text-gray-500 font-medium truncate mt-0.5" x-text="selectedEvent ? selectedEvent.title : ''"></p>
+                        <p class="text-xs text-gray-500 font-medium break-words mt-0.5" x-text="selectedEvent ? selectedEvent.title : ''"></p>
                     </div>
                 </div>
 

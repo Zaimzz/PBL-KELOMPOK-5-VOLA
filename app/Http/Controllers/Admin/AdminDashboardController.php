@@ -23,7 +23,7 @@ class AdminDashboardController extends Controller
 
         // Statistik dashboard jarang berubah per menit; cache menghilangkan
         // belasan round-trip query ke database remote di setiap navigasi.
-        $stats = Cache::remember('admin_dashboard_stats_'.$admin->id, 60, function (): array {
+        $stats = Cache::remember('admin_dashboard_stats_v2_'.$admin->id, 60, function (): array {
             $pendingEoCount = OrganizerProfile::where('verification_status', VerificationStatus::Pending)->count();
             $pendingReviewEventCount = Event::where('status', EventStatus::PendingReview)->count();
             $activeEventCount = Event::where('status', EventStatus::Active)->count();
@@ -90,12 +90,17 @@ class AdminDashboardController extends Controller
             $recentEos = OrganizerProfile::latest('created_at')->take(3)->get();
             foreach ($recentEos as $reo) {
                 $activities->push([
+                    'type' => 'eo',
                     'title' => 'Pendaftaran Penyelenggara Baru',
                     'description' => "EO {$reo->organization_name} mendaftarkan profil organisasi.",
                     'time' => $reo->created_at ? $reo->created_at->diffForHumans() : 'Baru saja',
                     'raw_time' => $reo->created_at?->toIso8601String(),
                     'badge' => 'Penyelenggara',
                     'badge_color' => 'bg-indigo-50 text-brand-700',
+                    'action_link' => route('admin.eo-verifications', [
+                        'search' => $reo->organization_name,
+                        'selected' => $reo->id,
+                    ]),
                 ]);
             }
 
@@ -104,12 +109,17 @@ class AdminDashboardController extends Controller
             foreach ($recentPayments as $rpay) {
                 $isPaid = $rpay->status === PaymentStatus::Paid;
                 $activities->push([
+                    'type' => 'transaction',
                     'title' => 'Transaksi Layanan #'.$rpay->invoice_number,
                     'description' => 'Pembayaran Rp '.number_format($rpay->amount, 0, ',', '.').' ('.($isPaid ? 'LUNAS' : 'Menunggu').') untuk event '.($rpay->event?->title ?? '-'),
                     'time' => $rpay->created_at ? $rpay->created_at->diffForHumans() : 'Baru saja',
                     'raw_time' => $rpay->created_at?->toIso8601String(),
                     'badge' => 'Transaksi',
                     'badge_color' => $isPaid ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700',
+                    'action_link' => route('admin.transactions.index', [
+                        'search' => $rpay->invoice_number,
+                        'selected' => $rpay->id,
+                    ]),
                 ]);
             }
 
@@ -117,12 +127,16 @@ class AdminDashboardController extends Controller
             $recentSubmittedEvents = Event::latest('created_at')->take(3)->get();
             foreach ($recentSubmittedEvents as $rse) {
                 $activities->push([
+                    'type' => 'event',
                     'title' => 'Pengajuan Event: '.$rse->title,
                     'description' => 'Event baru diajukan ke platform dengan status: '.ucfirst($rse->status->value),
                     'time' => $rse->created_at ? $rse->created_at->diffForHumans() : 'Baru saja',
                     'raw_time' => $rse->created_at?->toIso8601String(),
                     'badge' => 'Event',
                     'badge_color' => 'bg-blue-50 text-blue-700',
+                    'action_link' => route('admin.review-events.index', [
+                        'selected' => $rse->id,
+                    ]),
                 ]);
             }
 

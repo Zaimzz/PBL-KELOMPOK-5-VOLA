@@ -17,7 +17,7 @@
             </div>
 
             <!-- Top Right: Download Actions Dropdown -->
-            <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+            <div class="relative inline-block" x-data="{ open: false }" @click.outside="open = false">
                 <button @click="open = !open" type="button" 
                         class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-brand-700 bg-brand-50 border border-brand-200 rounded-xl hover:bg-brand-100 transition-colors">
                     <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -39,7 +39,7 @@
                      x-transition:leave="transition ease-in duration-100"
                      x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                      x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-                     class="absolute right-0 mt-1.5 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden" 
+                     class="absolute left-0 sm:right-0 sm:left-auto mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-30 overflow-hidden" 
                      style="display: none;"
                      x-cloak>
                     <div class="py-1">
@@ -134,13 +134,13 @@
     </div>
 
     <!-- Main Content & Alpine.js Manager -->
-    <div id="admin-content-container" x-data="transactionManager()" class="w-full max-w-full min-w-0 space-y-6">
+    <div id="admin-content-container" x-data="transactionManager({{ request('selected') ? (int) request('selected') : 'null' }})" class="w-full max-w-full min-w-0 space-y-6">
 
         <!-- Search & Filter Bar -->
-        <div class="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-sm">
-            <form action="{{ route('admin.transactions.index') }}" method="GET" class="flex flex-col lg:flex-row items-center gap-3">
+        <div class="bg-white rounded-2xl border border-slate-200/90 p-3.5 shadow-sm">
+            <form action="{{ route('admin.transactions.index') }}" method="GET" class="flex flex-col 2xl:flex-row 2xl:items-center gap-2.5 sm:gap-3 w-full">
                 <!-- Search Box -->
-                <div class="relative flex-1 w-full">
+                <div class="relative flex-1 min-w-[200px] w-full 2xl:w-auto">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
@@ -150,162 +150,193 @@
                            name="search"
                            value="{{ request('search') }}"
                            placeholder="Cari nomor invoice #INV, nama event, atau penyelenggara"
-                           class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
+                           class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
                 </div>
 
-                <!-- Status Filter PILL BUTTONS (Warna Aktif: Biru, Terpisah) -->
-                <div class="flex items-center gap-2 w-full sm:w-auto shrink-0 overflow-x-auto pb-1 sm:pb-0">
-                    <input type="hidden" name="status" id="txStatusInput" value="{{ request('status', 'all') }}">
-
-                    <button type="button"
-                            onclick="setTxStatus('all')"
-                            class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all whitespace-nowrap {{ request('status', 'all') === 'all' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-                        Semua Status
-                    </button>
-
-                    <button type="button"
-                            onclick="setTxStatus('lunas')"
-                            class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all whitespace-nowrap {{ request('status') === 'lunas' || request('status') === 'paid' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-                        Lunas
-                    </button>
-
-                    <button type="button"
-                            onclick="setTxStatus('menunggu')"
-                            class="px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all whitespace-nowrap {{ request('status') === 'menunggu' || request('status') === 'pending' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
-                        Menunggu Pembayaran
-                    </button>
-                </div>
-
-                <!-- Period / Date Range Filter Dropdown + Conditional Month Picker -->
                 @php
                     $rawPeriod = request('period', 'all');
                     $isCustomMonth = str_starts_with($rawPeriod, 'month:') || $rawPeriod === 'custom_month' || (request()->has('month') && request('month') !== '' && $rawPeriod !== 'all');
                     $selectedPeriod = $isCustomMonth ? 'custom_month' : ($rawPeriod ?: 'all');
                     $selectedMonth = str_starts_with($rawPeriod, 'month:') ? substr($rawPeriod, 6) : ($isCustomMonth ? request('month', now()->format('Y-m')) : '');
-                @endphp
-                <div x-data="{ 
-                        open: false,
-                        period: '{{ $selectedPeriod }}',
-                        options: {
-                            'all': 'Semua Waktu',
-                            '1_year': '1 Tahun Terakhir',
-                            '6_months': '6 Bulan Terakhir',
-                            'this_month': 'Bulan Ini',
-                            'custom_month': 'Pilih Bulan Tertentu'
-                        },
-                        select(val) {
-                            this.period = val;
-                            this.open = false;
-                            const monthEl = document.getElementById('txMonthInput');
-                            if (val !== 'custom_month') {
-                                if (monthEl) {
-                                    monthEl.value = '';
-                                    monthEl.disabled = true;
-                                }
-                                $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenPeriod.form); });
-                            } else {
-                                if (monthEl) {
-                                    monthEl.disabled = false;
-                                    if (!monthEl.value) {
-                                        const today = new Date();
-                                        const ym = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
-                                        monthEl.value = ym;
-                                    }
-                                }
-                                $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenPeriod.form); });
-                            }
-                        }
-                    }" 
-                    class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto shrink-0 relative"
-                    @click.away="open = false">
-                    
-                    <input type="hidden" name="period" :value="period" x-ref="hiddenPeriod">
 
-                    <!-- Custom Dropdown Button -->
-                    <div class="relative w-full sm:w-56 shrink-0">
-                        <button type="button" 
-                                @click="open = !open" 
-                                class="w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-gray-50 hover:bg-gray-100/80 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-left">
-                            <span class="truncate" x-text="options[period] || 'Semua Waktu'"></span>
-                            <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200" 
-                                 :class="{ 'rotate-180 text-brand-600': open }" 
-                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-
-                        <div x-show="open" 
-                             x-transition:enter="transition ease-out duration-150"
-                             x-transition:enter-start="opacity-0 scale-95 translate-y-1"
-                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                             x-transition:leave="transition ease-in duration-100"
-                             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                             x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-                             class="absolute left-0 right-0 mt-1.5 py-1.5 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden" 
-                             style="display: none;" 
-                             x-cloak>
-                            <template x-for="(label, key) in options" :key="key">
-                                <button type="button" 
-                                        @click="select(key)"
-                                        class="w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm text-left transition-colors"
-                                        :class="period === key ? 'bg-brand-50 text-brand-700 font-bold' : 'text-gray-700 hover:bg-gray-50'">
-                                    <span x-text="label"></span>
-                                    <svg x-show="period === key" class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </button>
-                            </template>
-                        </div>
-                    </div>
-
-                    <input type="month"
-                           id="txMonthInput"
-                           name="month"
-                           value="{{ $selectedMonth }}"
-                           x-show="period === 'custom_month'"
-                           :disabled="period !== 'custom_month'"
-                           x-cloak
-                           @change="window.adminSubmitForm($el.form)"
-                           class="w-full sm:w-auto py-2 px-3 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
-                </div>
-
-                @php
                     $hasActiveFilter = (request('search') && trim(request('search')) !== '')
                         || (request('status') && request('status') !== 'all')
                         || ($rawPeriod !== 'all')
                         || ($isCustomMonth && request('month') && trim(request('month')) !== '');
                 @endphp
 
-                @if($hasActiveFilter)
-                    <a href="{{ route('admin.transactions.index') }}" 
-                       data-reset="true"
-                       x-data="{ resetting: false }"
-                       @click="resetting = true"
-                       class="group inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all shrink-0">
-                        <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
-                             :class="{ 'animate-spin text-brand-600': resetting }"
-                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        <span>Reset</span>
-                    </a>
-                @endif
+                <!-- Grup Filter Status + Dropdown Periode + Reset -->
+                <div class="flex flex-col xl:flex-row xl:items-center gap-2.5 w-full 2xl:w-auto shrink-0">
+
+                    <!-- Filter Status Pills: 2x2 + Reset di layar < xl (termasuk saat sidebar muncul di 1024px), 1 baris lurus di >= xl -->
+                    <div class="flex flex-row items-center justify-between xl:justify-start gap-2.5 w-full xl:w-auto shrink-0 transition-all duration-200">
+                        <input type="hidden" name="status" id="txStatusInput" value="{{ request('status', 'all') }}">
+
+                        <div class="grid grid-cols-2 gap-2 flex-1 xl:flex-initial xl:flex xl:flex-nowrap xl:items-center text-xs">
+                            <button type="button"
+                                    onclick="setTxStatus('all')"
+                                    class="px-3.5 py-2 font-bold rounded-xl transition-all whitespace-nowrap justify-center text-center w-full xl:w-auto {{ in_array(request('status', 'all'), ['all', '']) ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                Semua Status
+                            </button>
+
+                            <button type="button"
+                                    onclick="setTxStatus('lunas')"
+                                    class="px-3.5 py-2 font-bold rounded-xl transition-all whitespace-nowrap justify-center text-center w-full xl:w-auto {{ request('status') === 'lunas' || request('status') === 'paid' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                Lunas
+                            </button>
+
+                            <button type="button"
+                                    onclick="setTxStatus('menunggu')"
+                                    class="px-3.5 py-2 font-bold rounded-xl transition-all whitespace-nowrap justify-center text-center w-full xl:w-auto {{ request('status') === 'menunggu' || request('status') === 'pending' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                Menunggu
+                            </button>
+
+                            <button type="button"
+                                    onclick="setTxStatus('dibatalkan')"
+                                    class="px-3.5 py-2 font-bold rounded-xl transition-all whitespace-nowrap justify-center text-center w-full xl:w-auto {{ in_array(request('status'), ['dibatalkan', 'failed', 'cancelled', 'expired']) ? 'bg-brand-600 text-white shadow-xs' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                Dibatalkan
+                            </button>
+                        </div>
+
+                        <!-- Tombol Reset di samping kanan grid 2x2 (khusus layar < xl) -->
+                        @if($hasActiveFilter)
+                            <a href="{{ route('admin.transactions.index') }}" 
+                               data-reset="true"
+                               x-data="{ resetting: false }"
+                               @click="resetting = true"
+                               class="xl:hidden group inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all whitespace-nowrap shrink-0 self-center">
+                                <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
+                                     :class="{ 'animate-spin text-brand-600': resetting }"
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                <span>Reset</span>
+                            </a>
+                        @endif
+                    </div>
+
+                    <!-- Kontrol Periode + Reset (sederet dengan pil status mulai >= xl) -->
+                    <div class="flex flex-row items-center gap-2 w-full xl:w-auto shrink-0">
+                        <div x-data="{ 
+                                open: false,
+                                period: '{{ $selectedPeriod }}',
+                                options: {
+                                    'all': 'Semua Waktu',
+                                    '1_year': '1 Tahun Terakhir',
+                                    '6_months': '6 Bulan Terakhir',
+                                    'this_month': 'Bulan Ini',
+                                    'custom_month': 'Pilih Bulan Tertentu'
+                                },
+                                select(val) {
+                                    this.period = val;
+                                    this.open = false;
+                                    const monthEl = document.getElementById('txMonthInput');
+                                    if (val !== 'custom_month') {
+                                        if (monthEl) {
+                                            monthEl.value = '';
+                                            monthEl.disabled = true;
+                                        }
+                                        $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenPeriod.form); });
+                                    } else {
+                                        if (monthEl) {
+                                            monthEl.disabled = false;
+                                            if (!monthEl.value) {
+                                                const today = new Date();
+                                                const ym = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
+                                                monthEl.value = ym;
+                                            }
+                                        }
+                                        $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenPeriod.form); });
+                                    }
+                                }
+                            }" 
+                            :class="period === 'custom_month' ? 'grid-cols-2' : 'grid-cols-1'"
+                            class="grid xl:flex xl:flex-nowrap items-center gap-2 w-full xl:w-auto relative"
+                            @click.away="open = false">
+                            
+                            <input type="hidden" name="period" :value="period" x-ref="hiddenPeriod">
+
+                            <!-- Custom Dropdown Button -->
+                            <div class="relative w-full xl:w-48 shrink-0">
+                                <button type="button" 
+                                        @click="open = !open" 
+                                        class="w-full flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100/80 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-left">
+                                    <span class="whitespace-normal break-words leading-tight" x-text="options[period] || 'Semua Waktu'"></span>
+                                    <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200" 
+                                         :class="{ 'rotate-180 text-brand-600': open }" 
+                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                <div x-show="open" 
+                                     x-transition:enter="transition ease-out duration-150"
+                                     x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                     x-transition:leave="transition ease-in duration-100"
+                                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                     x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                                     class="absolute left-0 right-0 mt-1.5 py-1.5 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden" 
+                                     style="display: none;" 
+                                     x-cloak>
+                                    <template x-for="(label, key) in options" :key="key">
+                                        <button type="button" 
+                                                @click="select(key)"
+                                                class="w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm text-left transition-colors"
+                                                :class="period === key ? 'bg-brand-50 text-brand-700 font-bold' : 'text-gray-700 hover:bg-gray-50'">
+                                            <span x-text="label"></span>
+                                            <svg x-show="period === key" class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <input type="month"
+                                   id="txMonthInput"
+                                   name="month"
+                                   value="{{ $selectedMonth }}"
+                                   x-show="period === 'custom_month'"
+                                   :disabled="period !== 'custom_month'"
+                                   x-cloak
+                                   @change="window.adminSubmitForm($el.form)"
+                                   class="w-full xl:w-44 py-2 px-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
+                        </div>
+
+                        <!-- Tombol Reset di ujung kanan baris (>= xl) -->
+                        @if($hasActiveFilter)
+                            <a href="{{ route('admin.transactions.index') }}" 
+                               data-reset="true"
+                               x-data="{ resetting: false }"
+                               @click="resetting = true"
+                               class="hidden xl:inline-flex group items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all whitespace-nowrap shrink-0 self-center">
+                                <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
+                                     :class="{ 'animate-spin text-brand-600': resetting }"
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                <span>Reset</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
             </form>
         </div>
 
         <!-- Transactions Table Card -->
         <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden w-full max-w-full min-w-0">
             <div class="overflow-x-auto w-full">
-                <table class="table-fixed w-full text-left border-collapse">
+                <table class="table-fixed w-full min-w-[1060px] text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50/80 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-                            <th class="py-3.5 px-6 w-[17%]">Nomor Invoice</th>
-                            <th class="py-3.5 px-6 w-[23%]">Penyelenggara & Event</th>
-                            <th class="py-3.5 px-4 w-[15%]">Nominal</th>
-                            <th class="py-3.5 px-4 w-[12%]">Tanggal</th>
-                            <th class="py-3.5 px-4 w-[13%] text-center">Metode</th>
-                            <th class="py-3.5 px-4 w-[10%] text-center">Status</th>
-                            <th class="py-3.5 px-6 w-[10%] text-center">Aksi</th>
+                            <th class="py-4 px-5 sm:px-6 w-[16%] whitespace-nowrap">Nomor Invoice</th>
+                            <th class="py-4 px-5 w-[22%] whitespace-nowrap">Penyelenggara & Event</th>
+                            <th class="py-4 px-5 w-[15%] whitespace-nowrap">Nominal</th>
+                            <th class="py-4 px-5 w-[12%] whitespace-nowrap">Tanggal</th>
+                            <th class="py-4 px-6 w-[13%] text-center whitespace-nowrap">Metode</th>
+                            <th class="py-4 px-6 w-[11%] text-center whitespace-nowrap">Status</th>
+                            <th class="py-4 px-5 sm:px-6 w-[11%] text-center whitespace-nowrap">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-sm">
@@ -375,7 +406,7 @@
                             @endphp
                             <tr class="hover:bg-gray-50/60 transition-colors">
                                 <!-- Nomor Invoice -->
-                                <td class="py-4 px-6 whitespace-nowrap">
+                                <td class="py-4 px-5 sm:px-6 whitespace-nowrap">
                                     <button type="button"
                                             x-on:click="openDetail({{ $tx->id }})"
                                             class="font-bold text-brand-600 hover:text-brand-800 hover:underline transition-colors">
@@ -384,7 +415,7 @@
                                 </td>
 
                                 <!-- Penyelenggara & Event -->
-                                <td class="py-4 px-6">
+                                <td class="py-4 px-5">
                                     <div class="font-bold text-gray-900 text-sm line-clamp-1">
                                         {{ $tx->event->title ?? '-' }}
                                     </div>
@@ -397,21 +428,21 @@
                                 </td>
 
                                 <!-- Nominal -->
-                                <td class="py-4 px-4 whitespace-nowrap">
+                                <td class="py-4 px-5 whitespace-nowrap">
                                     <span class="font-extrabold text-gray-900">
                                         Rp {{ number_format($tx->amount, 0, ',', '.') }}
                                     </span>
                                 </td>
 
                                 <!-- Tanggal -->
-                                <td class="py-4 px-4 whitespace-nowrap">
+                                <td class="py-4 px-5 whitespace-nowrap">
                                     <div class="text-xs font-semibold text-gray-700">
                                         {{ $tx->created_at->translatedFormat('d M Y') }}
                                     </div>
                                 </td>
 
                                 <!-- Metode Pembayaran -->
-                                <td class="py-4 px-4 text-center whitespace-nowrap">
+                                <td class="py-4 px-6 text-center whitespace-nowrap">
                                     <div class="flex items-center justify-center">
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border {{ $methodConfig['class'] }}">
                                             @if($methodConfig['icon'])
@@ -425,7 +456,7 @@
                                 </td>
 
                                 <!-- Status Badge -->
-                                <td class="py-4 px-4 text-center whitespace-nowrap">
+                                <td class="py-4 px-6 text-center whitespace-nowrap">
                                     <div class="flex items-center justify-center">
                                         @if($statusStr === 'paid' || $statusStr === 'lunas')
                                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
@@ -447,7 +478,7 @@
                                 </td>
 
                                 <!-- Aksi -->
-                                <td class="py-4 px-6 text-center whitespace-nowrap">
+                                <td class="py-4 px-5 sm:px-6 text-center whitespace-nowrap">
                                     <div class="flex items-center justify-center gap-2">
                                         <!-- View Detail (Eye Icon) -->
                                         <button type="button"
@@ -474,7 +505,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-12 px-6 text-center">
+                                <td colspan="7" class="py-12 px-5 sm:px-6 text-center">
                                     <x-empty-state 
                                         title="Tidak ada transaksi ditemukan" 
                                         description="Tidak ada catatan transaksi atau invoice yang sesuai dengan parameter pencarian Anda." 
@@ -497,7 +528,7 @@
         <!-- ============================================== -->
         <!-- MODAL DETAIL TRANSAKSI / INVOICE (COMPACT)     -->
         <!-- ============================================== -->
-        <x-modal name="transaction-detail-modal" :show="false" maxWidth="2xl">
+        <x-modal name="transaction-detail-modal" :show="false" maxWidth="2xl" zIndex="40">
             <div class="p-5 flex flex-col flex-1 min-h-0 overflow-hidden">
                 <template x-if="loading">
                     <div class="py-12 text-center text-gray-400 my-auto">
@@ -610,7 +641,7 @@
             }
         }
 
-        function transactionManager() {
+        function transactionManager(autoSelectedId = null) {
             return {
                 currentTx: null,
                 loading: false,
@@ -618,12 +649,41 @@
                 errorMessage: '',
                 currentTxId: null,
 
-                async openDetail(id) {
+                init() {
+                    if (autoSelectedId) {
+                        this.$nextTick(() => {
+                            this.openDetail(autoSelectedId, false);
+                        });
+                    }
+
+                    window.addEventListener('popstate', () => {
+                        const curUrl = new URL(window.location.href);
+                        const sel = curUrl.searchParams.get('selected');
+                        if (sel) {
+                            this.openDetail(parseInt(sel), false);
+                        } else {
+                            this.$dispatch('close');
+                            this.currentTx = null;
+                            this.currentTxId = null;
+                        }
+                    });
+                },
+
+                async openDetail(id, shouldPushState = true) {
                     this.currentTxId = id;
                     this.loading = true;
                     this.hasError = false;
                     this.errorMessage = '';
                     this.currentTx = null;
+
+                    if (shouldPushState) {
+                        const url = new URL(window.location.href);
+                        if (url.searchParams.get('selected') !== String(id)) {
+                            url.searchParams.set('selected', id);
+                            window.history.pushState({ selected: id }, '', url.toString());
+                        }
+                    }
+
                     this.$dispatch('open-modal', 'transaction-detail-modal');
 
                     try {

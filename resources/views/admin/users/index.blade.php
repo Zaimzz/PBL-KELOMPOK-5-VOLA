@@ -1,47 +1,45 @@
 <x-layouts.admin title="Manajemen Pengguna">
 
     <!-- Header & Breadcrumbs Section -->
-    <div class="mb-6 relative z-10 opacity-100 w-full max-w-full min-w-0">
-        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 w-full">
-            <!-- Sisi Kiri: Badge, Judul & Deskripsi -->
-            <div class="max-w-md">
-                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border mb-2.5 bg-sky-50 text-sky-700 border-sky-200/70">
-                    <span class="relative flex h-2 w-2 mr-0.5">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-sky-600"></span>
-                    </span>
-                    <span>DIREKTORI AKUN • MODERASI AKSES</span>
-                </div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Manajemen <span class="text-amber-500">Pengguna</span></h1>
-                <p class="text-slate-600 text-sm mt-1 leading-relaxed">Kelola data seluruh crew dan penyelenggara event, pantau status akun, dan moderasi akses platform.</p>
+    <div class="mb-6 relative z-10 opacity-100 w-full max-w-full min-w-0 space-y-4">
+        <!-- Sisi Atas: Badge, Judul & Deskripsi Full-Width -->
+        <div class="w-full">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border mb-2.5 bg-sky-50 text-sky-700 border-sky-200/70">
+                <span class="relative flex h-2 w-2 mr-0.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-sky-600"></span>
+                </span>
+                <span>DIREKTORI AKUN • MODERASI AKSES</span>
             </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Manajemen <span class="text-amber-500">Pengguna</span></h1>
+            <p class="text-slate-600 text-sm mt-1 leading-relaxed">Kelola data seluruh crew dan penyelenggara event, pantau status akun, dan moderasi akses platform.</p>
+        </div>
 
-            <!-- Sisi Kanan: 4 Luxury Cards Memanjang 1 Baris -->
-            <div id="admin-metrics-container" class="flex flex-wrap items-center gap-3 w-full xl:w-auto shrink-0">
-                <x-metric-card label="Total Pengguna" :value="number_format($stats['total_users'], 0, ',', '.')" bg="bg-indigo-50" text="text-indigo-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                    </svg>
-                </x-metric-card>
+        <!-- Sisi Bawah: 4 Luxury Cards (Strictly 1 Col Mobile, 2x2 Tablet, 4 Sejajar Desktop XL) -->
+        <div id="admin-metrics-container" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
+            <x-metric-card label="Total Pengguna" :value="number_format($stats['total_users'], 0, ',', '.')" bg="bg-indigo-50" text="text-indigo-600" class="w-full sm:min-w-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+            </x-metric-card>
 
-                <x-metric-card label="Crew Aktif" :value="number_format($stats['active_volunteers'], 0, ',', '.')" bg="bg-blue-50" text="text-blue-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                    </svg>
-                </x-metric-card>
+            <x-metric-card label="Crew Aktif" :value="number_format($stats['active_volunteers'], 0, ',', '.')" bg="bg-blue-50" text="text-blue-600" class="w-full sm:min-w-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+            </x-metric-card>
 
-                <x-metric-card label="Event Organizer" :value="number_format($stats['total_eos'], 0, ',', '.')" bg="bg-emerald-50" text="text-emerald-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                    </svg>
-                </x-metric-card>
+            <x-metric-card label="Event Organizer" :value="number_format($stats['total_eos'], 0, ',', '.')" bg="bg-emerald-50" text="text-emerald-600" class="w-full sm:min-w-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+            </x-metric-card>
 
-                <x-metric-card label="Ditangguhkan" :value="number_format($stats['suspended_users'], 0, ',', '.')" bg="bg-rose-50" text="text-rose-600" valueClass="text-rose-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                    </svg>
-                </x-metric-card>
-            </div>
+            <x-metric-card label="Ditangguhkan" :value="number_format($stats['suspended_users'], 0, ',', '.')" bg="bg-rose-50" text="text-rose-600" valueClass="text-rose-600" class="w-full sm:min-w-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                </svg>
+            </x-metric-card>
         </div>
     </div>
 
@@ -50,7 +48,7 @@
 
         <!-- Search & Filter Card -->
         <x-card class="p-3">
-            <form action="{{ route('admin.users.index') }}" method="GET" class="flex flex-col md:flex-row items-center gap-3">
+            <form action="{{ route('admin.users.index') }}" method="GET" class="flex flex-col lg:flex-row lg:items-center gap-2.5 sm:gap-3">
                 <!-- Search Box -->
                 <div class="relative flex-1 w-full">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -65,157 +63,156 @@
                            class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
                 </div>
 
-                <!-- Dropdown Peran -->
-                <div x-data="{ 
-                        open: false, 
-                        selected: '{{ request('role', 'all') }}',
-                        options: {
-                            'all': 'Semua Peran',
-                            'volunteer': 'Crew',
-                            'eo': 'Event Organizer'
-                        },
-                        select(val) {
-                            this.selected = val;
-                            this.open = false;
-                            $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenRole.form); });
-                        }
-                    }" 
-                    class="relative w-full sm:w-48 shrink-0"
-                    @click.away="open = false">
-                    
-                    <input type="hidden" name="role" :value="selected" x-ref="hiddenRole">
+                <!-- 2 Dropdown Filter (Berjejer Sejajar di Mobile/Tablet, Geser Saat Reset Muncul) -->
+                <div class="flex items-center gap-2 w-full lg:w-auto">
+                    <!-- Dropdown Peran -->
+                    <div x-data="{ 
+                            open: false, 
+                            selected: '{{ request('role', 'all') }}',
+                            options: {
+                                'all': 'Semua Peran',
+                                'volunteer': 'Crew',
+                                'eo': 'Event Organizer'
+                            },
+                            select(val) {
+                                this.selected = val;
+                                this.open = false;
+                                $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenRole.form); });
+                            }
+                        }" 
+                        class="relative flex-1 min-w-0 lg:w-48 lg:flex-none shrink-0"
+                        @click.away="open = false">
+                        
+                        <input type="hidden" name="role" :value="selected" x-ref="hiddenRole">
 
-                    <button type="button" 
-                            @click="open = !open" 
-                            class="w-full flex items-center justify-between gap-3 px-4 py-2 bg-gray-50 hover:bg-gray-100/80 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-left">
-                        <span class="truncate" x-text="options[selected] || 'Semua Peran'"></span>
-                        <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200" 
-                             :class="{ 'rotate-180 text-brand-600': open }" 
-                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
+                        <button type="button" 
+                                @click="open = !open" 
+                                class="w-full flex items-center justify-between gap-2 px-3 sm:px-4 py-2.5 bg-gray-50 hover:bg-gray-100/80 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-left">
+                            <span class="truncate" x-text="options[selected] || 'Semua Peran'"></span>
+                            <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200" 
+                                 :class="{ 'rotate-180 text-brand-600': open }" 
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
 
-                    <div x-show="open" 
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0 scale-95 translate-y-1"
-                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-100"
-                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                         x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-                         class="absolute left-0 right-0 mt-1.5 py-1.5 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden" 
-                         style="display: none;" 
-                         x-cloak>
-                        <template x-for="(label, key) in options" :key="key">
-                            <button type="button" 
-                                    @click="select(key)"
-                                    class="w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm text-left transition-colors"
-                                    :class="selected === key ? 'bg-brand-50 text-brand-700 font-bold' : 'text-gray-700 hover:bg-gray-50'">
-                                <span x-text="label"></span>
-                                <svg x-show="selected === key" class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                                </svg>
-                            </button>
-                        </template>
+                        <div x-show="open" 
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                             class="absolute left-0 right-0 mt-1.5 py-1.5 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden" 
+                             style="display: none;" 
+                             x-cloak>
+                            <template x-for="(label, key) in options" :key="key">
+                                <button type="button" 
+                                        @click="select(key)"
+                                        class="w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm text-left transition-colors"
+                                        :class="selected === key ? 'bg-brand-50 text-brand-700 font-bold' : 'text-gray-700 hover:bg-gray-50'">
+                                    <span x-text="label"></span>
+                                    <svg x-show="selected === key" class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </button>
+                            </template>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Dropdown Status -->
-                <div x-data="{ 
-                        open: false, 
-                        selected: '{{ request('status', 'all') }}',
-                        options: {
-                            'all': 'Semua Status',
-                            'active': 'Aktif',
-                            'suspended': 'Ditangguhkan'
-                        },
-                        select(val) {
-                            this.selected = val;
-                            this.open = false;
-                            $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenStatus.form); });
-                        }
-                    }" 
-                    class="relative w-full sm:w-48 shrink-0"
-                    @click.away="open = false">
-                    
-                    <input type="hidden" name="status" :value="selected" x-ref="hiddenStatus">
+                    <!-- Dropdown Status -->
+                    <div x-data="{ 
+                            open: false, 
+                            selected: '{{ request('status', 'all') }}',
+                            options: {
+                                'all': 'Semua Status',
+                                'active': 'Aktif',
+                                'suspended': 'Ditangguhkan'
+                            },
+                            select(val) {
+                                this.selected = val;
+                                this.open = false;
+                                $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenStatus.form); });
+                            }
+                        }" 
+                        class="relative flex-1 min-w-0 lg:w-48 lg:flex-none shrink-0"
+                        @click.away="open = false">
+                        
+                        <input type="hidden" name="status" :value="selected" x-ref="hiddenStatus">
 
-                    <button type="button" 
-                            @click="open = !open" 
-                            class="w-full flex items-center justify-between gap-3 px-4 py-2 bg-gray-50 hover:bg-gray-100/80 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-left">
-                        <span class="truncate" x-text="options[selected] || 'Semua Status'"></span>
-                        <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200" 
-                             :class="{ 'rotate-180 text-brand-600': open }" 
-                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
+                        <button type="button" 
+                                @click="open = !open" 
+                                class="w-full flex items-center justify-between gap-2 px-3 sm:px-4 py-2.5 bg-gray-50 hover:bg-gray-100/80 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-left">
+                            <span class="truncate" x-text="options[selected] || 'Semua Status'"></span>
+                            <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200" 
+                                 :class="{ 'rotate-180 text-brand-600': open }" 
+                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
 
-                    <div x-show="open" 
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0 scale-95 translate-y-1"
-                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-100"
-                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                         x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-                         class="absolute left-0 right-0 mt-1.5 py-1.5 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden" 
-                         style="display: none;" 
-                         x-cloak>
-                        <template x-for="(label, key) in options" :key="key">
-                            <button type="button" 
-                                    @click="select(key)"
-                                    class="w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm text-left transition-colors"
-                                    :class="selected === key ? 'bg-brand-50 text-brand-700 font-bold' : 'text-gray-700 hover:bg-gray-50'">
-                                <span x-text="label"></span>
-                                <svg x-show="selected === key" class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                                </svg>
-                            </button>
-                        </template>
+                        <div x-show="open" 
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                             class="absolute left-0 right-0 mt-1.5 py-1.5 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden" 
+                             style="display: none;" 
+                             x-cloak>
+                            <template x-for="(label, key) in options" :key="key">
+                                <button type="button" 
+                                        @click="select(key)"
+                                        class="w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm text-left transition-colors"
+                                        :class="selected === key ? 'bg-brand-50 text-brand-700 font-bold' : 'text-gray-700 hover:bg-gray-50'">
+                                    <span x-text="label"></span>
+                                    <svg x-show="selected === key" class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </button>
+                            </template>
+                        </div>
                     </div>
+
+                    @php
+                        $hasActiveFilter = (request('search') && trim(request('search')) !== '')
+                            || (request('role') && request('role') !== 'all')
+                            || (request('status') && request('status') !== 'all');
+                    @endphp
+
+                    @if($hasActiveFilter)
+                        <div class="shrink-0">
+                            <a href="{{ route('admin.users.index') }}" 
+                               data-reset="true"
+                               x-data="{ resetting: false }"
+                               @click="resetting = true"
+                               class="group inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all whitespace-nowrap shrink-0">
+                                <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
+                                     :class="{ 'animate-spin text-brand-600': resetting }"
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                <span>Reset</span>
+                            </a>
+                        </div>
+                    @endif
                 </div>
-
-                <!-- Reset Button -->
-                @php
-                    $hasActiveFilter = (request('search') && trim(request('search')) !== '')
-                        || (request('role') && request('role') !== 'all')
-                        || (request('status') && request('status') !== 'all');
-                @endphp
-
-                @if($hasActiveFilter)
-                    <a href="{{ route('admin.users.index') }}" 
-                       data-reset="true"
-                       x-data="{ resetting: false }"
-                       @click="resetting = true"
-                       class="group inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all shrink-0">
-                        <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
-                             :class="{ 'animate-spin text-brand-600': resetting }"
-                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        <span>Reset</span>
-                    </a>
-                @endif
             </form>
         </x-card>
-
-        <!-- Flash Success Notification -->
-        @if(session('success'))
-            <x-alert type="success">{{ session('success') }}</x-alert>
-        @endif
 
         <!-- Data Table -->
         <x-card padding="p-0" class="overflow-hidden shadow-sm border border-slate-200/90 w-full max-w-full min-w-0">
             <div class="overflow-x-auto w-full">
-                <table class="table-fixed w-full text-left border-collapse">
+                <table class="table-fixed w-full min-w-[980px] text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50/75 border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400">
-                            <th class="py-3.5 px-4 w-[19%]">Nama / Pengguna</th>
-                            <th class="py-3.5 px-2 w-[14%] text-center">Peran</th>
-                            <th class="py-3.5 px-3 w-[20%]">Email & Kontak</th>
-                            <th class="py-3.5 px-3 w-[16%]">Asal / Institusi</th>
-                            <th class="py-3.5 px-2 w-[12%] text-center">Status Akun</th>
-                            <th class="py-3.5 px-3 w-[19%] text-center">Aksi</th>
+                            <th class="py-4 px-5 sm:px-6 w-[20%] whitespace-nowrap">Nama / Pengguna</th>
+                            <th class="py-4 px-5 w-[13%] text-center whitespace-nowrap">Peran</th>
+                            <th class="py-4 px-5 w-[20%] whitespace-nowrap">Email & Kontak</th>
+                            <th class="py-4 px-5 w-[16%] whitespace-nowrap">Asal / Institusi</th>
+                            <th class="py-4 px-5 w-[12%] text-center whitespace-nowrap">Status Akun</th>
+                            <th class="py-4 px-5 sm:px-6 w-[19%] text-center whitespace-nowrap">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-sm">
@@ -232,15 +229,25 @@
                             @endphp
                             <tr class="hover:bg-gray-50/60 transition-colors">
                                 <!-- Nama / Pengguna -->
-                                <td class="py-4 px-4">
+                                <td class="py-4 px-5 sm:px-6">
                                     <div class="flex items-center gap-2.5 min-w-0">
-                                        <div class="w-9 h-9 rounded-full {{ $isVolunteer ? 'bg-blue-100 text-blue-700' : 'bg-indigo-100 text-indigo-700' }} flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden shadow-xs">
-                                            @if($user->avatar_path)
-                                                <img src="{{ Storage::url($user->avatar_path) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
-                                            @else
+                                        @if($user->avatar_path)
+                                            <button type="button"
+                                                    onclick="window.openAdminLightbox('{{ Storage::url($user->avatar_path) }}', '{{ addslashes($user->name) }}', 'Foto Profil • {{ $isVolunteer ? 'Crew' : 'Event Organizer' }}', 'image')"
+                                                    class="w-10 h-10 rounded-xl bg-slate-900 overflow-hidden shrink-0 shadow-xs relative group/useravatar cursor-pointer ring-1 ring-black/5 hover:ring-2 hover:ring-brand-500 hover:scale-105 transition-all duration-150"
+                                                    title="Lihat foto profil">
+                                                <img src="{{ Storage::url($user->avatar_path) }}" alt="{{ $user->name }}" class="w-full h-full object-cover group-hover/useravatar:brightness-90 transition-all duration-200">
+                                                <div class="absolute inset-0 bg-slate-950/25 opacity-0 group-hover/useravatar:opacity-100 flex items-center justify-center transition-opacity duration-150">
+                                                    <svg class="w-4 h-4 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0M10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                    </svg>
+                                                </div>
+                                            </button>
+                                        @else
+                                            <div class="w-10 h-10 rounded-xl {{ $isVolunteer ? 'bg-blue-100 text-blue-700' : 'bg-indigo-100 text-indigo-700' }} flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden shadow-xs select-none">
                                                 {{ strtoupper(substr($user->name, 0, 2)) }}
-                                            @endif
-                                        </div>
+                                            </div>
+                                        @endif
                                         <div class="min-w-0 flex-1">
                                             <div class="font-bold text-gray-900 text-sm leading-snug truncate" title="{{ $user->name }}">{{ $user->name }}</div>
                                             <div class="text-[11px] text-gray-400 mt-0.5 truncate">Gabung {{ $user->created_at->translatedFormat('d M Y') }}</div>
@@ -249,7 +256,7 @@
                                 </td>
 
                                 <!-- Peran -->
-                                <td class="py-4 px-2 text-center whitespace-nowrap">
+                                <td class="py-4 px-5 text-center whitespace-nowrap">
                                     <div class="flex items-center justify-center">
                                         @if($isVolunteer)
                                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/70">
@@ -266,7 +273,7 @@
                                 </td>
 
                                 <!-- Email & Kontak -->
-                                <td class="py-4 px-3">
+                                <td class="py-4 px-5">
                                     <div class="font-medium text-gray-900 text-xs truncate" title="{{ $user->email }}">{{ $user->email }}</div>
                                     <div class="text-xs text-gray-500 mt-0.5 flex items-center gap-1 truncate">
                                         <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -277,13 +284,13 @@
                                 </td>
 
                                 <!-- Asal / Institusi -->
-                                <td class="py-4 px-3">
+                                <td class="py-4 px-5">
                                     <div class="font-semibold text-gray-800 text-xs truncate" title="{{ $institution }}">{{ $institution }}</div>
                                     <div class="text-[11px] text-gray-400 mt-0.5 truncate">{{ $location }}</div>
                                 </td>
 
                                 <!-- Status Akun -->
-                                <td class="py-4 px-2 text-center whitespace-nowrap">
+                                <td class="py-4 px-5 text-center whitespace-nowrap">
                                     <div class="flex items-center justify-center">
                                         @if($isActive)
                                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
@@ -300,7 +307,7 @@
                                 </td>
 
                                 <!-- Aksi -->
-                                <td class="py-4 px-3 text-center whitespace-nowrap">
+                                <td class="py-4 px-5 sm:px-6 text-center whitespace-nowrap">
                                     <div class="inline-flex items-center justify-center gap-1.5">
                                         <!-- Tombol Detail Akun -->
                                         <button type="button"
@@ -313,7 +320,7 @@
                                             Detail
                                         </button>
 
-                                        <!-- Tombol Suspend / Aktifkan -->
+                                        <!-- Tombol Tangguhkan / Aktifkan -->
                                         @if($isActive)
                                             <button type="button"
                                                     @click="confirmStatusChange({{ $user->id }}, '{{ addslashes($user->name) }}', 'suspend')"
@@ -321,7 +328,7 @@
                                                 <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
                                                 </svg>
-                                                Suspend
+                                                Tangguhkan
                                             </button>
                                         @else
                                             <button type="button"
@@ -338,7 +345,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="py-12 text-center text-gray-400">
+                                <td colspan="6" class="py-12 px-5 sm:px-6 text-center text-gray-400">
                                     <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                                     </svg>
@@ -434,20 +441,23 @@
                  x-transition:leave="transition ease-in duration-150"
                  x-transition:leave-start="opacity-100"
                  x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 z-[9999] overflow-y-auto overscroll-y-contain"
-                 style="display: none;"
-                 @keydown.escape.window="detailModalOpen = false">
+                 class="fixed inset-0 z-40 overflow-y-auto overscroll-y-contain"
+                 style="z-index: 40; display: none;"
+                 @keydown.escape.window="if (!window.adminLightboxOpen && !document.querySelector('[data-admin-lightbox][data-open=\'true\']') && !confirmModalOpen) closeDetailModal()">
 
-                <!-- Backdrop Overlay: WAJIB menutupi 100% seluruh layar termasuk Top Navbar dan Sidebar kiri -->
-                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity z-[9999]"
-                     @click="detailModalOpen = false"></div>
+                <!-- Backdrop Overlay: Menutupi seluruh layar -->
+                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity z-40"
+                     style="z-index: 40;"
+                     @click="if (window.adminLightboxOpen || document.querySelector('[data-admin-lightbox][data-open=\'true\']')) return; closeDetailModal()"
+                     @mousedown.self="if (window.adminLightboxOpen || document.querySelector('[data-admin-lightbox][data-open=\'true\']')) return;"></div>
 
                 <!-- Centering Wrapper (Safe padding p-6 sm:p-8 lg:pl-64) -->
-                <div class="fixed inset-0 z-[9999] lg:pl-64 flex items-center justify-center p-6 sm:p-8"
-                     @click.self="detailModalOpen = false">
+                <div class="fixed inset-0 z-40 lg:pl-64 flex items-center justify-center p-6 sm:p-8"
+                     style="z-index: 40;"
+                     @click.self="if (window.adminLightboxOpen || document.querySelector('[data-admin-lightbox][data-open=\'true\']')) return; closeDetailModal()"
+                     @mousedown.self="if (window.adminLightboxOpen || document.querySelector('[data-admin-lightbox][data-open=\'true\']')) return;">
                     <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl relative border border-gray-100 my-auto max-h-[85vh] max-h-[85dvh] flex flex-col overflow-hidden"
-                         @click.stop
-                         @click.outside="detailModalOpen = false">
+                         @click.stop>
                     
                         <!-- Loading Overlay State -->
                         <template x-if="loadingUser">
@@ -490,16 +500,26 @@
                                 <!-- Modal Header: px-5 py-3.5 -->
                                 <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
                                     <div class="flex items-center gap-3 min-w-0">
-                                        <div class="w-9 h-9 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center font-extrabold text-xs overflow-hidden shrink-0 shadow-xs">
-                                            <template x-if="selectedUser && selectedUser.avatar_url">
-                                                <img :src="selectedUser.avatar_url" class="w-full h-full object-cover">
-                                            </template>
-                                            <template x-if="!selectedUser || !selectedUser.avatar_url">
+                                        <template x-if="selectedUser && selectedUser.avatar_url">
+                                            <button type="button"
+                                                    @click="window.openAdminLightbox(selectedUser.avatar_url, selectedUser.name, 'Foto Profil • ' + (selectedUser.role_label || 'Pengguna'), 'image')"
+                                                    class="w-10 h-10 rounded-xl bg-slate-900 overflow-hidden shrink-0 shadow-xs relative group/modalavatar cursor-pointer ring-1 ring-black/5 hover:ring-2 hover:ring-brand-500 hover:scale-105 transition-all duration-150"
+                                                    title="Lihat foto profil">
+                                                <img :src="selectedUser.avatar_url" class="w-full h-full object-cover group-hover/modalavatar:brightness-90 transition-all duration-200">
+                                                <div class="absolute inset-0 bg-slate-950/25 opacity-0 group-hover/modalavatar:opacity-100 flex items-center justify-center transition-opacity duration-150">
+                                                    <svg class="w-4 h-4 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0M10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                    </svg>
+                                                </div>
+                                            </button>
+                                        </template>
+                                        <template x-if="!selectedUser || !selectedUser.avatar_url">
+                                            <div class="w-10 h-10 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center font-extrabold text-xs overflow-hidden shrink-0 shadow-xs select-none">
                                                 <span x-text="selectedUser ? selectedUser.name.substring(0,2).toUpperCase() : 'US'"></span>
-                                            </template>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <h3 class="text-sm font-extrabold text-gray-900 truncate" x-text="selectedUser ? selectedUser.name : 'Detail Akun'"></h3>
+                                            </div>
+                                        </template>
+                                        <div class="min-w-0 flex-1">
+                                            <h3 class="text-sm font-extrabold text-gray-900 break-words" x-text="selectedUser ? selectedUser.name : 'Detail Akun'"></h3>
                                             <div class="flex items-center gap-2 mt-0.5">
                                                 <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
                                                       :class="selectedUser && selectedUser.role === 'volunteer' ? 'bg-blue-50 text-blue-700' : 'bg-indigo-50 text-indigo-700'"
@@ -508,6 +528,11 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <button type="button" @click="closeDetailModal()" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0" title="Tutup Modal">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
                                 </div>
 
                                 <!-- Modal Body: p-5 with gap-3 or space-y-3 -->
@@ -593,20 +618,23 @@
                  x-transition:leave="transition ease-in duration-150"
                  x-transition:leave-start="opacity-100"
                  x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 z-[9999] overflow-y-auto overscroll-y-contain"
-                 style="display: none;"
-                 @keydown.escape.window="confirmModalOpen = false">
+                 class="fixed inset-0 z-50 overflow-y-auto overscroll-y-contain"
+                 style="z-index: 50; display: none;"
+                 @keydown.escape.window="if (!window.adminLightboxOpen && !document.querySelector('[data-admin-lightbox][data-open=\'true\']')) confirmModalOpen = false">
 
-                <!-- Fullscreen Backdrop Overlay: WAJIB menutupi 100% seluruh layar termasuk Top Navbar dan Sidebar kiri -->
-                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity z-[9999]"
-                     @click="confirmModalOpen = false"></div>
+                <!-- Fullscreen Backdrop Overlay: Menutupi seluruh layar -->
+                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity z-50"
+                     style="z-index: 50;"
+                     @click="if (window.adminLightboxOpen || document.querySelector('[data-admin-lightbox][data-open=\'true\']')) return; confirmModalOpen = false"
+                     @mousedown.self="if (window.adminLightboxOpen || document.querySelector('[data-admin-lightbox][data-open=\'true\']')) return;"></div>
 
                 <!-- Centering Wrapper (Safe padding p-6 sm:p-8 lg:pl-64) -->
-                <div class="fixed inset-0 z-[9999] lg:pl-64 flex items-center justify-center p-6 sm:p-8"
-                     @click.self="confirmModalOpen = false">
+                <div class="fixed inset-0 z-50 lg:pl-64 flex items-center justify-center p-6 sm:p-8"
+                     style="z-index: 50;"
+                     @click.self="if (window.adminLightboxOpen || document.querySelector('[data-admin-lightbox][data-open=\'true\']')) return; confirmModalOpen = false"
+                     @mousedown.self="if (window.adminLightboxOpen || document.querySelector('[data-admin-lightbox][data-open=\'true\']')) return;">
                     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl relative border border-gray-100 text-center my-auto max-h-[85vh] max-h-[85dvh] overflow-y-auto overscroll-y-contain flex flex-col space-y-3"
-                         @click.stop
-                         @click.outside="confirmModalOpen = false">
+                         @click.stop>
 
                         <!-- Icon Warning / Question -->
                         <div class="w-10 h-10 rounded-xl mx-auto flex items-center justify-center"
@@ -635,12 +663,12 @@
                             <div class="p-2.5 bg-rose-50/90 border border-rose-200/80 rounded-xl text-left text-xs text-rose-900 space-y-1 leading-snug shadow-2xs">
                                 <p class="font-bold flex items-center gap-1.5 text-rose-950 text-[11px]">
                                     <svg class="w-3.5 h-3.5 shrink-0 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                    Peringatan Dampak Penangguhan (Suspend):
+                                    Peringatan Dampak Penangguhan:
                                 </p>
                                 <div class="space-y-0.5 text-[11px] text-rose-800 pl-4 list-disc">
                                     <p>&bull; <strong>Auto-logout</strong> dan pemblokiran sesi seketika.</p>
                                     <p>&bull; <strong>Crew:</strong> Pencabutan akses riwayat keikutsertaan event & sertifikat.</p>
-                                    <p>&bull; <strong>EO:</strong> Pembekuan event operasional dan penguncian NIB.</p>
+                                    <p>&bull; <strong>Event Organizer:</strong> Pembekuan event operasional dan penguncian NIB.</p>
                                 </div>
                             </div>
                         </template>
@@ -650,7 +678,7 @@
                             <button type="button"
                                     @click="confirmModalOpen = false"
                                     :disabled="isLoading"
-                                    class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors">
+                                    class="px-4 py-2 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-colors shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed">
                                 Batal
                             </button>
 
@@ -658,13 +686,13 @@
                                 @csrf
                                 <button type="submit"
                                         :disabled="isLoading"
-                                        class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white rounded-xl transition-all shadow-xs"
+                                        class="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold text-white rounded-xl transition-all shadow-xs disabled:opacity-80 disabled:cursor-not-allowed"
                                         :class="targetAction === 'suspend' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'">
-                                    <svg x-show="isLoading" class="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                                    <svg x-show="isLoading" class="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" x-cloak>
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                                     </svg>
-                                    <span x-text="isLoading ? 'Memproses...' : (targetAction === 'suspend' ? 'Ya, Tangguhkan' : 'Ya, Aktifkan')"></span>
+                                    <span x-text="targetAction === 'suspend' ? 'Tangguhkan Akun' : 'Aktifkan Akun'"></span>
                                 </button>
                             </form>
                         </div>
@@ -723,10 +751,19 @@
                     });
                 },
 
+                closeDetailModal() {
+                    this.detailModalOpen = false;
+                    setTimeout(() => {
+                        this.selectedUser = null;
+                        this.currentUserId = null;
+                    }, 250);
+                },
+
                 confirmStatusChange(userId, userName, action) {
                     this.targetUserId = userId;
                     this.targetUserName = userName;
                     this.targetAction = action;
+                    this.isLoading = false;
                     this.confirmModalOpen = true;
                 }
             };

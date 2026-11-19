@@ -1,46 +1,45 @@
 <x-layouts.admin title="Event Aktif">
 
     <!-- Header Section -->
-    <div class="mb-6 relative z-10 opacity-100">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border mb-2.5 bg-emerald-50 text-emerald-700 border-emerald-200/70">
-                    <span class="relative flex h-2 w-2 mr-0.5">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
-                    </span>
-                    <span>DIREKTORI PLATFORM • EVENT PUBLIK</span>
-                </div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Event <span class="text-amber-600">Aktif</span></h1>
-                <p class="text-slate-600 text-sm mt-1">Direktori seluruh event yang sedang berlangsung atau telah dipublikasikan di platform VOLA.</p>
+    <div class="mb-6 relative z-10 opacity-100 space-y-4">
+        <!-- Blok Judul Full-Width -->
+        <div class="w-full">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border mb-2.5 bg-emerald-50 text-emerald-700 border-emerald-200/70">
+                <span class="relative flex h-2 w-2 mr-0.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+                </span>
+                <span>DIREKTORI PLATFORM • EVENT PUBLIK</span>
             </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Event <span class="text-amber-600">Aktif</span></h1>
+            <p class="text-slate-600 text-sm mt-1">Direktori seluruh event yang sedang berlangsung atau telah dipublikasikan di platform VOLA.</p>
+        </div>
 
-            <!-- Top Metrics Cards -->
-            <div id="admin-metrics-container" class="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full lg:w-auto shrink-0">
-                <!-- Total Event Aktif -->
-                <x-metric-card label="Total Event Aktif" :value="number_format($stats['total_active'], 0, ',', '.')" bg="bg-indigo-50" text="text-brand-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                </x-metric-card>
+        <!-- Top Metrics Cards: Grid 1 Col (Mobile) -> 3 Cols (MD ke atas) Rata Kiri-Kanan -->
+        <div id="admin-metrics-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+            <!-- Total Event Aktif -->
+            <x-metric-card label="Total Event Aktif" :value="number_format($stats['total_active'], 0, ',', '.')" bg="bg-indigo-50" text="text-brand-600" class="w-full sm:min-w-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </x-metric-card>
 
-                <!-- Crew Terdaftar -->
-                <x-metric-card label="Crew Terdaftar" :value="number_format($stats['registered_volunteers'], 0, ',', '.')" bg="bg-blue-50" text="text-blue-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                </x-metric-card>
+            <!-- Crew Terdaftar -->
+            <x-metric-card label="Crew Terdaftar" :value="number_format($stats['registered_volunteers'], 0, ',', '.')" bg="bg-blue-50" text="text-blue-600" class="w-full sm:min-w-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            </x-metric-card>
 
-                <!-- Buka Pendaftaran -->
-                <x-metric-card label="Buka Pendaftaran" :value="number_format($stats['open_registration'], 0, ',', '.')" bg="bg-amber-50" text="text-amber-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                </x-metric-card>
-            </div>
+            <!-- Buka Pendaftaran -->
+            <x-metric-card label="Buka Pendaftaran" :value="number_format($stats['open_registration'], 0, ',', '.')" bg="bg-amber-50" text="text-amber-600" class="w-full sm:min-w-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </x-metric-card>
         </div>
     </div>
 
@@ -50,7 +49,7 @@
         <!-- Search & Filter Card -->
         <x-card class="p-3">
             <form action="{{ route('admin.active-events.index') }}" method="GET"
-                class="flex flex-col md:flex-row items-center gap-3">
+                class="flex flex-col lg:flex-row lg:items-center gap-2.5 sm:gap-3">
                 <!-- Search Box -->
                 <div class="relative flex-1 w-full">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -64,161 +63,165 @@
                         class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-colors">
                 </div>
 
-                <!-- Dropdown Kategori -->
-                @php
-                    $catOptions = [['value' => 'all', 'label' => 'Semua Kategori']];
-                    foreach ($categories as $category) {
-                        $catOptions[] = [
-                            'value' => (string) $category->id,
-                            'label' => $category->name,
-                        ];
-                    }
-                @endphp
-                <div x-data="{
-                    open: false,
-                    selected: '{{ (string) request('category', 'all') }}',
-                    options: {{ \Illuminate\Support\Js::from($catOptions) }},
-                    get selectedLabel() {
-                        const found = this.options.find(item => item.value === this.selected);
-                        return found ? found.label : 'Semua Kategori';
-                    },
-                    select(val) {
-                        this.selected = val;
-                        this.open = false;
-                        $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenCategory.form); });
-                    }
-                }" class="relative w-full md:w-56 shrink-0" @click.away="open = false">
+                <!-- 2 Dropdown Filter (Berjejer Sejajar di Mobile/Tablet, Geser Saat Reset Muncul) -->
+                <div class="flex items-center gap-2 w-full lg:w-auto">
+                    <!-- Dropdown Kategori -->
+                    @php
+                        $catOptions = [['value' => 'all', 'label' => 'Semua Kategori']];
+                        foreach ($categories as $category) {
+                            $catOptions[] = [
+                                'value' => (string) $category->id,
+                                'label' => $category->name,
+                            ];
+                        }
+                    @endphp
+                    <div x-data="{
+                        open: false,
+                        selected: '{{ (string) request('category', 'all') }}',
+                        options: {{ \Illuminate\Support\Js::from($catOptions) }},
+                        get selectedLabel() {
+                            const found = this.options.find(item => item.value === this.selected);
+                            return found ? found.label : 'Semua Kategori';
+                        },
+                        select(val) {
+                            this.selected = val;
+                            this.open = false;
+                            $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenCategory.form); });
+                        }
+                    }" class="relative flex-1 min-w-0 lg:w-56 lg:flex-none shrink-0" @click.away="open = false">
 
-                    <input type="hidden" name="category" :value="selected" x-ref="hiddenCategory">
+                        <input type="hidden" name="category" :value="selected" x-ref="hiddenCategory">
 
-                    <button type="button" @click="open = !open"
-                        class="w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-gray-50 hover:bg-gray-100/80 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-left">
-                        <span class="truncate" x-text="selectedLabel"></span>
-                        <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200"
-                            :class="{ 'rotate-180 text-brand-600': open }" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
+                        <button type="button" @click="open = !open"
+                            class="w-full flex items-center justify-between gap-2 px-3 sm:px-4 py-2.5 bg-gray-50 hover:bg-gray-100/80 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-left">
+                            <span class="truncate" x-text="selectedLabel"></span>
+                            <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200"
+                                :class="{ 'rotate-180 text-brand-600': open }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
 
-                    <div x-show="open" x-transition:enter="transition ease-out duration-150"
-                        x-transition:enter-start="opacity-0 scale-95 translate-y-1"
-                        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-100"
-                        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                        x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-                        class="absolute left-0 right-0 mt-1.5 py-1.5 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto"
-                        style="display: none;" x-cloak>
-                        <template x-for="item in options" :key="item.value">
-                            <button type="button" @click="select(item.value)"
-                                class="w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm text-left transition-colors"
-                                :class="selected === item.value ? 'bg-brand-50 text-brand-700 font-bold' :
-                                    'text-gray-700 hover:bg-gray-50'">
-                                <span x-text="item.label" class="truncate"></span>
-                                <svg x-show="selected === item.value" class="w-4 h-4 text-brand-600 shrink-0 ml-2"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                        d="M5 13l4 4L19 7" />
-                                </svg>
-                            </button>
-                        </template>
+                        <div x-show="open" x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                            class="absolute left-0 right-0 mt-1.5 py-1.5 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto"
+                            style="display: none;" x-cloak>
+                            <template x-for="item in options" :key="item.value">
+                                <button type="button" @click="select(item.value)"
+                                    class="w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm text-left transition-colors"
+                                    :class="selected === item.value ? 'bg-brand-50 text-brand-700 font-bold' :
+                                        'text-gray-700 hover:bg-gray-50'">
+                                    <span x-text="item.label" class="truncate"></span>
+                                    <svg x-show="selected === item.value" class="w-4 h-4 text-brand-600 shrink-0 ml-2"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </button>
+                            </template>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Dropdown Status -->
-                <div x-data="{
-                    open: false,
-                    selected: '{{ request('status', 'all') }}',
-                    options: {
-                        'all': 'Semua Status',
-                        'buka_rekrutmen': 'Buka Rekrutmen',
-                        'ditutup': 'Ditutup',
-                        'sedang_berjalan': 'Sedang Berjalan',
-                        'selesai': 'Selesai'
-                    },
-                    select(val) {
-                        this.selected = val;
-                        this.open = false;
-                        $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenStatus.form); });
-                    }
-                }" class="relative w-full md:w-52 shrink-0" @click.away="open = false">
+                    <!-- Dropdown Status -->
+                    <div x-data="{
+                        open: false,
+                        selected: '{{ request('status', 'all') }}',
+                        options: {
+                            'all': 'Semua Status',
+                            'buka_rekrutmen': 'Buka Rekrutmen',
+                            'ditutup': 'Ditutup',
+                            'sedang_berjalan': 'Sedang Berjalan',
+                            'selesai': 'Selesai'
+                        },
+                        select(val) {
+                            this.selected = val;
+                            this.open = false;
+                            $nextTick(() => { window.adminSubmitForm(this.$refs.hiddenStatus.form); });
+                        }
+                    }" class="relative flex-1 min-w-0 lg:w-52 lg:flex-none shrink-0" @click.away="open = false">
 
-                    <input type="hidden" name="status" :value="selected" x-ref="hiddenStatus">
+                        <input type="hidden" name="status" :value="selected" x-ref="hiddenStatus">
 
-                    <button type="button" @click="open = !open"
-                        class="w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-gray-50 hover:bg-gray-100/80 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-left">
-                        <span class="truncate" x-text="options[selected] || 'Semua Status'"></span>
-                        <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200"
-                            :class="{ 'rotate-180 text-brand-600': open }" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
+                        <button type="button" @click="open = !open"
+                            class="w-full flex items-center justify-between gap-2 px-3 sm:px-4 py-2.5 bg-gray-50 hover:bg-gray-100/80 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-left">
+                            <span class="truncate" x-text="options[selected] || 'Semua Status'"></span>
+                            <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200"
+                                :class="{ 'rotate-180 text-brand-600': open }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
 
-                    <div x-show="open" x-transition:enter="transition ease-out duration-150"
-                        x-transition:enter-start="opacity-0 scale-95 translate-y-1"
-                        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-100"
-                        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                        x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-                        class="absolute left-0 right-0 mt-1.5 py-1.5 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden"
-                        style="display: none;" x-cloak>
-                        <template x-for="(label, key) in options" :key="key">
-                            <button type="button" @click="select(key)"
-                                class="w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm text-left transition-colors"
-                                :class="selected === key ? 'bg-brand-50 text-brand-700 font-bold' :
-                                    'text-gray-700 hover:bg-gray-50'">
-                                <span x-text="label"></span>
-                                <svg x-show="selected === key" class="w-4 h-4 text-brand-600 shrink-0" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                        d="M5 13l4 4L19 7" />
-                                </svg>
-                            </button>
-                        </template>
+                        <div x-show="open" x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                            class="absolute left-0 right-0 mt-1.5 py-1.5 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden"
+                            style="display: none;" x-cloak>
+                            <template x-for="(label, key) in options" :key="key">
+                                <button type="button" @click="select(key)"
+                                    class="w-full flex items-center justify-between px-3.5 py-2 text-xs sm:text-sm text-left transition-colors"
+                                    :class="selected === key ? 'bg-brand-50 text-brand-700 font-bold' :
+                                        'text-gray-700 hover:bg-gray-50'">
+                                    <span x-text="label"></span>
+                                    <svg x-show="selected === key" class="w-4 h-4 text-brand-600 shrink-0" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </button>
+                            </template>
+                        </div>
                     </div>
+
+                    @php
+                        $hasActiveFilter = (request('search') && trim(request('search')) !== '')
+                            || (request('category') && request('category') !== 'all')
+                            || (request('status') && request('status') !== 'all');
+                    @endphp
+
+                    @if($hasActiveFilter)
+                        <div class="shrink-0">
+                            <a href="{{ route('admin.active-events.index') }}" 
+                                data-reset="true"
+                                x-data="{ resetting: false }" 
+                                @click="resetting = true"
+                                class="group inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all whitespace-nowrap shrink-0">
+                                <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
+                                    :class="{ 'animate-spin text-brand-600': resetting }" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                <span>Reset</span>
+                            </a>
+                        </div>
+                    @endif
                 </div>
-
-                <!-- Reset Button -->
-                @php
-                    $hasActiveFilter = (request('search') && trim(request('search')) !== '')
-                        || (request('category') && request('category') !== 'all')
-                        || (request('status') && request('status') !== 'all');
-                @endphp
-
-                @if($hasActiveFilter)
-                    <a href="{{ route('admin.active-events.index') }}" 
-                        data-reset="true"
-                        x-data="{ resetting: false }" 
-                        @click="resetting = true"
-                        class="group inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 active:scale-95 transition-all shrink-0">
-                        <svg class="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 group-hover:-rotate-45 shrink-0"
-                            :class="{ 'animate-spin text-brand-600': resetting }" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        <span>Reset</span>
-                    </a>
-                @endif
             </form>
         </x-card>
 
         <!-- Events Table Card -->
         <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden w-full max-w-full min-w-0">
             <div class="overflow-x-auto w-full">
-                <table class="table-fixed w-full text-left border-collapse">
+                <table class="table-fixed w-full min-w-[1020px] text-left border-collapse">
                     <thead>
                         <tr
                             class="bg-gray-50/80 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-                            <th class="py-3.5 px-4 w-[24%]">Nama Event</th>
-                            <th class="py-3.5 px-3 w-[13%]">Penyelenggara</th>
-                            <th class="py-3.5 px-2 w-[10%] text-center">Kategori</th>
-                            <th class="py-3.5 px-3 w-[14%]">Tanggal & Lokasi</th>
-                            <th class="py-3.5 px-3 w-[13%]">Total Crew</th>
-                            <th class="py-3.5 px-2 w-[15%] text-center">Status</th>
-                            <th class="py-3.5 px-3 w-[11%] text-center">Aksi</th>
+                            <th class="py-4 px-5 sm:px-6 w-[23%] whitespace-nowrap">Nama Event</th>
+                            <th class="py-4 px-5 w-[14%] whitespace-nowrap">Penyelenggara</th>
+                            <th class="py-4 px-5 w-[11%] text-center whitespace-nowrap">Kategori</th>
+                            <th class="py-4 px-5 w-[14%] whitespace-nowrap">Tanggal & Lokasi</th>
+                            <th class="py-4 px-5 w-[13%] text-center whitespace-nowrap">Total Crew</th>
+                            <th class="py-4 px-5 w-[13%] text-center whitespace-nowrap">Status</th>
+                            <th class="py-4 px-5 sm:px-6 w-[12%] text-center whitespace-nowrap">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 text-sm">
@@ -261,7 +264,7 @@
                             @endphp
                             <tr class="hover:bg-gray-50/60 transition-colors">
                                 <!-- Nama Event & ID -->
-                                <td class="py-4 px-4">
+                                <td class="py-4 px-5 sm:px-6">
                                     <div class="flex items-center gap-3 min-w-0">
                                         @if ($event->poster_path)
                                             <button type="button"
@@ -295,7 +298,7 @@
                                 </td>
 
                                 <!-- Penyelenggara -->
-                                <td class="py-4 px-3">
+                                <td class="py-4 px-5">
                                     <div class="font-bold text-gray-900 text-sm truncate" title="{{ $event->organizer->organization_name ?? 'Penyelenggara' }}">
                                         {{ $event->organizer->organization_name ?? 'Penyelenggara' }}
                                     </div>
@@ -305,19 +308,19 @@
                                 </td>
 
                                 <!-- Kategori -->
-                                <td class="py-4 px-2 text-center">
+                                <td class="py-4 px-5 text-center whitespace-nowrap">
                                     <span
-                                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-brand-700 max-w-full truncate">
+                                        class="inline-flex items-center justify-center mx-auto px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-brand-700 max-w-full truncate">
                                         {{ $event->category?->name ?? 'Umum' }}
                                     </span>
                                 </td>
 
                                 <!-- Tanggal & Lokasi -->
-                                <td class="py-4 px-3">
+                                <td class="py-4 px-5">
                                     <div class="text-xs font-bold text-gray-800 whitespace-nowrap">
                                         @if ($event->start_date && $event->end_date && !$event->start_date->equalTo($event->end_date))
                                             {{ $event->start_date->translatedFormat('d') }} –
-                                            {{ $event->end_date->translatedFormat('d M Y') }}
+                                             {{ $event->end_date->translatedFormat('d M Y') }}
                                         @elseif($event->start_date)
                                             {{ $event->start_date->translatedFormat('d M Y') }}
                                         @else
@@ -337,8 +340,8 @@
                                 </td>
 
                                 <!-- Total Crew & Progress Bar -->
-                                <td class="py-4 px-3">
-                                    <div class="flex items-center justify-between gap-1 text-xs font-bold mb-1.5">
+                                <td class="py-4 px-5 text-center">
+                                    <div class="flex items-center justify-center gap-1.5 text-xs font-bold mb-1.5">
                                         <span
                                             class="truncate {{ $progressPercent >= 100 ? 'text-emerald-700' : 'text-gray-800' }}">
                                             {{ $acceptedVolunteers }}/{{ $totalQuota }} Crew
@@ -350,59 +353,63 @@
                                             class="shrink-0 {{ $progressPercent >= 100 ? 'text-emerald-600' : 'text-gray-600' }}">{{ $progressPercent }}%</span>
                                     </div>
                                     <!-- Dynamic Progress Bar -->
-                                    <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                                    <div class="w-full max-w-[110px] mx-auto bg-gray-100 rounded-full h-1.5 overflow-hidden">
                                         <div class="h-1.5 rounded-full transition-all duration-500 {{ $statusType === 'selesai' ? 'bg-gray-400' : ($progressPercent >= 100 ? 'bg-emerald-500' : 'bg-brand-600') }}"
                                             style="width: {{ $progressPercent }}%"></div>
                                     </div>
                                 </td>
 
                                 <!-- Status Badge -->
-                                <td class="py-4 px-2 text-center whitespace-nowrap">
-                                    @if ($statusType === 'buka_rekrutmen')
-                                        <span
-                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200/70">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-sky-600 shrink-0"></span>
-                                            Buka Rekrutmen
-                                        </span>
-                                    @elseif($statusType === 'sedang_berjalan')
-                                        <span
-                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
-                                            Sedang Berjalan
-                                        </span>
-                                    @elseif($statusType === 'ditutup')
-                                        <span
-                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/70">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
-                                            Ditutup
-                                        </span>
-                                    @else
-                                        <span
-                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/70">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"></span>
-                                            Selesai
-                                        </span>
-                                    @endif
+                                <td class="py-4 px-5 text-center whitespace-nowrap">
+                                    <div class="flex items-center justify-center">
+                                        @if ($statusType === 'buka_rekrutmen')
+                                            <span
+                                                class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200/70">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-sky-600 shrink-0"></span>
+                                                Buka Rekrutmen
+                                            </span>
+                                        @elseif($statusType === 'sedang_berjalan')
+                                            <span
+                                                class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0"></span>
+                                                Sedang Berjalan
+                                            </span>
+                                        @elseif($statusType === 'ditutup')
+                                            <span
+                                                class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/70">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                                                Ditutup
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/70">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"></span>
+                                                Selesai
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
 
                                 <!-- Aksi -->
-                                <td class="py-4 px-3 text-center whitespace-nowrap">
+                                <td class="py-4 px-5 sm:px-6 text-center whitespace-nowrap">
                                     <div class="flex items-center justify-center">
                                         <button type="button" x-on:click="openDetailModal({{ $event->id }})"
                                             class="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-brand-700 text-xs font-semibold rounded-xl transition-colors">
-                                            Lihat Detail
                                             <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
+                                            Detail
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-12 px-6 text-center">
+                                <td colspan="7" class="py-12 px-5 sm:px-6 text-center">
                                     <x-empty-state title="Tidak ada event aktif ditemukan"
                                         description="Tidak ada data event aktif yang sesuai dengan kata kunci pencarian atau filter yang dipilih." />
                                 </td>
@@ -423,7 +430,7 @@
         <!-- ============================================== -->
         <!-- MODAL DETAIL EVENT AKTIF (COMPACT ANTI-SCROLL) -->
         <!-- ============================================== -->
-        <x-modal name="active-event-detail-modal" :show="false" maxWidth="2xl">
+        <x-modal name="active-event-detail-modal" :show="false" maxWidth="2xl" zIndex="40">
             <div class="p-5 flex flex-col flex-1 min-h-0 overflow-hidden">
                 <template x-if="loading">
                     <div class="py-12 text-center text-gray-400 my-auto">

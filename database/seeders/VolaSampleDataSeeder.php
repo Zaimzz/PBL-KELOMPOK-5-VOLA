@@ -667,10 +667,11 @@ class VolaSampleDataSeeder extends Seeder
             $year = $tItem['year'] ?? $createdDate->year;
             $invNumber = sprintf('INV-%d-%04d', $year, $tIndex + 101);
 
+            // 1 Event = 1 Invoice: Pastikan 1 event hanya memiliki 1 invoice
             Payment::firstOrCreate(
-                ['invoice_number' => $invNumber],
+                ['event_id' => $event->id],
                 [
-                    'event_id' => $event->id,
+                    'invoice_number' => $invNumber,
                     'package_name' => $tItem['pkg'],
                     'package_duration_days' => $tItem['pkg'] === 'enterprise' ? 14 : ($tItem['pkg'] === 'professional' ? 7 : 3),
                     'midtrans_order_id' => 'ORDER-'.$year.'-'.Str::upper(Str::random(10)),

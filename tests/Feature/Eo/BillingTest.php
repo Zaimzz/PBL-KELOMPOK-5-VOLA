@@ -203,6 +203,55 @@ test('create invoice returns 403 when eo has no organizer profile', function () 
         ->assertForbidden();
 });
 
+test('create invoice reuses existing pending invoice for the same event and does not duplicate', function () {
+    ['user' => $user, 'event' => $event] = makeEoWithEvent();
+
+    $existing = Payment::factory()->create([
+        'event_id' => $event->id,
+        'package_name' => 'professional',
+        'invoice_number' => 'INV-2026-TESTREUSE',
+        'snap_token' => 'mock-snap-token-123',
+        'status' => PaymentStatus::Pending,
+        'amount' => PublicationPackage::price('professional'),
+        'expired_at' => now()->addHours(12),
+    ]);
+
+    $resp = $this->actingAs($user)
+        ->postJson(route('eo.billing.invoice.create'), [
+            'event_id' => $event->id,
+            'package_slug' => 'professional',
+        ]);
+
+    $resp->assertOk()
+        ->assertJson([
+            'snap_token' => 'mock-snap-token-123',
+            'invoice_number' => 'INV-2026-TESTREUSE',
+            'payment_id' => $existing->id,
+        ]);
+
+    expect(Payment::where('event_id', $event->id)->count())->toBe(1);
+});
+
+test('create invoice rejects creation if event is already paid', function () {
+    ['user' => $user, 'event' => $event] = makeEoWithEvent();
+
+    Payment::factory()->paid()->create([
+        'event_id' => $event->id,
+        'invoice_number' => 'INV-2026-PAIDALREADY',
+    ]);
+
+    $this->actingAs($user)
+        ->postJson(route('eo.billing.invoice.create'), [
+            'event_id' => $event->id,
+            'package_slug' => 'professional',
+        ])
+        ->assertStatus(422)
+        ->assertJson([
+            'error' => 'Event ini sudah memiliki invoice lunas.',
+            'invoice_number' => 'INV-2026-PAIDALREADY',
+        ]);
+});
+
 // ─── Scheduled expiration ─────────────────────────────────────────────────────
 
 test('payments expire command marks overdue pending payments as expired', function () {

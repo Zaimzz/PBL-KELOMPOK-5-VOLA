@@ -168,48 +168,75 @@ class BillingController extends Controller
 
         $package = PublicationPackage::find($validated['package_slug']);
 
-        // Idempotency check: if there is already a pending payment for this exact
-        // event + package combination, return the existing snap token (or renew it).
-        $existing = Payment::where('event_id', $event->id)
-            ->where('package_name', $validated['package_slug'])
+        // 1. Guard: If event is already PAID, do not allow creating a new invoice.
+        $paidPayment = Payment::where('event_id', $event->id)
+            ->where('status', PaymentStatus::Paid)
+            ->first();
+
+        if ($paidPayment) {
+            return response()->json([
+                'error' => 'Event ini sudah memiliki invoice lunas.',
+                'invoice_number' => $paidPayment->invoice_number,
+                'payment_id' => $paidPayment->id,
+            ], 422);
+        }
+
+        // 2. 1 Event = 1 Active Invoice Rule:
+        // Check if an existing PENDING invoice already exists for this event.
+        $existingPending = Payment::where('event_id', $event->id)
             ->where('status', PaymentStatus::Pending)
-            ->where('expired_at', '>', now())
             ->latest()
             ->first();
 
-        if ($existing && $existing->snap_token) {
-            return response()->json([
-                'snap_token' => $existing->snap_token,
-                'payment_id' => $existing->id,
-                'invoice_number' => $existing->invoice_number,
-                'client_key' => config('services.midtrans.client_key'),
-            ]);
+        // Auto-expire if pending invoice has passed 24h
+        if ($existingPending && ($existingPending->expired_at?->isPast() || $existingPending->created_at->lt(now()->subHours(24)))) {
+            $existingPending->update(['status' => PaymentStatus::Expired]);
+            $existingPending = null;
         }
 
-        // Generate a unique invoice number
-        $invoiceNumber = 'INV-'.now()->format('Y').'-'.strtoupper(Str::random(8));
-
-        // Canonical amount comes from backend catalogue — never from the request
         $amount = PublicationPackage::price($validated['package_slug']);
 
-        // Build Midtrans Snap transaction payload
-        $orderId = 'VOLA-'.now()->format('YmdHis').'-'.Str::random(6);
+        if ($existingPending) {
+            // REUSE existing invoice! Keep the same invoice_number.
+            $payment = $existingPending;
 
-        // Create the payment record FIRST so we can embed its ID in the Snap finish URL.
-        // The finish URL is a server-side verify-and-redirect route — this guarantees the
-        // payment status is synced from Midtrans even when the JS onSuccess callback is
-        // interrupted by the browser redirect triggered by the Snap finish callback.
-        $payment = Payment::create([
-            'event_id' => $event->id,
-            'package_name' => $validated['package_slug'],
-            'package_duration_days' => $package['duration_days'],
-            'invoice_number' => $invoiceNumber,
-            'midtrans_order_id' => $orderId,
-            'snap_token' => null,
-            'amount' => $amount,
-            'status' => PaymentStatus::Pending,
-            'expired_at' => now()->addHours(24),
-        ]);
+            // If same package and has existing valid snap_token, return it directly
+            if ($payment->package_name === $validated['package_slug'] && $payment->snap_token && $payment->amount == $amount) {
+                return response()->json([
+                    'snap_token' => $payment->snap_token,
+                    'payment_id' => $payment->id,
+                    'invoice_number' => $payment->invoice_number,
+                    'client_key' => config('services.midtrans.client_key'),
+                ]);
+            }
+
+            // If package changed or snap token is missing, renew order ID & package details on the SAME invoice
+            $orderId = 'VOLA-'.now()->format('YmdHis').'-'.Str::random(6);
+            $payment->update([
+                'package_name' => $validated['package_slug'],
+                'package_duration_days' => $package['duration_days'],
+                'amount' => $amount,
+                'midtrans_order_id' => $orderId,
+                'snap_token' => null,
+                'expired_at' => now()->addHours(24),
+            ]);
+        } else {
+            // Only create a NEW invoice if no pending or paid invoice exists (all previous are expired/cancelled)
+            $invoiceNumber = 'INV-'.now()->format('Y').'-'.strtoupper(Str::random(8));
+            $orderId = 'VOLA-'.now()->format('YmdHis').'-'.Str::random(6);
+
+            $payment = Payment::create([
+                'event_id' => $event->id,
+                'package_name' => $validated['package_slug'],
+                'package_duration_days' => $package['duration_days'],
+                'invoice_number' => $invoiceNumber,
+                'midtrans_order_id' => $orderId,
+                'snap_token' => null,
+                'amount' => $amount,
+                'status' => PaymentStatus::Pending,
+                'expired_at' => now()->addHours(24),
+            ]);
+        }
 
         $snapParams = [
             'transaction_details' => [
@@ -240,8 +267,10 @@ class BillingController extends Controller
         try {
             $snapToken = Snap::getSnapToken($snapParams);
         } catch (\Exception $e) {
-            // Roll back the orphaned payment record if Snap token retrieval fails
-            $payment->delete();
+            // Roll back the orphaned payment record ONLY if it was newly created
+            if ($payment->wasRecentlyCreated) {
+                $payment->delete();
+            }
             report($e);
 
             return response()->json(['error' => 'Gagal menghubungi Midtrans. Silakan coba lagi.'], 500);
@@ -445,6 +474,12 @@ class BillingController extends Controller
         if (! $event) {
             return;
         }
+
+        // Cancel any lingering pending payments for this same event to maintain 1 Event = 1 Invoice
+        Payment::where('event_id', $payment->event_id)
+            ->where('id', '!=', $payment->id)
+            ->where('status', PaymentStatus::Pending)
+            ->update(['status' => PaymentStatus::Cancelled]);
 
         $activatableStatuses = [
             EventStatus::AwaitingPayment->value,
