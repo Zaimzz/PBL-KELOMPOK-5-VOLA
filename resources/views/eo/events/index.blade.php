@@ -73,6 +73,8 @@
                             @if ($event->poster_path)
                                 <img src="{{ $event->poster_url }}"
                                      alt="Poster {{ $event->title }}"
+                                     loading="lazy"
+                                     onerror="this.onerror=null;this.src='{{ asset('images/event-placeholder.svg') }}'"
                                      class="w-full h-full object-cover">
                             @else
                                 <div class="w-full h-full flex flex-col items-center justify-center min-h-[120px] gap-2">

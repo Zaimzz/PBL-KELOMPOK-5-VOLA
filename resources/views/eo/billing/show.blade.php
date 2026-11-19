@@ -172,7 +172,7 @@
 
     @if ($statusValue === 'pending' && $payment->snap_token)
         @push('scripts')
-            <script src="https://app.sandbox.midtrans.com/snap/snap.js"
+            <script src="https://app.sandbox.midtrans.com/snap/snap.js" defer
                     data-client-key="{{ config('services.midtrans.client_key') }}"></script>
             <script>
                 function reopenSnap(token) {

@@ -8,7 +8,6 @@ use App\Http\Requests\Eo\UpdateOrganizerProfileRequest;
 use App\Support\MediaStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class OrganizerProfileController extends Controller
@@ -25,6 +24,7 @@ class OrganizerProfileController extends Controller
         if ($profile) {
             $events = $profile->events()
                 ->with('category')
+                ->withCount('positions')
                 ->latest('created_at')
                 ->limit(4)
                 ->get();

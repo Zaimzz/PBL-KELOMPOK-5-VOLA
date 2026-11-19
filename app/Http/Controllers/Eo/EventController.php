@@ -14,7 +14,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -306,7 +305,7 @@ class EventController extends Controller
         }
 
         // Validate at least 1 position
-        if ($event->positions()->count() === 0) {
+        if (! $event->positions()->exists()) {
             return back()->with('error', 'Event harus memiliki minimal 1 posisi sebelum dapat diajukan untuk review.');
         }
 
