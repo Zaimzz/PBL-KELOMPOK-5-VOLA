@@ -26,15 +26,15 @@ class ProfileTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this
-            ->actingAs($user)
-            ->patch('/profile', [
-                'name' => 'Test User',
-                'email' => 'test@example.com',
-            ]);
+        ->actingAs($user)
+        ->patch('/account/profile', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile/edit');
+            ->assertRedirect('/account/profile');
 
         $user->refresh();
 
@@ -48,15 +48,15 @@ class ProfileTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this
-            ->actingAs($user)
-            ->patch('/profile', [
-                'name' => 'Test User',
-                'email' => $user->email,
-            ]);
+        ->actingAs($user)
+        ->patch('/account/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+        ]);
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile/edit');
+            ->assertRedirect('/account/profile');
 
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
@@ -67,7 +67,7 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->delete('/profile', [
+            ->delete('/account/profile', [
                 'password' => 'password',
             ]);
 
@@ -85,14 +85,14 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
+            ->from('/account/profile')
+            ->delete('/account/profile', [
                 'password' => 'wrong-password',
             ]);
 
         $response
             ->assertSessionHasErrorsIn('userDeletion', 'password')
-            ->assertRedirect('/profile');
+            ->assertRedirect('/account/profile');
 
         $this->assertNotNull($user->fresh());
     }

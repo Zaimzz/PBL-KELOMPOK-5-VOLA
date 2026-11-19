@@ -35,6 +35,21 @@ class SearchController extends Controller
 
         $operator = $dbQuery->getConnection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
 
+        $status = (array) $request->input('status', []);
+        $time = $request->input('time', '');
+
+        if (! empty($status)) {
+            $supportsOpenVolunteer = in_array('Open Volunteer', $status, true);
+
+            if (! $supportsOpenVolunteer) {
+                $dbQuery->whereRaw('1 = 0');
+            }
+        }
+
+        if ($time === 'bulan-ini') {
+            $dbQuery->whereDate('registration_deadline', '>=', now()->toDateString())
+                ->whereDate('registration_deadline', '<=', now()->addDays(30)->toDateString());
+        }
         if ($query !== '') {
             $dbQuery->where(function ($q) use ($query, $operator) {
                 $q->where('title', $operator, '%'.$query.'%')
@@ -76,7 +91,15 @@ class SearchController extends Controller
             $dbQuery->orderBy('registration_deadline');
         }
 
-        $searchCacheKey = 'crew_search_'.md5(json_encode([$query, $category, $location, $position, $sort], JSON_UNESCAPED_UNICODE));
+        $searchCacheKey = 'crew_search_'.md5(json_encode([
+            $query,
+            $category,
+            $location,
+            $position,
+            $status,
+            $time,
+            $sort,
+        ], JSON_UNESCAPED_UNICODE));
 
         $allEvents = Cache::remember($searchCacheKey, 30, function () use ($dbQuery) {
             return $dbQuery->get()->map(function (Event $event) {

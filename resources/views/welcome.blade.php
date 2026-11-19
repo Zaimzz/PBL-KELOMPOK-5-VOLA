@@ -3,408 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>VOLA — Temukan Event, Bangun Pengalamanmu</title>
-
+    <meta name="description" content="VOLA menghubungkan relawan dengan peluang event dan membantu penyelenggara menemukan kru lapangan yang tepat.">
+    <meta name="theme-color" content="#ffffff">
+    <title>VOLA — Temukan Event Impian, Bangun Pengalamanmu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="vola-landing">
-
-    <header class="vola-navbar">
-        <div class="vola-container vola-nav-inner">           
-            <a href="{{ route('home') }}#beranda"
-            class="vola-brand"
-            aria-label="VOLA - Beranda">
-                VOLA<span>.</span>
-            </a>
-
-            <nav class="vola-nav-links" id="volaNavLinks">
-                <a href="#beranda" class="is-active">Beranda</a>
-                <a href="#event">Cari Event</a>
-                <a href="#tentang">Tentang Kami</a>
-            </nav>
-
-            <div class="vola-nav-actions">
-                @auth
-                    <a href="{{ match(auth()->user()->role) { \App\Enums\UserRole::Admin => route('admin.dashboard'), \App\Enums\UserRole::Eo => route('eo.dashboard'), default => route('profile.show') } }}"
-                       class="vola-btn vola-btn-primary vola-btn-small">
-                        {{ auth()->user()->role === \App\Enums\UserRole::Volunteer ? 'Profil Saya' : 'Dashboard' }}
-                    </a>
-                @else
-                    <a href="{{ route('login') }}" class="vola-login-link">
-                        Masuk
-                    </a>
-                    <a href="{{ route('register') }}"
-                       class="vola-btn vola-btn-primary vola-btn-small">
-                        Daftar
-                    </a>
-                @endauth
-            </div>
-
-            <button type="button"
-                    class="vola-menu-toggle"
-                    id="volaMenuToggle"
-                    aria-label="Buka menu"
-                    aria-expanded="false"
-                    aria-controls="volaNavLinks">
-                ☰
-            </button>
-        </div>
-    </header>
-
-    <main>
-        <section class="vola-hero" id="beranda">
-            <div class="vola-container vola-hero-grid">
-
-                <div class="vola-hero-content">
-                    <span class="vola-eyebrow">
-                        <span aria-hidden="true">✦</span>
-                        Find. Join. Contribute.
-                    </span>
-
-                    <h1>
-                        Temukan Event,<br>
-                        Bangun <span>Pengalamanmu.</span>
-                    </h1>
-
-                    <p class="vola-hero-description">
-                        Platform yang menghubungkan mahasiswa dengan peluang
-                        volunteer event, serta membantu Event Organizer
-                        menemukan kru lapangan terbaik.
-                    </p>
-
-                    <div class="vola-hero-actions">
-                        <a href="#event"
-                           class="vola-btn vola-btn-primary">
-                            Cari Event Sekarang <span>→</span>
-                        </a>
-
-                        <a href="{{ route('register') }}"
-                           class="vola-btn vola-btn-outline">
-                            <span>⊕</span> Buat Event (Untuk EO)
-                        </a>
-                    </div>
-
-                    <div class="vola-stats">
-                        <div class="vola-stat">
-                            <strong>50+ Event</strong>
-                            <span>Kampus</span>
-                        </div>
-
-                        <div class="vola-stat">
-                            <strong>350+ Relawan</strong>
-                            <span>Aktif</span>
-                        </div>
-
-                        <div class="vola-stat">
-                            <strong>100% Gratis</strong>
-                            <span>Mahasiswa</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="vola-hero-visual">
-                    <img
-                        src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1100&q=85"
-                        alt="Sekelompok anak muda dalam kegiatan bersama"
-                        fetchpriority="high"
-                    >
-
-                    <div class="vola-photo-caption">
-                        <span>
-                            <span class="vola-status-dot">●</span>
-                            Komunitas &amp; Relawan Lapangan
-                        </span>
-                        <span class="vola-verified">VOLA Community</span>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        
-<!-- HOW VOLA WORKS -->
-<section class="vola-how" id="tentang">
-    <div class="vola-container">
-
-        <div class="vola-section-heading">
-            <span class="vola-section-label">
-                LANGKAH SEDERHANA
-            </span>
-
-            <h2>Bagaimana VOLA Bekerja</h2>
-
-            <p>
-                Proses sederhana dan transparan, baik untuk kamu
-                yang ingin menambah pengalaman kepanitiaan maupun
-                mengelola kru acara.
-            </p>
-        </div>
-
-        <div class="vola-steps-grid">
-
-            <!-- CARD VOLUNTEER -->
-            <article class="vola-steps-card">
-                <div class="vola-steps-header">
-                    <div class="vola-role-icon">♡</div>
-
-                    <div>
-                        <span class="vola-role-kicker">
-                            PERAN RELAWAN
-                        </span>
-                        <h3>Volunteer &amp; Kru</h3>
-                    </div>
-
-                    <span class="vola-role-badge">Gratis</span>
-                </div>
-
-                <div class="vola-step-list">
-                    <div class="vola-step-item">
-                        <span class="vola-step-number">1</span>
-                        <div>
-                            <h4>Cari Event Sesuai Minat</h4>
-                            <p>
-                                Temukan peluang volunteer berdasarkan
-                                kategori, kota, jadwal, dan minatmu.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="vola-step-item">
-                        <span class="vola-step-number">2</span>
-                        <div>
-                            <h4>Lamar Posisi Lapangan</h4>
-                            <p>
-                                Pelajari deskripsi dan persyaratan posisi,
-                                lalu ajukan lamaran sesuai kualifikasimu.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="vola-step-item">
-                        <span class="vola-step-number">3</span>
-                        <div>
-                            <h4>Raih Pengalaman &amp; Relasi</h4>
-                            <p>
-                                Ikuti proses seleksi dan dapatkan pengalaman
-                                baru bersama penyelenggara acara.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <a href="#event" class="vola-steps-link">
-                    Eksplorasi peluang volunteer →
+<body class="lp-page">
+@php
+    $dashboardUrl = auth()->check()
+        ? match (auth()->user()->role) {
+            \App\Enums\UserRole::Admin => route('admin.dashboard'),
+            \App\Enums\UserRole::Eo => route('eo.dashboard'),
+            default => route('dashboard'),
+        }
+        : route('login');
+@endphp
+<header class="lp-header">
+    <div class="lp-container lp-header-inner">
+        <a href="{{ route('home') }}" class="lp-logo" aria-label="VOLA Beranda">VOLA<span>.</span></a>
+        <button class="lp-menu-toggle" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="lp-navigation">
+            <span></span><span></span><span></span>
+        </button>
+        <nav class="lp-navigation" id="lp-navigation" aria-label="Navigasi utama">
+            <a class="is-active" href="#beranda" aria-current="location">Beranda</a>
+            <a href="#tentang">Tentang</a>
+            <a href="#event">Cari Event</a>
+            <a href="#wawasan">Wawasan</a>
+        </nav>
+        <div class="lp-header-actions">
+            @auth
+                <a class="lp-button lp-button-primary lp-button-small" href="{{ $dashboardUrl }}">Dashboard</a>
+            @else
+                <a class="lp-button lp-button-outline lp-button-small lp-login"
+                href="{{ route('login') }}">
+                    Masuk
                 </a>
-            </article>
-
-            <!-- CARD EVENT ORGANIZER -->
-            <article class="vola-steps-card">
-                <div class="vola-steps-header">
-                    <div class="vola-role-icon is-green">⚑</div>
-
-                    <div>
-                        <span class="vola-role-kicker is-green">
-                            PENYELENGGARA
-                        </span>
-                        <h3>Event Organizer</h3>
-                    </div>
-
-                    <span class="vola-role-badge is-green">
-                        EO &amp; Panitia
-                    </span>
-                </div>
-
-                <div class="vola-step-list">
-                    <div class="vola-step-item">
-                        <span class="vola-step-number">1</span>
-                        <div>
-                            <h4>Lengkapi Profil Organisasi</h4>
-                            <p>
-                                Isi informasi organisasi dan dokumen
-                                legalitas untuk proses verifikasi.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="vola-step-item">
-                        <span class="vola-step-number">2</span>
-                        <div>
-                            <h4>Publikasikan Kebutuhan Kru</h4>
-                            <p>
-                                Buat event, tentukan posisi, kuota,
-                                persyaratan, dan informasi pendaftaran.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="vola-step-item">
-                        <span class="vola-step-number">3</span>
-                        <div>
-                            <h4>Kelola Rekrutmen Event</h4>
-                            <p>
-                                Pantau kebutuhan acara dan kelola
-                                informasi rekrutmen melalui dashboard EO.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <a href="{{ route('register') }}"
-                   class="vola-steps-link is-green">
-                    Mulai sebagai penyelenggara →
-                </a>
-            </article>
-
+                <a class="lp-button lp-button-primary lp-button-small" href="{{ route('register') }}">Daftar</a>
+            @endauth
         </div>
     </div>
-</section>
-
-
-<!-- EVENT PILIHAN -->
-<section class="vola-events" id="event">
-    <div class="vola-container">
-
-        <div class="vola-events-heading">
-            <div>
-                <span class="vola-section-label">
-                    DIREKTORI EVENT
-                </span>
-
-                <h2>Event Pilihan &amp; Terbuka</h2>
-
-                <p>
-                    Temukan peluang volunteer dan pengalaman baru
-                    bersama komunitas serta penyelenggara acara.
-                </p>
+</header>
+<main>
+    <section class="lp-hero" id="beranda">
+        <div class="lp-hero-glow lp-hero-glow-one"></div>
+        <div class="lp-hero-glow lp-hero-glow-two"></div>
+        <div class="lp-container lp-hero-grid">
+            <div class="lp-hero-copy lp-reveal">
+                <span class="lp-eyebrow"><span aria-hidden="true">✦</span> Satu Platform untuk Semua Event</span>
+                <h1>Temukan Event Impian,<span>Bangun Pengalamanmu.</span></h1>
+                <p class="lp-hero-description">Platform yang menghubungkan antusiasme relawan dengan kebutuhan kru lapangan dari Event Organizer di seluruh Indonesia.</p>
+                <div class="lp-hero-actions">
+                    <a href="#event" class="lp-button lp-button-primary lp-button-large">Cari Event Sekarang <span aria-hidden="true">→</span></a>
+                    <a href="{{ route('register') }}" class="lp-button lp-button-outline lp-button-large"><span aria-hidden="true">＋</span> Buat Event</a>
+                </div>
+                <div class="lp-trust-row">
+                    <div class="lp-trust-item"><span class="lp-trust-icon">✓</span><span><strong>{{ number_format($landingStats['events']) }}</strong> Event Terbuka</span></div>
+                    <div class="lp-trust-item"><span class="lp-trust-icon lp-trust-icon-green">✓</span><span><strong>{{ number_format($landingStats['volunteers']) }}</strong> Relawan Terdaftar</span></div>
+                </div>
             </div>
-
-            <a href="{{ route('login') }}"
-               class="vola-btn vola-btn-outline">
-                Lihat Semua Event →
-            </a>
-        </div>
-
-    <div class="vola-event-grid">
-        @forelse ($events as $event)
-            <article class="vola-event-card">
-                <div class="vola-event-tags">
-                    <span class="vola-event-category">
-                        {{ $event->category?->name ?? 'Event' }}
-                    </span>
-
-                    <span class="vola-open-tag">
-                        ● Open Volunteer
-                    </span>
+            <div class="lp-hero-art lp-reveal lp-reveal-delay">
+                <span class="lp-art-spark lp-art-spark-top">✦</span>
+                <span class="lp-art-spark lp-art-spark-bottom">✧</span>
+                <div class="lp-art-verification"><span>✦</span> EO Terverifikasi</div>
+                <div class="lp-hero-photo-frame">
+                    <img src="{{ asset('images/dashboard-crew/vola-hero-event-crew.webp') }}" alt="Suasana kegiatan pameran dan kru event di area expo" fetchpriority="high" width="1100" height="900">
+                    <div class="lp-photo-overlay">
+                        <div class="lp-photo-icon">✺</div>
+                        <div><strong>Temukan komunitasmu</strong><span>Mulai pengalaman baru bersama VOLA</span></div>
+                        <span class="lp-live-pill"><i></i> VOLA</span>
+                    </div>
                 </div>
-
-                <h3>{{ $event->title }}</h3>
-
-                <p class="vola-event-organizer">
-                    {{ $event->organizer?->organization_name ?? 'Penyelenggara VOLA' }}
-                </p>
-
-                <div class="vola-event-info">
-                    <p>⌖ {{ $event->city ?: $event->location }}</p>
-
-                    <p>
-                        ▦
-                        {{ $event->start_date
-                            ? $event->start_date->translatedFormat('d M Y')
-                            : 'Jadwal belum tersedia' }}
-                    </p>
-                </div>
-
-                <div class="vola-event-benefit">
-                    ♧
-                    {{ collect($event->benefits ?? [])->filter()->take(2)->join(' · ') ?: 'Pengalaman dan relasi baru' }}
-                </div>
-
-            <a href="{{ route('events.show', $event->slug) }}"
-            class="vola-btn vola-event-button">
-                Lihat Detail
-            </a>           
-        </article>
-        @empty
-            <div class="vola-events-empty">
-                <h3>Belum ada event yang tersedia</h3>
-                <p>
-                    Cek kembali nanti untuk menemukan kesempatan
-                    volunteer terbaru dari VOLA.
-                </p>
+                <div class="lp-floating-note"><span class="lp-floating-note-icon">♧</span><div><strong>{{ number_format($landingStats['organizers']) }} EO Terverifikasi</strong><span>Siap membuka peluang kolaborasi</span></div></div>
             </div>
-        @endforelse
-
         </div>
+    </section>
+    <section class="lp-category-strip" aria-label="Kategori event">
+        <div class="lp-marquee">
+            <div class="lp-marquee-track">
+                {{-- Kumpulan pertama --}}
+                <div class="lp-marquee-group">
+                    @foreach ($eventCategories as $category)
+                        <div class="lp-marquee-item">
+                            {{ $category->name }}
+                        </div>
+                    @endforeach
+                </div>
+                {{-- Kumpulan duplikat --}}
+                <div class="lp-marquee-group" aria-hidden="true">
+                    @foreach ($eventCategories as $category)
+                        <div class="lp-marquee-item">
+                            {{ $category->name }}
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="lp-pathways" id="tentang">
+        <div class="lp-container">
+            <div class="lp-section-heading lp-reveal">
+                <span class="lp-section-kicker">LANGKAH MUDAH</span>
+                <h2>Solusi Rekrutmen dalam Satu Pintu</h2>
+                <p>Proses sederhana, transparan, dan terpusat tanpa perlu mencari peluang dari berbagai media sosial.</p>
+            </div>
+            <div class="lp-pathway-grid">
+                <article class="lp-pathway-card lp-pathway-volunteer lp-reveal">
+                    <div class="lp-pathway-heading"><span class="lp-pathway-icon">♙</span><div><span class="lp-pathway-label">JALUR KRU &amp; RELAWAN</span><h3>Untuk Kru &amp; Relawan Muda</h3></div></div>
+                    <ol class="lp-steps">
+                        <li><span>1</span><div><h4>Temukan Event Sesuai Minat</h4><p>Pilih konser, expo, festival olahraga, hingga konferensi yang sesuai dengan minat dan waktumu.</p></div></li>
+                        <li><span>2</span><div><h4>Lamar Posisi dalam Sekali Klik</h4><p>Ajukan diri menggunakan profil dan CV digital tanpa mengisi formulir berulang.</p></div></li>
+                        <li><span>3</span><div><h4>Bangun Portofolio Lapangan</h4><p>Kumpulkan pengalaman, perluas koneksi, dan kembangkan kemampuan di industri event.</p></div></li>
+                    </ol>
+                    <a class="lp-pathway-link" href="#event">Eksplorasi lowongan crew <span>→</span></a>
+                </article>
+                <article class="lp-pathway-card lp-pathway-organizer lp-reveal lp-reveal-delay">
+                    <div class="lp-pathway-heading"><span class="lp-pathway-icon">⚑</span><div><span class="lp-pathway-label">JALUR PENYELENGGARA</span><h3>Untuk Event Organizer (EO)</h3></div></div>
+                    <ol class="lp-steps">
+                        <li><span>1</span><div><h4>Publikasikan Lowongan</h4><p>Tentukan divisi, kebutuhan kru, jadwal, lokasi, serta fasilitas yang ditawarkan.</p></div></li>
+                        <li><span>2</span><div><h4>Jangkau Kandidat Tepat</h4><p>Perkenalkan peluang event kepada relawan yang tertarik dan sesuai kebutuhan acara.</p></div></li>
+                        <li><span>3</span><div><h4>Kelola Seleksi Lebih Mudah</h4><p>Pantau pendaftar dan kelola proses rekrutmen melalui satu platform.</p></div></li>
+                    </ol>
+                    <a class="lp-pathway-link" href="{{ route('register') }}">Mulai pasang lowongan <span>→</span></a>
+                </article>
+            </div>
+        </div>
+    </section>
+    <section class="lp-events" id="event">
+        <div class="lp-container">
+            <div class="lp-section-topline lp-reveal"><div><span class="lp-section-kicker">KATALOG TERBUKA</span><h2>Event Pilihan &amp; Terbuka</h2><p>Peluang rekrutmen kru dan relawan yang tersedia di VOLA.</p></div>
+                <span class="lp-section-aside">{{ $events->count() }} event ditampilkan</span>
+            </div>
+            <div class="lp-event-grid">
+                @forelse ($events as $event)
+                    <article class="lp-event-card lp-reveal">
+                        <div class="lp-event-poster">
+                            <img src="{{ $event->poster_url }}" alt="Poster {{ $event->title }}" loading="lazy" width="800" height="480">
+                        </div>
+                        <div class="lp-event-card-top"><span class="lp-open-badge"><i></i> Open Recruitment</span><span class="lp-event-category">{{ $event->category?->name ?? 'Event' }}</span></div>
+                        <div class="lp-event-card-content">
+                            <div class="lp-event-organizer">{{ $event->organizer?->organization_name ?? 'Penyelenggara VOLA' }}</div>
+                            <h3>{{ $event->title }}</h3>
+                            <div class="lp-event-meta"><span><i>⌖</i>{{ $event->city ?: $event->location }}</span><span><i>▦</i>{{ $event->start_date?->translatedFormat('d M Y') ?? 'Jadwal menyusul' }}</span><span><i>✧</i>{{ collect($event->benefits ?? [])->filter()->take(2)->join(' · ') ?: 'Pengalaman dan relasi baru' }}</span></div>
+                        </div>
+                        <a href="{{ route('events.show', $event->slug) }}" class="lp-event-button">Lihat Detail <span>→</span></a>
+                    </article>
+                @empty
+                    <div class="lp-empty-state"><span>✦</span><h3>Event baru sedang dipersiapkan</h3><p>Belum ada event terbuka saat ini. Silakan kembali lagi untuk menemukan peluang terbaru.</p></div>
+                @endforelse
+            </div>
+        </div>
+    </section>
+    <section class="lp-insights" id="wawasan">
+        <div class="lp-container">
+            <div class="lp-section-heading lp-reveal"><span class="lp-section-kicker lp-kicker-yellow">PUSAT EDUKASI</span><h2>Pusat Wawasan Kru Event</h2><p>Tips dan panduan untuk memulai perjalananmu di industri event.</p></div>
+            <div class="lp-insight-grid">
+                <article class="lp-insight-card lp-reveal"><div class="lp-insight-image"><img src="{{ asset('images/dashboard-crew/green-marathon.jpg') }}" alt="Kegiatan event olahraga bersama relawan" loading="lazy" width="800" height="520"></div><div class="lp-insight-content"><span class="lp-insight-tag">TIPS KARIER</span><h3>Cara Menyiapkan Diri Menjadi Kru Event</h3><p>Kenali keterampilan dasar, siapkan CV, dan bangun pengalaman pertamamu di dunia event.</p><span class="lp-insight-read">Panduan untuk relawan <span>↗</span></span></div></article>
+                <article class="lp-insight-card lp-reveal lp-reveal-delay"><div class="lp-insight-image"><img src="{{ asset('images/dashboard-crew/tech-summit.jpg') }}" alt="Suasana konferensi teknologi dan kegiatan kru event" loading="lazy" width="800" height="520"></div><div class="lp-insight-content"><span class="lp-insight-tag">PENGALAMAN</span><h3>Belajar Banyak Hal dari Pengalaman Volunteer</h3><p>Pengalaman di lapangan dapat melatih komunikasi, kerja sama tim, dan kemampuan beradaptasi.</p><span class="lp-insight-read">Cerita dan inspirasi <span>↗</span></span></div></article>
+                <article class="lp-insight-card lp-reveal lp-reveal-delay-two"><div class="lp-insight-image"><img src="{{ asset('images/dashboard-crew/java-jazz.jpg') }}" alt="Suasana festival musik dan penonton" loading="lazy" width="800" height="520"></div><div class="lp-insight-content"><span class="lp-insight-tag">INFO EO</span><h3>Hal Penting dalam Mengelola Kru Event</h3><p>Perencanaan kebutuhan, pembagian tugas, dan komunikasi membantu acara berjalan lebih terarah.</p><span class="lp-insight-read">Wawasan penyelenggara <span>↗</span></span></div></article>
+            </div>
+        </div>
+    </section>
+    <section class="lp-community">
+        <div class="lp-container">
+            <div class="lp-section-heading lp-reveal"><span class="lp-section-kicker">KOMUNITAS VOLA</span><h2>Ruang Bertumbuh untuk Semua</h2><p>VOLA dirancang untuk membantu relawan dan penyelenggara berkolaborasi dengan lebih mudah.</p></div>
+            <div class="lp-community-grid">
+                <article class="lp-community-card lp-reveal"><span class="lp-community-symbol lp-symbol-purple">♡</span><div><h3>Untuk Relawan</h3><p>Temukan peluang, kembangkan keterampilan, dan bangun pengalaman dari berbagai acara.</p></div></article>
+                <article class="lp-community-card lp-reveal lp-reveal-delay"><span class="lp-community-symbol lp-symbol-yellow">✳</span><div><h3>Untuk Penyelenggara</h3><p>Publikasikan kebutuhan kru dan kelola pendaftaran kandidat melalui satu platform.</p></div></article>
+            </div>
+        </div>
+    </section>
+    <section class="lp-cta">
+        <div class="lp-container"><div class="lp-cta-panel lp-reveal"><div class="lp-cta-decoration"></div><div class="lp-cta-copy"><span>UNTUK PENYELENGGARA EVENT</span><h2>Siap Menggelar Event Besar Anda?</h2><p>Publikasikan kebutuhan kru dan temukan talenta lapangan untuk membantu menyukseskan acara Anda.</p></div><a href="{{ route('register') }}" class="lp-cta-button">Daftarkan Event Sekarang <span>→</span></a></div></div>
+    </section>
+</main>
+<footer class="lp-footer">
+    <div class="lp-container">
+        <div class="lp-footer-grid">
+            <div class="lp-footer-brand"><a href="{{ route('home') }}" class="lp-logo">VOLA<span>.</span></a><p>Sentralisasi informasi dan rekrutmen volunteer event untuk seluruh Indonesia.</p><span class="lp-footer-note">Temukan peluang. Bangun pengalaman.</span></div>
+            <div class="lp-footer-column"><h3>UNTUK RELAWAN</h3><a href="#event">Cari Event</a><a href="{{ route('register') }}">Daftar Volunteer</a><a href="#wawasan">Pusat Wawasan</a></div>
+            <div class="lp-footer-column"><h3>UNTUK PENYELENGGARA</h3><a href="{{ route('register') }}">Daftar sebagai EO</a><a href="{{ route('login') }}">Kelola Rekrutmen</a><a href="#tentang">Cara Kerja VOLA</a></div>
+            <div class="lp-footer-column"><h3>PERUSAHAAN</h3><a href="#tentang">Tentang VOLA</a><a href="#tentang">Informasi VOLA</a><a href="#beranda">Kembali ke Atas ↑</a></div>
+        </div>
+        <div class="lp-footer-bottom"><span>© {{ date('Y') }} VOLA. All rights reserved.</span><span>Dibuat dengan <b>♥</b> di Indonesia.</span></div>
     </div>
-</section>
-
-<!-- CTA PENYELENGGARA -->
-<section class="vola-cta-section">
-    <div class="vola-container">
-        <div class="vola-cta-box">
-
-            <div class="vola-cta-content">
-                <span class="vola-cta-label">
-                    KOLABORASI PENYELENGGARA
-                </span>
-
-                <h2>
-                    Punya Event Sendiri &amp; Butuh Kru Lapangan?
-                </h2>
-
-                <p>
-                    Publikasikan kebutuhan relawan acaramu dan temukan
-                    anak muda berbakat untuk menyukseskan acara.
-                </p>
-            </div>
-
-            <a href="{{ route('register') }}"
-               class="vola-btn vola-cta-button">
-                Daftarkan Event Sekarang →
-            </a>
-
-        </div>
-    </div>
-</section>
-
-<!-- FOOTER -->
-<footer class="vola-footer">
-    © {{ date('Y') }} VOLA Platform Relawan Indonesia.
-    All rights reserved.
 </footer>
-
-    </main>
-
-    <script>
-        const menuToggle = document.getElementById('volaMenuToggle');
-        const navLinks = document.getElementById('volaNavLinks');
-
-        menuToggle.addEventListener('click', function () {
-            const isOpen = navLinks.classList.toggle('is-open');
-
-            menuToggle.setAttribute('aria-expanded', String(isOpen));
-            menuToggle.setAttribute(
-                'aria-label',
-                isOpen ? 'Tutup menu' : 'Buka menu'
-            );
-            menuToggle.textContent = isOpen ? '✕' : '☰';
+<script>
+(() => {
+    const header = document.querySelector('.lp-header');
+    const menuButton = document.querySelector('.lp-menu-toggle');
+    const navigation = document.querySelector('.lp-navigation');
+    const navLinks = navigation ? Array.from(navigation.querySelectorAll('a[href^="#"]')) : [];
+    const sectionIds = ['beranda', 'tentang', 'event', 'wawasan'];
+    const sections = sectionIds.map((id) => document.getElementById(id)).filter(Boolean);
+    const mobileQuery = window.matchMedia('(max-width: 1024px)');
+    if (!header || !menuButton || !navigation) return;
+    const setMenuOpen = (open) => {
+        navigation.classList.toggle('is-open', open && mobileQuery.matches);
+        menuButton.classList.toggle('is-open', open && mobileQuery.matches);
+        menuButton.setAttribute('aria-expanded', String(open && mobileQuery.matches));
+        menuButton.setAttribute('aria-label', open ? 'Tutup menu navigasi' : 'Buka menu navigasi');
+    };
+    menuButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setMenuOpen(!navigation.classList.contains('is-open'));
+    });
+    navLinks.forEach((link) => {
+        link.addEventListener('click', () => {
+            const targetId = link.getAttribute('href').slice(1);
+            setActiveLink(targetId);
+            setMenuOpen(false);
         });
-
-        navLinks.querySelectorAll('a').forEach(function (link) {
-            link.addEventListener('click', function () {
-                navLinks.classList.remove('is-open');
-                menuToggle.setAttribute('aria-expanded', 'false');
-                menuToggle.setAttribute('aria-label', 'Buka menu');
-                menuToggle.textContent = '☰';
+    });
+    document.addEventListener('click', (event) => {
+        if (!header.contains(event.target)) setMenuOpen(false);
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') setMenuOpen(false);
+    });
+    const setActiveLink = (id) => {
+        navLinks.forEach((link) => {
+            const active = link.getAttribute('href') === `#${id}`;
+            link.classList.toggle('is-active', active);
+            if (active) link.setAttribute('aria-current', 'location');
+            else link.removeAttribute('aria-current');
+        });
+    };
+    let scrollTicking = false;
+    const updateActiveSection = () => {
+        const marker = window.scrollY + header.offsetHeight + 130;
+        let currentId = sections[0]?.id || 'beranda';
+        sections.forEach((section) => {
+            if (section.offsetTop <= marker) currentId = section.id;
+        });
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8) {
+            currentId = sections[sections.length - 1]?.id || currentId;
+        }
+        setActiveLink(currentId);
+        scrollTicking = false;
+    };
+    window.addEventListener('scroll', () => {
+        if (!scrollTicking) {
+            window.requestAnimationFrame(updateActiveSection);
+            scrollTicking = true;
+        }
+    }, { passive: true });
+    window.addEventListener('resize', () => {
+        if (!mobileQuery.matches) setMenuOpen(false);
+        updateActiveSection();
+    });
+    window.addEventListener('hashchange', () => {
+        const id = window.location.hash.slice(1);
+        if (sectionIds.includes(id)) setActiveLink(id);
+    });
+    setMenuOpen(false);
+    updateActiveSection();
+    // Reveal animation
+    const revealItems = document.querySelectorAll('.lp-reveal');
+    if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -35px 0px' });
+        revealItems.forEach((item) => revealObserver.observe(item));
+    } else {
+        revealItems.forEach((item) => item.classList.add('is-visible'));
+    }
+    // Isi marquee dengan pasangan grup identik agar tidak muncul ruang kosong
+    // ketika lebar kategori lebih pendek daripada layar.
+    const marqueeTrack = document.querySelector('.lp-marquee-track');
+    const marqueeBaseGroup = marqueeTrack?.querySelector('.lp-marquee-group');
+    if (marqueeTrack && marqueeBaseGroup && marqueeBaseGroup.children.length > 0) {
+        const fillMarquee = () => {
+            marqueeTrack.querySelectorAll('[data-marquee-clone="true"]').forEach((item) => item.remove());
+            while (marqueeTrack.scrollWidth < window.innerWidth * 2) {
+                for (let index = 0; index < 2; index += 1) {
+                    const clone = marqueeBaseGroup.cloneNode(true);
+                    clone.setAttribute('aria-hidden', 'true');
+                    clone.dataset.marqueeClone = 'true';
+                    marqueeTrack.appendChild(clone);
+                }
+            }
+            marqueeTrack.style.animationDuration = `${Math.max(22, marqueeTrack.scrollWidth / 75)}s`;
+        };
+        fillMarquee();
+        let marqueeResizeFrame = false;
+        window.addEventListener('resize', () => {
+            if (marqueeResizeFrame) return;
+            marqueeResizeFrame = true;
+            window.requestAnimationFrame(() => {
+                fillMarquee();
+                marqueeResizeFrame = false;
             });
         });
-    </script>
-
+    }
+})();
+</script>
 </body>
 </html>

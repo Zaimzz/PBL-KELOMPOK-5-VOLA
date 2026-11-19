@@ -13,7 +13,7 @@
         </div>
     @endif
 
-    <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+    <form action="{{ route('crew.profile.update') }}" method="POST" enctype="multipart/form-data" class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
         @csrf
         @method('PUT')
 

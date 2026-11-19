@@ -76,7 +76,7 @@ class ProfileController extends Controller
             $dataToUpdate
         );
 
-        return redirect()->route('profile.show')->with('status', 'Profil berhasil diperbarui.');
+        return redirect()->route('crew.profile.show')->with('status', 'Profil berhasil diperbarui.');
     }
 
     public function updateSkills(Request $request)
@@ -103,7 +103,7 @@ class ProfileController extends Controller
             ['skills' => $finalSkills]
         );
 
-        return redirect()->route('profile.show')->with('status', 'Keahlian berhasil diperbarui.');
+        return redirect()->route('crew.profile.show')->with('status', 'Keahlian berhasil diperbarui.');
     }
 
     public function uploadDocument(Request $request)
@@ -150,6 +150,6 @@ class ProfileController extends Controller
             $profile->update([$type => null]);
         }
 
-        return redirect()->route('profile.show')->with('status', 'File berhasil dihapus.');
+        return redirect()->route('crew.profile.show')->with('status', 'File berhasil dihapus.');
     }
 }
