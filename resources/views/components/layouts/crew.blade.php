@@ -14,17 +14,23 @@
     $displayName = $authUser?->name ?? 'Crew';
     
     $displayCity = $profile?->city ?? 'Indonesia';
-    
-    $unreadNotifs = $authUser?->unreadNotifications?->count() ?? 0;
 
-    $totalApplications = 0;
-    $acceptedCount = 0;
-    
-    if ($profile) {
-        $totalApplications = \App\Models\Application::where('volunteer_profile_id', $profile->id)->count();
-        $acceptedCount = \App\Models\Application::where('volunteer_profile_id', $profile->id)
-            ->where('status', 'accepted')->count();
-    }
+    $appCounts = $profile ? \Illuminate\Support\Facades\Cache::remember("crew_nav_counts_{$profile->id}", 60, function () use ($profile) {
+        $counts = \App\Models\Application::where('volunteer_profile_id', $profile->id)
+            ->selectRaw("count(*) as total, count(case when status = 'accepted' then 1 end) as accepted")
+            ->first();
+        return [
+            'total' => (int) ($counts->total ?? 0),
+            'accepted' => (int) ($counts->accepted ?? 0),
+        ];
+    }) : ['total' => 0, 'accepted' => 0];
+
+    $totalApplications = $appCounts['total'];
+    $acceptedCount = $appCounts['accepted'];
+
+    $initialUnreadNotifs = $authUser ? \Illuminate\Support\Facades\Cache::remember("crew_unread_notifs_{$authUser->id}", 60, function () use ($authUser) {
+        return (int) $authUser->unreadNotifications()->count();
+    }) : 0;
 
     $displayAvatar = null;
     if ($profile && $profile->photo_path) {
@@ -130,28 +136,37 @@
                         open: false, 
                         activeTab: 'all',
                         notifications: [], 
-                        isLoading: true, 
-                        
-                        async init() {
-                            await this.fetchNotifications();
+                        isLoading: false, 
+                        hasFetched: false,
+                        unreadCountServer: {{ $initialUnreadNotifs }},
+
+                        async toggleDropdown() {
+                            this.open = !this.open;
+                            if (this.open && !this.hasFetched) {
+                                await this.fetchNotifications();
+                            }
                         },
 
                         async fetchNotifications() {
-                            this.isLoading = true; // Mulai loading
+                            this.isLoading = true;
                             try {
                                 const res = await fetch('{{ route("api.notifications.index") }}');
                                 if (res.ok) {
                                     this.notifications = await res.json();
+                                    this.hasFetched = true;
                                 }
                             } catch (err) {
                                 console.error('Gagal memuat notifikasi:', err);
                             } finally {
-                                this.isLoading = false; // Selesai loading (baik sukses atau gagal)
+                                this.isLoading = false;
                             }
                         },
 
                         get unreadCount() { 
-                            return this.notifications.filter(n => !n.read).length; 
+                            if (this.hasFetched) {
+                                return this.notifications.filter(n => !n.read).length;
+                            }
+                            return this.unreadCountServer;
                         },
                         get hasVisibleNotifications() { 
                             if (this.activeTab === 'all') return this.notifications.length > 0; 
@@ -174,6 +189,7 @@
                         async markAsRead(id) {
                             const notif = this.notifications.find(n => n.id === id);
                             if (notif) notif.read = true;
+                            if (this.unreadCountServer > 0) this.unreadCountServer--;
 
                             try {
                                 await fetch(`/api/notifications/${id}/read`, {
@@ -191,6 +207,7 @@
                         async markAllAsRead() {
                             // Optimistic update
                             this.notifications.forEach(n => n.read = true);
+                            this.unreadCountServer = 0;
 
                             try {
                                 await fetch('/api/notifications/read-all', {
@@ -205,10 +222,9 @@
                             }
                         }
                      }" 
-                     x-init="init()" 
                      class="relative" @click.outside="open = false">
                    
-                    <button @click="open = !open" class="relative p-2 text-gray-500 hover:text-[#4F46E5] hover:bg-indigo-50 rounded-full transition">
+                    <button @click="toggleDropdown()" class="relative p-2 text-gray-500 hover:text-[#4F46E5] hover:bg-indigo-50 rounded-full transition">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                         </svg>

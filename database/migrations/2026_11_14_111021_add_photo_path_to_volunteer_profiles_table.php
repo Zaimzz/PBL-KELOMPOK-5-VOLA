@@ -1,40 +1,32 @@
 <?php
 
-namespace App\Notifications;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
-use App\Models\Event;
-
-class ApplicationAcceptedNotification extends Notification
+return new class extends Migration
 {
-    use Queueable;
-
-    protected $application;
-
-    public function __construct($application)
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
-        $this->application = $application;
+        Schema::table('volunteer_profiles', function (Blueprint $table) {
+            if (! Schema::hasColumn('volunteer_profiles', 'photo_path')) {
+                $table->string('photo_path')->nullable()->after('city');
+            }
+        });
     }
 
-    public function via($notifiable): array
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
-        return ['database']; // Simpan ke database saja
+        Schema::table('volunteer_profiles', function (Blueprint $table) {
+            if (Schema::hasColumn('volunteer_profiles', 'photo_path')) {
+                $table->dropColumn('photo_path');
+            }
+        });
     }
-
-    public function toArray($notifiable): array
-    {
-        $event = $this->application->position->event;
-        
-        return [
-            'type' => 'accepted',
-            'title' => 'Lamaran Diterima!',
-            'message' => "Selamat, kamu diterima sebagai <strong>{$this->application->position->name}</strong> untuk event <strong>{$event->title}</strong>.",
-            'link' => route('my-events.index'), // Arahkan ke Event Saya
-            'application_id' => $this->application->id,
-            'event_id' => $event->id,
-        ];
-    }
-}
+};

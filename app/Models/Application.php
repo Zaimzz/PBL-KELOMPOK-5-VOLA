@@ -6,6 +6,7 @@ use App\Enums\ApplicationStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Cache;
 
 class Application extends Model
 {
@@ -15,6 +16,21 @@ class Application extends Model
         'volunteer_profile_id', 'position_id', 'status', 'cover_letter',
         'applied_at', 'decided_at', 'decision_note',
     ];
+
+    protected static function booted(): void
+    {
+        static::saved(function (self $application) {
+            if ($application->volunteer_profile_id) {
+                Cache::forget("crew_nav_counts_{$application->volunteer_profile_id}");
+            }
+        });
+
+        static::deleted(function (self $application) {
+            if ($application->volunteer_profile_id) {
+                Cache::forget("crew_nav_counts_{$application->volunteer_profile_id}");
+            }
+        });
+    }
 
     protected function casts(): array
     {

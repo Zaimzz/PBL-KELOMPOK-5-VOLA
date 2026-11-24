@@ -157,7 +157,7 @@
 <script>
     function dashboardData() {
         return {
-            activeCategory: 'all',
+            activeCategory: '{{ request('category', 'all') }}',
             allEvents: [],
             categoryNames: {
                 'all': 'Semua',

@@ -13,19 +13,20 @@ use Illuminate\View\View;
 class SearchController extends Controller
 {
     private const CATEGORY_IMAGES = [
-        'festival'  => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800',
-        'seminar'   => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
-        'musik'     => 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800',
-        'olahraga'  => 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
-        'sosial'    => 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800',
-        'kampus'    => 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800',
+        'festival' => 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800',
+        'seminar' => 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
+        'musik' => 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800',
+        'olahraga' => 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800',
+        'sosial' => 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800',
+        'kampus' => 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800',
         'komunitas' => 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800',
-        'umum'      => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800',
+        'umum' => 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800',
     ];
 
     private function getImageByCategory(?string $category): string
     {
         $key = strtolower(trim($category ?? 'umum'));
+
         return self::CATEGORY_IMAGES[$key] ?? self::CATEGORY_IMAGES['umum'];
     }
 
@@ -50,11 +51,11 @@ class SearchController extends Controller
         if ($query !== '') {
             $dbQuery->where(function ($q) use ($query, $operator) {
                 $q->where('title', $operator, '%'.$query.'%')
-                  ->orWhere('location', $operator, '%'.$query.'%')
-                  ->orWhere('city', $operator, '%'.$query.'%')
-                  ->orWhereHas('category', fn ($cq) => $cq->where('name', $operator, '%'.$query.'%'))
-                  ->orWhereHas('organizer', fn ($oq) => $oq->where('organization_name', $operator, '%'.$query.'%'))
-                  ->orWhereHas('positions', fn ($pq) => $pq->where('name', $operator, '%'.$query.'%'));
+                    ->orWhere('location', $operator, '%'.$query.'%')
+                    ->orWhere('city', $operator, '%'.$query.'%')
+                    ->orWhereHas('category', fn ($cq) => $cq->where('name', $operator, '%'.$query.'%'))
+                    ->orWhereHas('organizer', fn ($oq) => $oq->where('organization_name', $operator, '%'.$query.'%'))
+                    ->orWhereHas('positions', fn ($pq) => $pq->where('name', $operator, '%'.$query.'%'));
             });
         }
 
@@ -65,7 +66,7 @@ class SearchController extends Controller
         if ($location !== '' && $location !== 'Semua Lokasi') {
             $dbQuery->where(function ($q) use ($location, $operator) {
                 $q->where('city', $operator, '%'.$location.'%')
-                  ->orWhere('location', $operator, '%'.$location.'%');
+                    ->orWhere('location', $operator, '%'.$location.'%');
             });
         }
 
@@ -88,9 +89,14 @@ class SearchController extends Controller
             $dbQuery->orderBy('registration_deadline');
         }
 
-        $allDbEvents = $dbQuery->get();
+        $totalEvents = (clone $dbQuery)->count();
+        $totalPages = (int) ceil($totalEvents / $perPage);
+        $page = max(1, min($page, max(1, $totalPages)));
+        $offset = ($page - 1) * $perPage;
 
-        $allEvents = $allDbEvents->map(function (Event $event) {
+        $dbEvents = $dbQuery->skip($offset)->take($perPage)->get();
+
+        $paginatedEvents = $dbEvents->map(function (Event $event) {
             $positionNames = $event->positions->pluck('name');
             $positionsText = $positionNames->take(3)->implode(', ');
             if ($positionNames->count() > 3) {
@@ -128,13 +134,7 @@ class SearchController extends Controller
                 'positions' => $positionsText ?: 'Belum ada posisi', 'days_left' => $daysLeft, 'position_count' => $positionCount,
                 'slot_label' => $slotLabel, 'slot_type' => $slotType, 'image' => $imageUrl,
             ];
-        });
-
-        $totalEvents = $allEvents->count();
-        $totalPages = (int) ceil($totalEvents / $perPage);
-        $page = max(1, min($page, max(1, $totalPages)));
-        $offset = ($page - 1) * $perPage;
-        $paginatedEvents = $allEvents->slice($offset, $perPage)->values();
+        })->values();
 
         $categories = ['Semua', 'Festival', 'Seminar', 'Musik', 'Olahraga', 'Sosial', 'Kampus', 'Komunitas'];
         $locations = ['Semua Lokasi', 'Jakarta', 'Bandung', 'Yogyakarta', 'Surabaya', 'Bali'];
