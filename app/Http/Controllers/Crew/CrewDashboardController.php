@@ -7,7 +7,8 @@ use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Event;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class CrewDashboardController extends Controller
@@ -30,7 +31,7 @@ class CrewDashboardController extends Controller
         return self::CATEGORY_IMAGES[$key] ?? self::CATEGORY_IMAGES['umum'];
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
         $authUser = auth()->user();
         $firstName = explode(' ', $authUser->name)[0] ?? 'Crew';
@@ -54,79 +55,83 @@ class CrewDashboardController extends Controller
             $acceptedCount = (int) ($counts->accepted_count ?? 0);
         }
 
-        $categoryParam = request('category');
+        $selectedCategory = strtolower(
+            trim((string) $request->query('category', 'all'))
+        );
 
-        $eventsQuery = Event::query()
-            ->with(['category', 'organizer', 'positions'])
-            ->where('status', EventStatus::Active)
-            ->whereNotNull('published_at')
-            ->whereDate('registration_deadline', '>=', now()->toDateString());
+        $recommendedEvents = Cache::remember(
+            'crew_recommended_events_'.$selectedCategory,
+            30,
+            function () use ($selectedCategory): array {
+                $query = Event::query()
+                    ->with(['category', 'organizer', 'positions'])
+                    ->where('status', EventStatus::Active)
+                    ->whereNotNull('published_at')
+                    ->whereDate('registration_deadline', '>=', now()->toDateString());
 
-        if ($categoryParam && $categoryParam !== 'all') {
-            $eventsQuery->whereHas('category', function ($q) use ($categoryParam) {
-                $q->where('slug', $categoryParam)
-                    ->orWhere('name', $categoryParam);
-            });
-        }
+                if ($selectedCategory !== 'all' && $selectedCategory !== '') {
+                    $query->whereHas('category', function ($categoryQuery) use ($selectedCategory) {
+                        $categoryQuery->where('slug', $selectedCategory)
+                            ->orWhere('name', $selectedCategory);
+                    });
+                }
 
-        $dbEvents = $eventsQuery
-            ->latest('published_at')
-            ->take(8)
-            ->get();
+                $dbEvents = $query
+                    ->latest('published_at')
+                    ->take(8)
+                    ->get();
 
-        $recommendedEvents = $dbEvents->map(function (Event $event): array {
-            $positionNames = $event->positions->pluck('name');
-            $positionsText = $positionNames->take(3)->implode(', ');
-            if ($positionNames->count() > 3) {
-                $positionsText .= '... ('.$positionNames->count().' posisi)';
+                return $dbEvents->map(function (Event $event): array {
+                    $positionNames = $event->positions->pluck('name');
+                    $positionsText = $positionNames->take(3)->implode(', ');
+
+                    if ($positionNames->count() > 3) {
+                        $positionsText .= '... ('.$positionNames->count().' posisi)';
+                    }
+
+                    $startDate = $event->start_date?->translatedFormat('d M Y');
+                    $endDate = $event->end_date?->translatedFormat('d M Y');
+
+                    $dateFormatted = $endDate && $endDate !== $startDate
+                        ? $startDate.' – '.$endDate
+                        : ($startDate ?? '-');
+
+                    $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
+
+                    return [
+                        'id' => $event->id,
+                        'title' => $event->title,
+                        'category' => $event->category?->name ?? 'Umum',
+                        'filter_category' => strtolower($event->category?->name ?? 'umum'),
+                        'organizer' => $event->organizer?->organization_name ?? '-',
+                        'organizer_verified' => $isVerified,
+                        'location' => trim(($event->location ?? '').($event->city ? ', '.$event->city : ''), ', '),
+                        'date' => $dateFormatted,
+                        'status' => 'Open Volunteer',
+                        'status_badge_type' => 'success',
+                        'image' => $event->poster_url,
+                        'positions_list' => $positionsText ?: 'Belum ada posisi',
+                    ];
+                })->values()->all();
             }
-
-            $startDate = $event->start_date?->translatedFormat('d M Y');
-            $endDate = $event->end_date?->translatedFormat('d M Y');
-            $dateFormatted = $endDate && $endDate !== $startDate
-                ? $startDate.' – '.$endDate
-                : ($startDate ?? '-');
-
-            $imageUrl = $event->poster_path
-                ? Storage::url($event->poster_path)
-                : $this->getImageByCategory($event->category?->name);
-
-            $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
-
-            return [
-                'id' => $event->id,
-                'title' => $event->title,
-                'category' => $event->category?->name ?? 'Umum',
-                'filter_category' => strtolower($event->category?->name ?? 'umum'),
-                'organizer' => $event->organizer?->organization_name ?? '-',
-                'organizer_verified' => $isVerified,
-                'location' => trim(($event->location ?? '').($event->city ? ', '.$event->city : ''), ', '),
-                'date' => $dateFormatted,
-                'status' => 'Open Volunteer',
-                'status_badge_type' => 'success',
-                'image' => $imageUrl,
-                'positions_list' => $positionsText ?: 'Belum ada posisi',
-            ];
-        })->values()->all();
+        );
 
         $categories = [
             ['slug' => 'all', 'name' => 'Semua'],
             ['slug' => 'festival', 'name' => 'Festival'],
             ['slug' => 'seminar', 'name' => 'Seminar'],
-            ['slug' => 'musik', 'name' => 'Musik'],
-            ['slug' => 'olahraga', 'name' => 'Olahraga'],
-            ['slug' => 'sosial', 'name' => 'Sosial'],
-            ['slug' => 'kampus', 'name' => 'Kampus'],
-            ['slug' => 'komunitas', 'name' => 'Komunitas'],
+            ['slug' => 'workshop', 'name' => 'Workshop'],
+            ['slug' => 'social', 'name' => 'Sosial'],
         ];
 
         return view('crew.dashboard', compact(
             'firstName',
-            'recommendedEvents',
             'activeApplicationsCount',
-            'acceptedCount',
             'pendingReviewCount',
-            'categories'
+            'acceptedCount',
+            'recommendedEvents',
+            'categories',
+            'selectedCategory'
         ));
     }
 }

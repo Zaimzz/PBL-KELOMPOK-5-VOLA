@@ -7,6 +7,7 @@ use App\Models\OrganizerProfile;
 use App\Models\Payment;
 use App\Models\User;
 use App\Support\PublicationPackage;
+use Illuminate\Console\Scheduling\Schedule;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -121,6 +122,22 @@ test('billing index filters by status', function () {
     $resp->assertOk()->assertSee('INV-2026-PAID-TST')->assertDontSee('INV-2026-PENDING-TST');
 });
 
+test('billing index does not change expired payment status', function () {
+    ['user' => $user, 'event' => $event] = makeEoWithEvent();
+
+    $payment = Payment::factory()->create([
+        'event_id' => $event->id,
+        'status' => PaymentStatus::Pending,
+        'expired_at' => now()->subHour(),
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('eo.billing.index'))
+        ->assertOk();
+
+    expect($payment->fresh()->status)->toBe(PaymentStatus::Pending);
+});
+
 test('billing index search by invoice number works', function () {
     ['user' => $user, 'event' => $event] = makeEoWithEvent();
 
@@ -186,6 +203,90 @@ test('create invoice returns 403 when eo has no organizer profile', function () 
         ->assertForbidden();
 });
 
+test('create invoice reuses existing pending invoice for the same event and does not duplicate', function () {
+    ['user' => $user, 'event' => $event] = makeEoWithEvent();
+
+    $existing = Payment::factory()->create([
+        'event_id' => $event->id,
+        'package_name' => 'professional',
+        'invoice_number' => 'INV-2026-TESTREUSE',
+        'snap_token' => 'mock-snap-token-123',
+        'status' => PaymentStatus::Pending,
+        'amount' => PublicationPackage::price('professional'),
+        'expired_at' => now()->addHours(12),
+    ]);
+
+    $resp = $this->actingAs($user)
+        ->postJson(route('eo.billing.invoice.create'), [
+            'event_id' => $event->id,
+            'package_slug' => 'professional',
+        ]);
+
+    $resp->assertOk()
+        ->assertJson([
+            'snap_token' => 'mock-snap-token-123',
+            'invoice_number' => 'INV-2026-TESTREUSE',
+            'payment_id' => $existing->id,
+        ]);
+
+    expect(Payment::where('event_id', $event->id)->count())->toBe(1);
+});
+
+test('create invoice rejects creation if event is already paid', function () {
+    ['user' => $user, 'event' => $event] = makeEoWithEvent();
+
+    Payment::factory()->paid()->create([
+        'event_id' => $event->id,
+        'invoice_number' => 'INV-2026-PAIDALREADY',
+    ]);
+
+    $this->actingAs($user)
+        ->postJson(route('eo.billing.invoice.create'), [
+            'event_id' => $event->id,
+            'package_slug' => 'professional',
+        ])
+        ->assertStatus(422)
+        ->assertJson([
+            'error' => 'Event ini sudah memiliki invoice lunas.',
+            'invoice_number' => 'INV-2026-PAIDALREADY',
+        ]);
+});
+
+// ─── Scheduled expiration ─────────────────────────────────────────────────────
+
+test('payments expire command marks overdue pending payments as expired', function () {
+    ['event' => $event] = makeEoWithEvent();
+
+    $overdue = Payment::factory()->create([
+        'event_id' => $event->id,
+        'status' => PaymentStatus::Pending,
+        'expired_at' => now()->subDay(),
+    ]);
+    $stillValid = Payment::factory()->create([
+        'event_id' => $event->id,
+        'status' => PaymentStatus::Pending,
+        'expired_at' => now()->addDay(),
+    ]);
+    $paid = Payment::factory()->paid()->create([
+        'event_id' => $event->id,
+        'expired_at' => now()->subDay(),
+    ]);
+
+    $this->artisan('payments:expire')->assertSuccessful();
+
+    expect($overdue->fresh()->status)->toBe(PaymentStatus::Expired);
+    expect($stillValid->fresh()->status)->toBe(PaymentStatus::Pending);
+    expect($paid->fresh()->status)->toBe(PaymentStatus::Paid);
+});
+
+test('events sync status and payments expire are scheduled daily', function () {
+    $commands = collect(app(Schedule::class)->events())
+        ->map(fn ($event) => $event->command);
+
+    expect($commands->contains(fn ($command) => str_contains($command, 'events:sync-status')))->toBeTrue();
+    expect($commands->contains(fn ($command) => str_contains($command, 'payments:expire')))->toBeTrue();
+});
+
 // ─── Show / download ──────────────────────────────────────────────────────────
 
 test('eo can view their own invoice detail', function () {
@@ -227,10 +328,12 @@ test('eo can download invoice pdf for their own payment', function () {
         'amount' => 55_000,
     ]);
 
-    $this->actingAs($user)
-        ->get(route('eo.billing.download', $payment))
-        ->assertOk()
-        ->assertHeader('Content-Type', 'text/html; charset=UTF-8');
+    $response = $this->actingAs($user)
+        ->get(route('eo.billing.download', $payment));
+
+    $response->assertOk()->assertHeader('Content-Type', 'application/pdf');
+    expect(str_starts_with($response->getContent(), '%PDF'))->toBeTrue();
+    expect($response->headers->get('Content-Disposition'))->toContain('.pdf');
 });
 
 test('eo cannot download invoice pdf for another eo payment', function () {
@@ -361,5 +464,5 @@ test('PublicationPackage price returns correct amounts', function () {
 });
 
 test('PublicationPackage throws on unknown slug', function () {
-    expect(fn () => PublicationPackage::price('nonexistent'))->toThrow(\InvalidArgumentException::class);
+    expect(fn () => PublicationPackage::price('nonexistent'))->toThrow(InvalidArgumentException::class);
 });

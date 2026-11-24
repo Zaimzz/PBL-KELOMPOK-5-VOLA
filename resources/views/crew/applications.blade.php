@@ -6,6 +6,20 @@
         <p class="mt-1 text-sm text-gray-500">Pantau status pendaftaran volunteer kamu.</p>
     </div>
 
+    @if(session('success'))
+        <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-2">
+            <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <span class="text-sm font-medium">{{ session('success') }}</span>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 flex items-center gap-2">
+            <svg class="w-5 h-5 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <span class="text-sm font-medium">{{ $errors->first() }}</span>
+        </div>
+    @endif
+
         <div class="mb-6 border-b border-gray-200">
         <nav class="flex gap-6 overflow-x-auto pb-1">
           
@@ -23,13 +37,6 @@
                 <span :class="activeTab === 'pending' ? 'text-[#4F46E5]' : 'text-gray-400'">{{ count(array_filter($applications, fn($a) => $a['status'] === 'pending')) }}</span>
             </button>
             
-            <button @click="activeTab = 'processing'" 
-                    :class="activeTab === 'processing' ? 'border-[#4F46E5] text-[#4F46E5]' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition flex items-center gap-1.5">
-                Sedang Diproses 
-                <span :class="activeTab === 'processing' ? 'text-[#4F46E5]' : 'text-gray-400'">{{ count(array_filter($applications, fn($a) => $a['status'] === 'processing')) }}</span>
-            </button>
-          
             <button @click="activeTab = 'accepted'" 
                     :class="activeTab === 'accepted' ? 'border-[#4F46E5] text-[#4F46E5]' : 'border-transparent text-gray-500 hover:text-gray-700'"
                     class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition flex items-center gap-1.5">
@@ -41,7 +48,14 @@
                     :class="activeTab === 'rejected' ? 'border-[#4F46E5] text-[#4F46E5]' : 'border-transparent text-gray-500 hover:text-gray-700'"
                     class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition flex items-center gap-1.5">
                 Ditolak 
-                <span :class="activeTab === 'rejected' ? 'text-[#4F46E5]' : 'text-gray-400'">{{ count(array_filter($applications, fn($a) => $a['status'] === 'rejected')) }}</span>
+                <span :class="activeTab === 'rejected' ? 'text-[#4F46E5]' : 'text-gray-400'">{{ count(array_filter($applications, fn($a) => in_array($a['status'], ['rejected', 'withdrawn']))) }}</span>
+            </button>
+
+            <button @click="activeTab = 'withdrawn'" 
+                    :class="activeTab === 'withdrawn' ? 'border-[#4F46E5] text-[#4F46E5]' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                    class="py-3 px-1 border-b-2 font-bold text-sm whitespace-nowrap transition flex items-center gap-1.5">
+                Dibatalkan 
+                <span :class="activeTab === 'withdrawn' ? 'text-[#4F46E5]' : 'text-gray-400'">{{ count(array_filter($applications, fn($a) => $a['status'] === 'withdrawn')) }}</span>
             </button>
         </nav>
     </div>
@@ -54,7 +68,7 @@
         @forelse($applications as $index => $application)
         
         <div class="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300"
-             x-show="activeTab === 'all' || activeTab === '{{ $application['status'] }}'"
+             x-show="activeTab === 'all' || activeTab === '{{ $application['status'] }}' || (activeTab === 'rejected' && '{{ $application['status'] }}' === 'withdrawn')"
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 transform scale-95 translate-y-2"
              x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
@@ -72,9 +86,9 @@
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             {{ $application['status_label'] }}
                         </span>
-                    @elseif($application['status'] === 'processing')
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-full border border-blue-100">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    @elseif($application['status'] === 'withdrawn')
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-50 text-gray-600 text-xs font-bold rounded-full border border-gray-200">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                             {{ $application['status_label'] }}
                         </span>
                     @else
@@ -135,7 +149,7 @@
             </div>
             @endif
 
-            <div class="flex items-center justify-end gap-2">
+            <div class="flex items-center justify-end gap-2 flex-wrap">
                 @if($application['status'] === 'accepted')
                     <a href="{{ route('applications.download-acceptance', $application['id']) }}" 
                        class="px-4 py-2 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition inline-flex items-center gap-2">
@@ -144,14 +158,9 @@
                         </svg>
                         Unduh Bukti Penerimaan
                     </a>
-                    <a href="{{ route('my-events.index') }}" 
-                       class="px-4 py-2 bg-[#4F46E5] text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition inline-flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        Lihat di Event Saya
-                    </a>
-                @else
+                @endif
+
+                @if(!empty($application['event_id']))
                     <a href="{{ route('events.detail', ['event' => $application['event_id']]) }}" 
                        class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition inline-flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,15 +202,15 @@
             <h3 class="text-lg font-bold text-gray-900 mb-2">Tidak Ada Lamaran Menunggu</h3>
         </div>
 
-        <div x-show="activeTab === 'processing' && {{ count(array_filter($applications, fn($a) => $a['status'] === 'processing')) }} === 0" 
+        <div x-show="activeTab === 'withdrawn' && {{ count(array_filter($applications, fn($a) => $a['status'] === 'withdrawn')) }} === 0" 
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 transform translate-y-4"
              x-transition:enter-end="opacity-100 transform translate-y-0"
              class="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center" style="display: none;">
-            <div class="w-16 h-16 mx-auto mb-4 bg-blue-50 rounded-full flex items-center justify-center">
-                <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <div class="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-full flex items-center justify-center">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Tidak Ada Lamaran Diproses</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Tidak Ada Lamaran Dibatalkan</h3>
         </div>
 
         <div x-show="activeTab === 'accepted' && {{ count(array_filter($applications, fn($a) => $a['status'] === 'accepted')) }} === 0" 
@@ -218,7 +227,7 @@
             </a>
         </div>
 
-        <div x-show="activeTab === 'rejected' && {{ count(array_filter($applications, fn($a) => $a['status'] === 'rejected')) }} === 0" 
+        <div x-show="activeTab === 'rejected' && {{ count(array_filter($applications, fn($a) => in_array($a['status'], ['rejected', 'withdrawn']))) }} === 0" 
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 transform translate-y-4"
              x-transition:enter-end="opacity-100 transform translate-y-0"

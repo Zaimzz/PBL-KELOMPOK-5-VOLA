@@ -58,4 +58,3 @@ class ApplicationDecided extends Notification
         ];
     }
 }
-

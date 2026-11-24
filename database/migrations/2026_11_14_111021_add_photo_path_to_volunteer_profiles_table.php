@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('volunteer_profiles', function (Blueprint $table) {
             if (! Schema::hasColumn('volunteer_profiles', 'photo_path')) {
-                $table->string('photo_path')->nullable()->after('city');
+                $table->string('photo_path')->nullable()->after('portfolio_path');
             }
         });
     }

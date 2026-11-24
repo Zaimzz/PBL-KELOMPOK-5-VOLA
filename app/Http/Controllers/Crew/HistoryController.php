@@ -8,6 +8,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class HistoryController extends Controller
@@ -40,34 +41,38 @@ class HistoryController extends Controller
             });
         }
 
-        $appsSummary = Application::query()
-            ->join('event_positions', 'applications.position_id', '=', 'event_positions.id')
-            ->join('events', 'event_positions.event_id', '=', 'events.id')
-            ->leftJoin('event_categories', 'events.category_id', '=', 'event_categories.id')
-            ->where('applications.volunteer_profile_id', $profile->id)
-            ->whereIn('applications.status', ['accepted', 'rejected'])
-            ->selectRaw("
-                LOWER(event_categories.name) as cat_name,
-                count(*) as total,
-                count(case when applications.status = 'accepted' then 1 end) as accepted_total
-            ")
-            ->groupBy('event_categories.name')
-            ->get();
+        [$counts, $totalCertificates] = Cache::remember('crew_history_counts_'.$profile->id, 60, function () use ($profile): array {
+            $appsSummary = Application::query()
+                ->join('event_positions', 'applications.position_id', '=', 'event_positions.id')
+                ->join('events', 'event_positions.event_id', '=', 'events.id')
+                ->leftJoin('event_categories', 'events.category_id', '=', 'event_categories.id')
+                ->where('applications.volunteer_profile_id', $profile->id)
+                ->whereIn('applications.status', ['accepted', 'rejected'])
+                ->selectRaw("
+                    LOWER(event_categories.name) as cat_name,
+                    count(*) as total,
+                    count(case when applications.status = 'accepted' then 1 end) as accepted_total
+                ")
+                ->groupBy('event_categories.name')
+                ->get();
 
-        $totalCertificates = (int) $appsSummary->sum('accepted_total');
-        $allCount = (int) $appsSummary->sum('total');
-        $catMap = $appsSummary->pluck('total', 'cat_name')->toArray();
+            $totalCertificates = (int) $appsSummary->sum('accepted_total');
+            $allCount = (int) $appsSummary->sum('total');
+            $catMap = $appsSummary->pluck('total', 'cat_name')->toArray();
 
-        $counts = [
-            'all' => $allCount,
-            'festival' => (int) ($catMap['festival'] ?? 0),
-            'seminar' => (int) ($catMap['seminar'] ?? 0),
-            'sosial' => (int) ($catMap['sosial'] ?? 0),
-            'kampus' => (int) ($catMap['kampus'] ?? 0),
-            'komunitas' => (int) ($catMap['komunitas'] ?? 0),
-            'olahraga' => (int) ($catMap['olahraga'] ?? 0),
-            'musik' => (int) ($catMap['musik'] ?? 0),
-        ];
+            $counts = [
+                'all' => $allCount,
+                'festival' => (int) ($catMap['festival'] ?? 0),
+                'seminar' => (int) ($catMap['seminar'] ?? 0),
+                'sosial' => (int) ($catMap['sosial'] ?? 0),
+                'kampus' => (int) ($catMap['kampus'] ?? 0),
+                'komunitas' => (int) ($catMap['komunitas'] ?? 0),
+                'olahraga' => (int) ($catMap['olahraga'] ?? 0),
+                'musik' => (int) ($catMap['musik'] ?? 0),
+            ];
+
+            return [$counts, $totalCertificates];
+        });
 
         $perPage = 4;
         $paginatedApps = $query->orderByDesc('applied_at')->paginate($perPage);
@@ -86,6 +91,8 @@ class HistoryController extends Controller
 
             return [
                 'id' => $app->id,
+                'event_id' => $event?->id,
+                'organizer_user_id' => $event?->organizer?->user_id,
                 'event_title' => $event?->title ?? 'Event Tidak Ditemukan',
                 'organizer' => $event?->organizer?->organization_name ?? '-',
                 'position' => $app->position?->name ?? '-',

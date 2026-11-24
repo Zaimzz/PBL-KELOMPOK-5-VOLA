@@ -28,18 +28,13 @@
     $totalApplications = $appCounts['total'];
     $acceptedCount = $appCounts['accepted'];
 
-    $initialUnreadNotifs = $authUser ? \Illuminate\Support\Facades\Cache::remember("crew_unread_notifs_{$authUser->id}", 60, function () use ($authUser) {
-        return (int) $authUser->unreadNotifications()->count();
-    }) : 0;
+    $unreadNotifs = \Illuminate\Support\Facades\Cache::remember(
+        'crew_unread_notifs_'.($authUser?->id ?? 0),
+        60,
+        fn () => $authUser ? (int) $authUser->unreadNotifications()->count() : 0
+    );
 
-    $displayAvatar = null;
-    if ($profile && $profile->photo_path) {
-        $displayAvatar = asset('storage/' . $profile->photo_path);
-    } elseif ($authUser?->avatar_path) {
-        $displayAvatar = filter_var($authUser->avatar_path, FILTER_VALIDATE_URL)
-            ? $authUser->avatar_path
-            : \Illuminate\Support\Facades\Storage::url($authUser->avatar_path);
-    }
+    $displayAvatar = $authUser?->avatar_url;
 
     $words = array_values(array_filter(explode(' ', trim($displayName))));
     $initials = count($words) >= 2 
@@ -102,7 +97,7 @@
             </a>
 
             <p class="px-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-8">Akun</p>
-            <a href="{{ route('profile.show') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl {{ request()->routeIs('profile.*') ? 'bg-indigo-50 text-[#4F46E5]' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition">
+            <a href="{{ route('crew.profile.show') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl {{ request()->routeIs('crew.profile.*') || request()->routeIs('profile.*') ? 'bg-indigo-50 text-[#4F46E5]' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 Profil Saya
             </a>           
@@ -137,36 +132,36 @@
                         activeTab: 'all',
                         notifications: [], 
                         isLoading: false, 
-                        hasFetched: false,
-                        unreadCountServer: {{ $initialUnreadNotifs }},
+                        loaded: false,
+                        initialUnread: {{ $unreadNotifs }},
 
                         async toggleDropdown() {
                             this.open = !this.open;
-                            if (this.open && !this.hasFetched) {
+                            if (this.open && !this.loaded) {
                                 await this.fetchNotifications();
                             }
                         },
 
                         async fetchNotifications() {
-                            this.isLoading = true;
+                            this.isLoading = true; 
                             try {
                                 const res = await fetch('{{ route("api.notifications.index") }}');
                                 if (res.ok) {
                                     this.notifications = await res.json();
-                                    this.hasFetched = true;
+                                    this.loaded = true;
                                 }
                             } catch (err) {
                                 console.error('Gagal memuat notifikasi:', err);
                             } finally {
-                                this.isLoading = false;
+                                this.isLoading = false; 
                             }
                         },
 
                         get unreadCount() { 
-                            if (this.hasFetched) {
-                                return this.notifications.filter(n => !n.read).length;
+                            if (! this.loaded) {
+                                return this.initialUnread;
                             }
-                            return this.unreadCountServer;
+                            return this.notifications.filter(n => !n.read).length; 
                         },
                         get hasVisibleNotifications() { 
                             if (this.activeTab === 'all') return this.notifications.length > 0; 
@@ -189,7 +184,7 @@
                         async markAsRead(id) {
                             const notif = this.notifications.find(n => n.id === id);
                             if (notif) notif.read = true;
-                            if (this.unreadCountServer > 0) this.unreadCountServer--;
+                            if (this.initialUnread > 0) this.initialUnread--;
 
                             try {
                                 await fetch(`/api/notifications/${id}/read`, {
@@ -207,7 +202,7 @@
                         async markAllAsRead() {
                             // Optimistic update
                             this.notifications.forEach(n => n.read = true);
-                            this.unreadCountServer = 0;
+                            this.initialUnread = 0;
 
                             try {
                                 await fetch('/api/notifications/read-all', {
@@ -311,7 +306,7 @@
                             <p class="text-xs font-bold text-gray-900 tracking-wide">Masuk sebagai</p>
                             <p class="text-xs text-gray-500 truncate mt-0.5">{{ $authUser->email }}</p>
                         </div>
-                        <a href="{{ route('profile.show') }}" class="flex items-center gap-3 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition group">
+                        <a href="{{ route('crew.profile.show') }}" class="flex items-center gap-3 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition group">
                             <svg class="w-5 h-5 text-gray-400 group-hover:text-[#4F46E5] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                             <span>Lihat Profil</span>
                         </a>

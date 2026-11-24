@@ -98,6 +98,13 @@ class TransactionTest extends TestCase
             'status' => PaymentStatus::Pending,
         ]);
 
+        $cancelledTx = Payment::factory()->create([
+            'event_id' => $otherEvent->id,
+            'invoice_number' => 'INV-2025-080',
+            'amount' => 300000,
+            'status' => PaymentStatus::Cancelled,
+        ]);
+
         // Search by invoice number
         $responseSearch = $this->actingAs($this->admin)->get(route('admin.transactions.index', [
             'search' => 'INV-2025-084',
@@ -121,6 +128,15 @@ class TransactionTest extends TestCase
         $responsePending->assertStatus(200);
         $responsePending->assertSee('INV-2025-082');
         $responsePending->assertDontSee('INV-2025-084');
+
+        // Filter by pill status 'dibatalkan'
+        $responseCancelled = $this->actingAs($this->admin)->get(route('admin.transactions.index', [
+            'status' => 'dibatalkan',
+        ]));
+        $responseCancelled->assertStatus(200);
+        $responseCancelled->assertSee('INV-2025-080');
+        $responseCancelled->assertDontSee('INV-2025-084');
+        $responseCancelled->assertDontSee('INV-2025-082');
     }
 
     public function test_metrics_header_calculated_accurately(): void
@@ -168,6 +184,36 @@ class TransactionTest extends TestCase
             'status' => 'paid',
             'payment_type' => 'QRIS',
         ]);
+    }
+
+    public function test_show_endpoint_with_event_poster_path(): void
+    {
+        $eventWithPoster = Event::factory()->create([
+            'organizer_id' => $this->organizer->id,
+            'title' => 'Jakarta Game Expo 2025',
+            'status' => EventStatus::Active,
+            'poster_path' => 'events/posters/sample-poster.jpg',
+        ]);
+
+        $tx = Payment::factory()->create([
+            'event_id' => $eventWithPoster->id,
+            'invoice_number' => 'INV-2025-100',
+            'amount' => 500000,
+            'status' => PaymentStatus::Paid,
+            'payment_type' => 'qris',
+        ]);
+
+        $response = $this->actingAs($this->admin)->getJson(route('admin.transactions.show', $tx));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'id' => $tx->id,
+            'invoice_number' => 'INV-2025-100',
+            'event' => [
+                'title' => 'Jakarta Game Expo 2025',
+            ],
+        ]);
+        $this->assertNotNull($response->json('event.poster_url'));
     }
 
     public function test_download_invoice_returns_successful_response(): void

@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Enums\EventStatus;
+use App\Enums\VerificationStatus;
 use App\Models\Event;
 use App\Models\User;
 
@@ -70,7 +71,13 @@ class EventPolicy
      */
     public function submit(User $user, Event $event): bool
     {
-        if ($user->organizerProfile?->id !== $event->organizer_id) {
+        $organizerProfile = $user->organizerProfile;
+
+        if ($organizerProfile?->id !== $event->organizer_id) {
+            return false;
+        }
+
+        if ($organizerProfile->verification_status !== VerificationStatus::Verified) {
             return false;
         }
 
@@ -79,6 +86,29 @@ class EventPolicy
             EventStatus::Draft,
             EventStatus::Rejected,
         ], true);
+    }
+
+    /**
+     * Determine whether the user can close event registration.
+     * Only active events can be closed.
+     */
+    public function close(User $user, Event $event): bool
+    {
+        return $user->organizerProfile?->id === $event->organizer_id
+            && $event->status === EventStatus::Active;
+    }
+
+    /**
+     * Determine whether the user can mark the event as finished.
+     * Active and closed events can be finished.
+     */
+    public function finish(User $user, Event $event): bool
+    {
+        return $user->organizerProfile?->id === $event->organizer_id
+            && in_array($event->status, [
+                EventStatus::Active,
+                EventStatus::Closed,
+            ], true);
     }
 
     /**

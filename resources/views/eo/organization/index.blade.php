@@ -364,7 +364,7 @@
                                 </div>
                                 <div class="mt-3 flex items-center justify-between">
                                     <span class="text-xs text-gray-400">
-                                        {{ $event->positions->count() ?? 0 }} Posisi
+                                        {{ $event->positions_count ?? 0 }} Posisi
                                     </span>
                                     <a href="{{ route('eo.events.edit', $event) }}" class="text-xs text-brand-600 hover:text-brand-700 font-medium">
                                         Detail Event →

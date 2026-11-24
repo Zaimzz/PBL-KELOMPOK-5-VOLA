@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Crew;
 
 use App\Http\Controllers\Controller;
+use App\Support\MediaStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -15,11 +15,11 @@ class ProfileController extends Controller
         $user = Auth::user();
         $profile = $user->volunteerProfile;
         $skills = is_array($profile?->skills) ? $profile->skills : [];
-        
+
         $availableSkills = [
             'Liaison Officer (LO)', 'Dokumentasi & Media', 'Registrasi & Ticketing',
             'Stage Crew', 'Keamanan / Security', 'Konsumsi & Logistik',
-            'MC / Host', 'Desain Grafis', 'Videografer', 'First Aid / Medis'
+            'MC / Host', 'Desain Grafis', 'Videografer', 'First Aid / Medis',
         ];
 
         return view('crew.profile', compact('user', 'profile', 'skills', 'availableSkills'));
@@ -31,12 +31,12 @@ class ProfileController extends Controller
         $profile = $user->volunteerProfile;
 
         $cities = [
-            'Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Semarang', 
+            'Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Semarang',
             'Makassar', 'Palembang', 'Tangerang', 'Depok', 'Yogyakarta',
             'Malang', 'Bekasi', 'Batam', 'Pekanbaru', 'Denpasar',
             'Samarinda', 'Balikpapan', 'Pontianak', 'Manado', 'Padang',
             'Lampung', 'Jambi', 'Banjarmasin', 'Mataram', 'Kupang',
-            'Jayapura', 'Ambon', 'Sorong', 'Ternate', 'Banda Aceh'
+            'Jayapura', 'Ambon', 'Sorong', 'Ternate', 'Banda Aceh',
         ];
 
         return view('crew.profile-edit', compact('user', 'profile', 'cities'));
@@ -60,7 +60,7 @@ class ProfileController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($profile && $profile->photo_path) {
-                Storage::disk('public')->delete($profile->photo_path);
+                MediaStorage::deleteSafe($profile->photo_path);
             }
             $path = $request->file('photo')->store('profiles', 'public');
             $validated['photo_path'] = $path;
@@ -76,7 +76,7 @@ class ProfileController extends Controller
             $dataToUpdate
         );
 
-        return redirect()->route('profile.show')->with('status', 'Profil berhasil diperbarui.');
+        return redirect()->route('crew.profile.show')->with('status', 'Profil berhasil diperbarui.');
     }
 
     public function updateSkills(Request $request)
@@ -92,7 +92,7 @@ class ProfileController extends Controller
         $selectedSkills = $request->input('skills', []);
         $customSkill = trim($request->input('custom_skill'));
 
-        if (!empty($customSkill)) {
+        if (! empty($customSkill)) {
             $selectedSkills[] = $customSkill;
         }
 
@@ -103,21 +103,21 @@ class ProfileController extends Controller
             ['skills' => $finalSkills]
         );
 
-        return redirect()->route('profile.show')->with('status', 'Keahlian berhasil diperbarui.');
+        return redirect()->route('crew.profile.show')->with('status', 'Keahlian berhasil diperbarui.');
     }
 
     public function uploadDocument(Request $request)
     {
         $request->validate([
             'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'type' => 'required|in:cv_path,portfolio_path'
+            'type' => 'required|in:cv_path,portfolio_path',
         ]);
 
         $user = Auth::user();
         $profile = $user->volunteerProfile;
 
         if ($profile && $profile->{$request->type}) {
-            Storage::disk('public')->delete($profile->{$request->type});
+            MediaStorage::deleteSafe($profile->{$request->type});
         }
 
         $originalName = $request->file('file')->getClientOriginalName();
@@ -130,15 +130,15 @@ class ProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'url' => asset('storage/' . $path),
+            'url' => MediaStorage::documentUrl($path),
             'filename' => $originalName,
-            'message' => 'File berhasil diunggah!'
+            'message' => 'File berhasil diunggah!',
         ]);
     }
 
     public function deleteDocument(string $type)
     {
-        if (!in_array($type, ['cv_path', 'portfolio_path'])) {
+        if (! in_array($type, ['cv_path', 'portfolio_path'])) {
             abort(400, 'Tipe dokumen tidak valid.');
         }
 
@@ -146,10 +146,10 @@ class ProfileController extends Controller
         $profile = $user->volunteerProfile;
 
         if ($profile && $profile->{$type}) {
-            Storage::disk('public')->delete($profile->{$type});
+            MediaStorage::deleteSafe($profile->{$type});
             $profile->update([$type => null]);
         }
 
-        return redirect()->route('profile.show')->with('status', 'File berhasil dihapus.');
+        return redirect()->route('crew.profile.show')->with('status', 'File berhasil dihapus.');
     }
 }

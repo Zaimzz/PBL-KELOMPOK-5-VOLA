@@ -7,6 +7,7 @@ use App\Enums\PaymentStatus;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class MidtransWebhookController extends Controller
@@ -140,6 +141,12 @@ class MidtransWebhookController extends Controller
             return;
         }
 
+        // Cancel any lingering pending payments for this same event to maintain 1 Event = 1 Invoice
+        Payment::where('event_id', $payment->event_id)
+            ->where('id', '!=', $payment->id)
+            ->where('status', PaymentStatus::Pending)
+            ->update(['status' => PaymentStatus::Cancelled]);
+
         // Only activate if the event is awaiting payment or already active
         // (do not accidentally re-activate a closed/finished/rejected event)
         $activatableStatuses = [
@@ -159,6 +166,9 @@ class MidtransWebhookController extends Controller
             'status' => EventStatus::Active,
             'published_at' => $event->published_at ?? now(),
         ]);
+
+        Cache::forget('eo_dashboard_'.$event->organizer_id);
+        Cache::forget('crew_recommended_events');
 
         Log::info('Midtrans webhook: event publication activated', [
             'event_id' => $event->id,

@@ -7,7 +7,8 @@
     <title>{{ $title ?? 'Vola' }} — Event Organizer</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700&display=swap" rel="stylesheet" />
+    {{-- Muat CSS font secara non-blocking agar render tidak menunggu server pihak ketiga --}}
+    <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -70,11 +71,12 @@
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                         </svg>
-                        Koordinasi Kru
+                        Koordinasi Crew
                     </a>
                 </div>
 
                 <!-- KEUANGAN -->
+                @if (Route::has('eo.billing.index'))
                 <div class="mb-2">
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2 mt-4">Keuangan</p>
 
@@ -87,6 +89,7 @@
                         Pembayaran & Tagihan
                     </a>
                 </div>
+                @endif
 
                 <!-- AKUN -->
                 <div class="mb-2">
@@ -240,11 +243,43 @@
 
             <!-- Footer -->
             <footer class="border-t border-gray-100 py-4 px-4 sm:px-6 text-center text-xs text-gray-400">
-                &copy; {{ date('Y') }} VOLA Platform Relawan Indonesia. All rights reserved.
+                &copy; {{ date('Y') }} VOLA Platform Crew Indonesia. All rights reserved.
             </footer>
 
         </div>
     </div>
+
+    {{-- Cegah double-submit pada seluruh form EO: tombol submit dikunci setelah submit valid pertama.
+         Tidak memengaruhi form yang ditangani Alpine (x-on:submit.prevent) atau confirm() yang dibatalkan. --}}
+    <script>
+        (function () {
+            document.addEventListener('submit', function (e) {
+                if (e.defaultPrevented) return;
+
+                var form = e.target;
+                if (!form || form.tagName !== 'FORM') return;
+
+                if (form.dataset.submitting === '1') {
+                    e.preventDefault();
+                    return;
+                }
+
+                form.dataset.submitting = '1';
+                var btn = form.querySelector('button[type="submit"], input[type="submit"]');
+                if (btn) btn.disabled = true;
+            });
+
+            // Pulihkan tombol jika halaman dikembalikan dari bfcache (tombol back/forward)
+            window.addEventListener('pageshow', function () {
+                document.querySelectorAll('form[data-submitting="1"]').forEach(function (form) {
+                    form.dataset.submitting = '0';
+                    form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(function (btn) {
+                        btn.disabled = false;
+                    });
+                });
+            });
+        })();
+    </script>
 
     @stack('scripts')
 </body>

@@ -29,7 +29,7 @@ class CrewPerformanceTest extends TestCase
     {
         [$user, $profile] = $this->createVolunteer();
 
-        $routes = ['dashboard', 'search.index', 'applications.index', 'my-events.index', 'history.index', 'profile.show', 'settings.index'];
+        $routes = ['dashboard', 'search.index', 'applications.index', 'my-events.index', 'history.index', 'crew.profile.show', 'settings.index'];
 
         foreach ($routes as $route) {
             $response = $this->actingAs($user)->get(route($route));

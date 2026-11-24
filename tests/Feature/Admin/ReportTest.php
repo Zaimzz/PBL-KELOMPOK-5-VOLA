@@ -49,9 +49,10 @@ class ReportTest extends TestCase
         $response->assertSee('RPT-2025-001');
         $response->assertSee('Pelapor Andi');
         $response->assertSee('Terlapor Bima');
-        $response->assertSee('Menunggu Tindakan');
-        $response->assertSee('Sedang Ditinjau');
-        $response->assertSee('Laporan Selesai');
+        $response->assertSee('Menunggu');
+        $response->assertSee('Selesai');
+        $response->assertSee('Ditolak');
+        $response->assertSee('Tindak Lanjut');
     }
 
     public function test_non_admin_cannot_access_reports_index(): void

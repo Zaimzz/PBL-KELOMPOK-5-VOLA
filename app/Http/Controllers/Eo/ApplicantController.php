@@ -6,9 +6,12 @@ use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Event;
+use App\Models\EventPosition;
 use App\Notifications\ApplicationDecided;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ApplicantController extends Controller
@@ -34,9 +37,9 @@ class ApplicantController extends Controller
             ]);
         }
 
-        // All events owned by this EO (any status)
+        // All events owned by this EO (any status) — only id/title are rendered
         $events = Event::where('organizer_id', $organizerProfile->id)
-            ->withCount('applications')
+            ->select(['id', 'title'])
             ->orderByDesc('created_at')
             ->get();
 
@@ -63,7 +66,7 @@ class ApplicantController extends Controller
 
         // Build base query for applications on the selected event
         $query = Application::query()
-            ->whereHas('position', fn ($q) => $q->where('event_id', $selectedEvent->id))
+            ->whereIn('position_id', $positions->pluck('id'))
             ->with([
                 'volunteerProfile.user',
                 'position',
@@ -90,12 +93,16 @@ class ApplicantController extends Controller
         }
 
         // Statistics for selected event (always based on full event, ignoring search/filters)
-        $statsQuery = Application::query()
-            ->whereHas('position', fn ($q) => $q->where('event_id', $selectedEvent->id));
+        $statRows = DB::table('applications')
+            ->join('event_positions', 'applications.position_id', '=', 'event_positions.id')
+            ->where('event_positions.event_id', $selectedEvent->id)
+            ->selectRaw('applications.status, COUNT(*) as aggregate')
+            ->groupBy('applications.status')
+            ->pluck('aggregate', 'applications.status');
 
-        $totalCount = (clone $statsQuery)->count();
-        $pendingCount = (clone $statsQuery)->where('status', ApplicationStatus::Pending)->count();
-        $acceptedCount = (clone $statsQuery)->where('status', ApplicationStatus::Accepted)->count();
+        $totalCount = (int) $statRows->sum();
+        $pendingCount = (int) ($statRows[ApplicationStatus::Pending->value] ?? 0);
+        $acceptedCount = (int) ($statRows[ApplicationStatus::Accepted->value] ?? 0);
 
         $applications = $query->orderByDesc('applied_at')->paginate(10)->withQueryString();
 
@@ -114,25 +121,58 @@ class ApplicantController extends Controller
     /**
      * Accept a volunteer application.
      * Only the EO who owns the event may accept.
+     * The position row is locked so concurrent accepts cannot exceed its quota.
      */
     public function accept(Request $request, Application $application): RedirectResponse
     {
         $this->authorizeApplication($request, $application);
 
-        if (! in_array($application->status, [ApplicationStatus::Pending, ApplicationStatus::Rejected], true)) {
-            return back()->with('error', 'Hanya pendaftar berstatus menunggu atau ditolak yang dapat diterima.');
+        $result = DB::transaction(function () use ($application): string {
+            $position = EventPosition::query()
+                ->whereKey($application->position_id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $application->refresh();
+
+            if ($application->status !== ApplicationStatus::Pending) {
+                return 'invalid_status';
+            }
+
+            $acceptedCount = Application::query()
+                ->where('position_id', $position->id)
+                ->where('status', ApplicationStatus::Accepted)
+                ->count();
+
+            if ($acceptedCount >= $position->quota) {
+                return 'quota_full';
+            }
+
+            $application->update([
+                'status' => ApplicationStatus::Accepted,
+                'decided_at' => now(),
+                'decision_note' => null,
+            ]);
+
+            return 'accepted';
+        });
+
+        if ($result === 'invalid_status') {
+            return back()->with('error', 'Hanya pendaftar berstatus menunggu yang dapat diterima.');
         }
 
-        $application->update([
-            'status' => ApplicationStatus::Accepted,
-            'decided_at' => now(),
-            'decision_note' => null,
-        ]);
+        if ($result === 'quota_full') {
+            return back()->with('error', 'Kuota posisi '.$application->position?->name.' sudah penuh. Pendaftar tidak dapat diterima.');
+        }
 
         // Notify volunteer via Laravel notification system
+        $application->load(['volunteerProfile.user', 'position.event']);
         $volunteer = $application->volunteerProfile?->user;
         if ($volunteer) {
             $volunteer->notify(new ApplicationDecided($application, 'accepted'));
+            Cache::forget('crew_application_counts_'.$application->volunteer_profile_id);
+            Cache::forget('crew_unread_notifs_'.$volunteer->id);
+            Cache::forget('crew_history_counts_'.$application->volunteer_profile_id);
         }
 
         return back()->with('success', 'Pendaftar berhasil diterima.');
@@ -161,9 +201,13 @@ class ApplicantController extends Controller
         ]);
 
         // Notify volunteer via Laravel notification system
+        $application->load(['volunteerProfile.user', 'position.event']);
         $volunteer = $application->volunteerProfile?->user;
         if ($volunteer) {
             $volunteer->notify(new ApplicationDecided($application, 'rejected'));
+            Cache::forget('crew_application_counts_'.$application->volunteer_profile_id);
+            Cache::forget('crew_unread_notifs_'.$volunteer->id);
+            Cache::forget('crew_history_counts_'.$application->volunteer_profile_id);
         }
 
         return back()->with('success', 'Pendaftar berhasil ditolak.');
@@ -181,11 +225,12 @@ class ApplicantController extends Controller
             abort(403, 'Profil organisasi tidak ditemukan.');
         }
 
-        $eventOwnerId = $application->position?->event?->organizer_id;
+        $ownsApplication = Application::whereKey($application->getKey())
+            ->whereHas('position.event', fn ($q) => $q->where('organizer_id', $organizerProfile->id))
+            ->exists();
 
-        if ($eventOwnerId !== $organizerProfile->id) {
+        if (! $ownsApplication) {
             abort(403, 'Anda tidak memiliki akses untuk mengubah pendaftaran ini.');
         }
     }
 }
-

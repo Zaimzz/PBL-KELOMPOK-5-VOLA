@@ -17,7 +17,7 @@
             <span class="text-sm font-semibold text-gray-400 shrink-0 mr-2">Kategori :</span>
             @foreach ($categories as $category)
                 <button type="button" 
-                        @click="activeCategory = '{{ $category['slug'] }}'"
+                        @click="window.location.href = '/dashboard?category={{ $category['slug'] }}'"
                         :class="activeCategory === '{{ $category['slug'] }}'
                             ? 'bg-[#4F46E5] text-white shadow-md' :
                             'bg-gray-100 hover:bg-gray-200 text-gray-700'"
@@ -157,7 +157,7 @@
 <script>
     function dashboardData() {
         return {
-            activeCategory: '{{ request('category', 'all') }}',
+            activeCategory: @js($selectedCategory),
             allEvents: [],
             categoryNames: {
                 'all': 'Semua',

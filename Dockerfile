@@ -113,6 +113,11 @@ RUN mkdir -p \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
+RUN mkdir -p storage/app/public/posters \
+    && php artisan storage:link \
+    && chown -R www-data:www-data storage/app/public \
+    && chmod -R 775 storage/app/public
+
 EXPOSE 10000
 
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]

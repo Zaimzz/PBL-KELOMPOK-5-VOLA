@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\EventStatus;
+use App\Support\MediaStorage;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +23,31 @@ class Event extends Model
         'pic_phone', 'benefits', 'status', 'rejection_reason', 'reviewed_by',
         'reviewed_at', 'published_at',
     ];
+
+    protected $appends = [
+        'poster_url',
+        'banner_url',
+    ];
+
+    /**
+     * URL publik poster event (Supabase Storage atau fallback SVG).
+     */
+    protected function posterUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => MediaStorage::posterUrl($this->poster_path),
+        );
+    }
+
+    /**
+     * Alias untuk poster_url.
+     */
+    protected function bannerUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => $this->poster_url,
+        );
+    }
 
     protected function casts(): array
     {

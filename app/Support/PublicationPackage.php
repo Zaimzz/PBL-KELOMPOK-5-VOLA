@@ -91,4 +91,3 @@ final class PublicationPackage
         return array_keys(self::PACKAGES);
     }
 }
-

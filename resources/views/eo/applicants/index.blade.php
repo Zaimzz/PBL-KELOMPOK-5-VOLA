@@ -31,8 +31,8 @@
     ================================================================ --}}
     @elseif ($events->isEmpty())
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">Seleksi Pendaftar Relawan</h1>
-            <p class="text-gray-500 mt-1">Lihat data dan berkas pendaftar untuk menentukan calon volunteer.</p>
+            <h1 class="text-2xl font-bold text-gray-900">Seleksi Pendaftar Crew</h1>
+            <p class="text-gray-500 mt-1">Lihat data dan berkas pendaftar untuk menentukan calon Crew.</p>
         </div>
 
         <x-card>
@@ -44,7 +44,7 @@
                 </div>
                 <h2 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Event</h2>
                 <p class="text-gray-500 max-w-sm mx-auto mb-6">
-                    Anda perlu membuat event terlebih dahulu agar volunteer dapat mendaftar dan muncul di halaman ini.
+                    Anda perlu membuat event terlebih dahulu agar Crew dapat mendaftar dan muncul di halaman ini.
                 </p>
                 <a href="{{ route('eo.events.create') }}"
                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
@@ -65,9 +65,9 @@
         <div class="mb-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Seleksi Pendaftar Relawan</h1>
+                    <h1 class="text-2xl font-bold text-gray-900">Seleksi Pendaftar Crew</h1>
                     <p class="text-gray-500 mt-1">
-                        Lihat data dan berkas pendaftar untuk menentukan calon volunteer.
+                        Lihat data dan berkas pendaftar untuk menentukan calon Crew.
                         @if ($selectedEvent)
                             Event: <span class="font-semibold text-gray-700">{{ $selectedEvent->title }}</span>
                         @endif
@@ -105,7 +105,7 @@
                 <div>
                     <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Pendaftar</p>
                     <p class="text-3xl font-bold text-gray-900 mt-1">{{ number_format($totalCount) }}</p>
-                    <p class="text-xs text-gray-400 mt-1">Relawan</p>
+                    <p class="text-xs text-gray-400 mt-1">Crew</p>
                 </div>
                 <div class="w-12 h-12 bg-brand-50 rounded-xl flex items-center justify-center shrink-0">
                     <svg class="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,7 +133,7 @@
                 <div>
                     <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Diterima</p>
                     <p class="text-3xl font-bold text-green-600 mt-1">{{ number_format($acceptedCount) }}</p>
-                    <p class="text-xs text-gray-400 mt-1">Relawan Diterima</p>
+                    <p class="text-xs text-gray-400 mt-1">Crew Diterima</p>
                 </div>
                 <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
                     <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,7 +245,7 @@
                         </div>
                         <h3 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Pendaftar</h3>
                         <p class="text-gray-500 max-w-sm mx-auto mb-6">
-                            Belum ada volunteer yang mendaftar ke event ini. Pendaftar yang masuk akan muncul secara otomatis di halaman ini.
+                            Belum ada Crew yang mendaftar ke event ini. Pendaftar yang masuk akan muncul secara otomatis di halaman ini.
                         </p>
                         <a href="{{ route('eo.events.index') }}"
                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
@@ -265,10 +265,10 @@
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-gray-100 bg-gray-50">
-                                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Relawan</th>
+                                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Crew</th>
                                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Divisi Pilihan</th>
                                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Tanggal Melamar</th>
-                                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Berkas Relawan</th>
+                                <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Berkas Crew</th>
                                 <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                                 <th class="px-5 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Keputusan / Aksi</th>
                             </tr>
@@ -318,7 +318,7 @@
                                     <td class="px-5 py-4">
                                         <div class="flex flex-col gap-1">
                                             @if ($volunteer?->cv_path)
-                                                <a href="{{ Storage::url($volunteer->cv_path) }}"
+                                                <a href="{{ $volunteer->cv_url }}"
                                                    target="_blank"
                                                    rel="noopener noreferrer"
                                                    class="inline-flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-700 font-medium transition-colors">
@@ -329,7 +329,7 @@
                                                 </a>
                                             @endif
                                             @if ($volunteer?->portfolio_path)
-                                                <a href="{{ Storage::url($volunteer->portfolio_path) }}"
+                                                <a href="{{ $volunteer->portfolio_url }}"
                                                    target="_blank"
                                                    rel="noopener noreferrer"
                                                    class="inline-flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
@@ -377,7 +377,7 @@
                                                 <form method="POST"
                                                       action="{{ route('eo.applicants.accept', $application) }}"
                                                       x-data
-                                                      x-on:submit.prevent="if(confirm('Terima pendaftaran {{ addslashes($user?->name ?? 'relawan ini') }}?')) $el.submit()">
+                                                      x-on:submit.prevent="if(confirm('Terima pendaftaran {{ addslashes($user?->name ?? 'Crew ini') }}?')) $el.submit()">
                                                     @csrf
                                                     @method('PATCH')
                                                     <button type="submit"
@@ -399,7 +399,7 @@
                                                 <form method="POST"
                                                       action="{{ route('eo.applicants.reject', $application) }}"
                                                       x-data
-                                                      x-on:submit.prevent="if(confirm('Batalkan penerimaan {{ addslashes($user?->name ?? 'relawan ini') }}? Status akan berubah menjadi Ditolak.')) $el.submit()">
+                                                      x-on:submit.prevent="if(confirm('Batalkan penerimaan {{ addslashes($user?->name ?? 'Crew ini') }}? Status akan berubah menjadi Ditolak.')) $el.submit()">
                                                     @csrf
                                                     @method('PATCH')
                                                     <input type="hidden" name="decision_note" value="Penerimaan dibatalkan oleh EO.">
@@ -410,21 +410,10 @@
                                                 </form>
 
                                             @elseif ($statusValue === 'rejected')
-                                                {{-- Reconsider: accept again --}}
-                                                <form method="POST"
-                                                      action="{{ route('eo.applicants.accept', $application) }}"
-                                                      x-data
-                                                      x-on:submit.prevent="if(confirm('Terima ulang pendaftaran {{ addslashes($user?->name ?? 'relawan ini') }}?')) $el.submit()">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit"
-                                                            class="px-3 py-1.5 bg-brand-50 text-brand-600 text-xs font-medium rounded-lg border border-brand-200 hover:bg-brand-100 transition-colors">
-                                                        Tinjau Ulang
-                                                    </button>
-                                                </form>
+                                                <span class="text-xs text-gray-400 italic">Keputusan final</span>
 
                                             @elseif ($statusValue === 'withdrawn')
-                                                <span class="text-xs text-gray-400 italic">Dicabut oleh relawan</span>
+                                                <span class="text-xs text-gray-400 italic">Dicabut oleh Crew</span>
                                             @endif
 
                                             {{-- Reject Modal --}}
@@ -442,7 +431,7 @@
                                                          x-transition:enter-end="opacity-100 scale-100">
                                                         <h3 class="text-lg font-semibold text-gray-900 mb-1">Tolak Pendaftar</h3>
                                                         <p class="text-sm text-gray-500 mb-4">
-                                                            Anda akan menolak pendaftaran <strong>{{ $user?->name }}</strong>. Tindakan ini dapat dibatalkan kemudian.
+                                                            Anda akan menolak pendaftaran <strong>{{ $user?->name }}</strong>. Tindakan ini tidak dapat dibatalkan.
                                                         </p>
                                                         <form method="POST" action="{{ route('eo.applicants.reject', $application) }}">
                                                             @csrf

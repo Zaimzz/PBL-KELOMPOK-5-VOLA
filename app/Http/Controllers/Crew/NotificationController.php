@@ -13,9 +13,8 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        // Ambil semua notifikasi dari tabel 'notifications' milik user ini
-        // Urutkan dari yang terbaru
-        $notifications = $user->notifications()->latest()->get()->map(function ($notif) {
+        // Ambil 20 notifikasi terbaru dari tabel 'notifications' milik user ini
+        $notifications = $user->notifications()->latest()->take(20)->get()->map(function ($notif) {
             return [
                 'id' => $notif->id,
                 'type' => $notif->data['type'] ?? 'info',
@@ -45,7 +44,7 @@ class NotificationController extends Controller
     public function markAllAsRead()
     {
         $user = Auth::user();
-        $user->unreadNotifications->markAsRead();
+        $user->unreadNotifications()->update(['read_at' => now()]);
         Cache::forget("crew_unread_notifs_{$user->id}");
 
         return response()->json(['success' => true]);

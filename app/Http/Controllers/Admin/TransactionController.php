@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TransactionController extends Controller
@@ -20,13 +19,28 @@ class TransactionController extends Controller
     {
         $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
-            'status' => ['nullable', 'string', 'in:all,paid,pending,failed,expired,cancelled,lunas,menunggu'],
+            'status' => ['nullable', 'string', 'in:all,paid,pending,failed,expired,cancelled,lunas,menunggu,dibatalkan,gagal'],
+            'period' => ['nullable', 'string', 'max:50'],
             'month' => ['nullable', 'string', 'max:20'],
+            'selected' => ['nullable', 'integer'],
         ]);
+
+        // Auto-expire invoice 'Menunggu Pembayaran' yang sudah lewat batas waktu (expired_at < now() atau > 24 jam)
+        Payment::where('status', PaymentStatus::Pending)
+            ->where(function ($q) {
+                $q->where(function ($sq) {
+                    $sq->whereNotNull('expired_at')
+                        ->where('expired_at', '<', now());
+                })->orWhere(function ($sq) {
+                    $sq->whereNull('expired_at')
+                        ->where('created_at', '<', now()->subHours(24));
+                });
+            })
+            ->update(['status' => PaymentStatus::Expired]);
 
         $query = Payment::query()->with(['event.organizer', 'event.category']);
 
-        // Search: Invoice Number, Event Title, Organizer Name
+        // Search: Presisi pada Invoice Number, Event Title, dan Organizer Name (tanpa kolom teknis/JSON)
         if ($request->filled('search')) {
             $search = $request->search;
             $cleanSearch = ltrim($search, '#');
@@ -34,33 +48,51 @@ class TransactionController extends Controller
             $query->where(function ($q) use ($search, $cleanSearch) {
                 $operator = $q->getConnection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
                 $q->where('invoice_number', $operator, '%'.$cleanSearch.'%')
-                    ->orWhere('midtrans_order_id', $operator, '%'.$search.'%')
+                    ->orWhere('invoice_number', $operator, '%'.$search.'%')
                     ->orWhereHas('event', function ($eq) use ($search, $operator) {
                         $eq->where('title', $operator, '%'.$search.'%')
                             ->orWhereHas('organizer', function ($oq) use ($search, $operator) {
-                                $oq->where('organization_name', $operator, '%'.$search.'%')
-                                    ->orWhere('pic_name', $operator, '%'.$search.'%');
+                                $oq->where('organization_name', $operator, '%'.$search.'%');
                             });
                     });
             });
         }
 
-        // Status Filter: Pill Buttons (all, paid/lunas, pending/menunggu)
+        // Status Filter: Pill Buttons (all, paid/lunas, pending/menunggu, dibatalkan/failed)
         if ($request->filled('status') && $request->status !== 'all') {
             $status = $request->status;
             if ($status === 'lunas' || $status === 'paid') {
                 $query->where('status', PaymentStatus::Paid);
             } elseif ($status === 'menunggu' || $status === 'pending') {
                 $query->where('status', PaymentStatus::Pending);
+            } elseif ($status === 'dibatalkan' || $status === 'failed' || $status === 'cancelled' || $status === 'expired' || $status === 'gagal') {
+                $query->whereIn('status', [PaymentStatus::Failed, PaymentStatus::Cancelled, PaymentStatus::Expired]);
             } else {
                 $query->where('status', $status);
             }
         }
 
-        // Month Filter
-        if ($request->filled('month') && $request->month !== 'all') {
+        // Rentang Tampil Transaksi: Bawaan Semua Waktu (All Time) / 1+ Tahun Terakhir / Bulan Tertentu
+        $period = $request->input('period', 'all');
+        if ($period === '1_year') {
+            $query->where('created_at', '>=', now()->subYear());
+        } elseif ($period === '6_months') {
+            $query->where('created_at', '>=', now()->subMonths(6));
+        } elseif ($period === 'this_month') {
+            $query->whereYear('created_at', now()->year)
+                ->whereMonth('created_at', now()->month);
+        } elseif ($period === 'custom_month' && $request->filled('month')) {
             try {
-                $date = Carbon::parse($request->month);
+                $date = Carbon::parse($request->input('month'));
+                $query->whereYear('created_at', $date->year)
+                    ->whereMonth('created_at', $date->month);
+            } catch (\Exception $e) {
+                // Ignore invalid date string
+            }
+        } elseif (str_starts_with($period, 'month:')) {
+            $monthVal = substr($period, 6);
+            try {
+                $date = Carbon::parse($monthVal);
                 $query->whereYear('created_at', $date->year)
                     ->whereMonth('created_at', $date->month);
             } catch (\Exception $e) {
@@ -74,7 +106,7 @@ class TransactionController extends Controller
         $totalCount = Payment::count();
         $pendingCount = Payment::where('status', PaymentStatus::Pending)->count();
 
-        // Month comparison for volume (+14.2% or calculated)
+        // Month comparison for volume
         $thisMonthVolume = Payment::where('status', PaymentStatus::Paid)
             ->whereMonth('paid_at', now()->month)
             ->whereYear('paid_at', now()->year)
@@ -100,48 +132,15 @@ class TransactionController extends Controller
             'pending_count' => $pendingCount,
         ];
 
+        // Prioritaskan transaksi yang diklik dari Aktivitas Terkini ke urutan paling atas
+        if ($request->filled('selected')) {
+            $query->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [(int) $request->selected]);
+        }
+
         // Eager load and paginate
         $transactions = $query->latest('created_at')->paginate(10)->withQueryString();
 
-        // Available months list for dropdown
-        $driver = DB::connection()->getDriverName();
-        $dateSelect = match ($driver) {
-            'pgsql' => "to_char(created_at, 'YYYY-MM')",
-            'sqlite' => "strftime('%Y-%m', created_at)",
-            default => "DATE_FORMAT(created_at, '%Y-%m')",
-        };
-
-        $availableMonths = Payment::selectRaw("DISTINCT $dateSelect as ym")
-            ->orderByDesc('ym')
-            ->pluck('ym')
-            ->filter()
-            ->map(function ($ym) {
-                try {
-                    $dt = Carbon::createFromFormat('Y-m', $ym);
-
-                    return [
-                        'value' => $ym,
-                        'label' => $dt->translatedFormat('F Y'),
-                    ];
-                } catch (\Exception $e) {
-                    return [
-                        'value' => $ym,
-                        'label' => $ym,
-                    ];
-                }
-            })->values();
-
-        // Ensure current month is in the dropdown if empty
-        if ($availableMonths->isEmpty()) {
-            $availableMonths = collect([
-                [
-                    'value' => now()->format('Y-m'),
-                    'label' => now()->translatedFormat('F Y'),
-                ],
-            ]);
-        }
-
-        return view('admin.transactions.index', compact('transactions', 'stats', 'availableMonths'));
+        return view('admin.transactions.index', compact('transactions', 'stats'));
     }
 
     /**
@@ -149,6 +148,15 @@ class TransactionController extends Controller
      */
     public function show(Request $request, Payment $payment)
     {
+        if ($payment->status === PaymentStatus::Pending) {
+            $isExpired = ($payment->expired_at && $payment->expired_at->isPast())
+                || (! $payment->expired_at && $payment->created_at->addHours(24)->isPast());
+            if ($isExpired) {
+                $payment->update(['status' => PaymentStatus::Expired]);
+                $payment->refresh();
+            }
+        }
+
         $payment->load(['event.organizer', 'event.category']);
 
         $statusValue = $payment->status instanceof PaymentStatus ? $payment->status->value : (string) $payment->status;
@@ -179,6 +187,7 @@ class TransactionController extends Controller
                 'title' => $payment->event?->title ?? 'Event',
                 'category' => $payment->event?->category?->name ?? 'Umum',
                 'location' => $payment->event?->city ?? 'Indonesia',
+                'poster_url' => $payment->event?->poster_url,
             ],
             'organizer' => [
                 'name' => $payment->event?->organizer?->organization_name ?? 'Penyelenggara',
@@ -208,20 +217,68 @@ class TransactionController extends Controller
     }
 
     /**
-     * Download or view monthly transaction report PDF / printable document.
+     * Download or view transaction report PDF / printable document.
      */
     public function downloadReport(Request $request)
     {
+        $period = $request->input('period', 'all');
         $month = $request->input('month', now()->format('Y-m'));
         $query = Payment::with(['event.organizer', 'event.category'])->latest('created_at');
 
-        try {
-            $date = Carbon::parse($month);
-            $query->whereYear('created_at', $date->year)
-                ->whereMonth('created_at', $date->month);
-            $monthLabel = $date->translatedFormat('F Y');
-        } catch (\Exception $e) {
-            $monthLabel = $month;
+        if ($period === '1_year') {
+            $query->where('created_at', '>=', now()->subYear());
+            $monthLabel = '1 Tahun Terakhir';
+            $fileSuffix = '1-Tahun-Terakhir';
+        } elseif ($period === '6_months') {
+            $query->where('created_at', '>=', now()->subMonths(6));
+            $monthLabel = '6 Bulan Terakhir';
+            $fileSuffix = '6-Bulan-Terakhir';
+        } elseif ($period === 'this_month') {
+            $query->whereYear('created_at', now()->year)
+                ->whereMonth('created_at', now()->month);
+            $monthLabel = now()->translatedFormat('F Y');
+            $fileSuffix = now()->format('Y-m');
+        } elseif ($period === 'custom_month' && $request->filled('month')) {
+            try {
+                $date = Carbon::parse($month);
+                $query->whereYear('created_at', $date->year)
+                    ->whereMonth('created_at', $date->month);
+                $monthLabel = $date->translatedFormat('F Y');
+                $fileSuffix = $date->format('Y-m');
+            } catch (\Exception $e) {
+                $monthLabel = $month;
+                $fileSuffix = $month;
+            }
+        } elseif (str_starts_with($period, 'month:')) {
+            $monthVal = substr($period, 6);
+            try {
+                $date = Carbon::parse($monthVal);
+                $query->whereYear('created_at', $date->year)
+                    ->whereMonth('created_at', $date->month);
+                $monthLabel = $date->translatedFormat('F Y');
+                $fileSuffix = $date->format('Y-m');
+            } catch (\Exception $e) {
+                $monthLabel = $monthVal;
+                $fileSuffix = $monthVal;
+            }
+        } else {
+            $monthLabel = 'Semua Waktu (All Time)';
+            $fileSuffix = 'Semua-Waktu';
+        }
+
+        // Terapkan filter status jika dipilih
+        if ($request->filled('status') && $request->status !== 'all') {
+            $status = $request->status;
+            if ($status === 'lunas' || $status === 'paid') {
+                $query->where('status', PaymentStatus::Paid);
+                $fileSuffix .= '-Lunas';
+            } elseif ($status === 'menunggu' || $status === 'pending') {
+                $query->where('status', PaymentStatus::Pending);
+                $fileSuffix .= '-Menunggu';
+            } else {
+                $query->where('status', $status);
+                $fileSuffix .= '-'.ucfirst($status);
+            }
         }
 
         $payments = $query->get();
@@ -236,27 +293,68 @@ class TransactionController extends Controller
             'totalCount',
             'paidCount'
         ))->header('Content-Type', 'text/html')
-            ->header('Content-Disposition', 'inline; filename="Laporan-Transaksi-'.$month.'.html"');
+            ->header('Content-Disposition', 'inline; filename="Laporan-Transaksi-'.$fileSuffix.'.html"');
     }
 
     /**
-     * Download monthly transaction report as CSV.
+     * Download transaction report as CSV.
      */
     public function downloadCsv(Request $request)
     {
+        $period = $request->input('period', 'all');
         $month = $request->input('month', now()->format('Y-m'));
         $query = Payment::with(['event.organizer'])->latest('created_at');
 
-        try {
-            $date = Carbon::parse($month);
-            $query->whereYear('created_at', $date->year)
-                ->whereMonth('created_at', $date->month);
-        } catch (\Exception $e) {
-            // Abaikan jika format bulan tidak valid
+        if ($period === '1_year') {
+            $query->where('created_at', '>=', now()->subYear());
+            $fileSuffix = '1-Tahun-Terakhir';
+        } elseif ($period === '6_months') {
+            $query->where('created_at', '>=', now()->subMonths(6));
+            $fileSuffix = '6-Bulan-Terakhir';
+        } elseif ($period === 'this_month') {
+            $query->whereYear('created_at', now()->year)
+                ->whereMonth('created_at', now()->month);
+            $fileSuffix = now()->format('Y-m');
+        } elseif ($period === 'custom_month' && $request->filled('month')) {
+            try {
+                $date = Carbon::parse($month);
+                $query->whereYear('created_at', $date->year)
+                    ->whereMonth('created_at', $date->month);
+                $fileSuffix = $date->format('Y-m');
+            } catch (\Exception $e) {
+                $fileSuffix = $month;
+            }
+        } elseif (str_starts_with($period, 'month:')) {
+            $monthVal = substr($period, 6);
+            try {
+                $date = Carbon::parse($monthVal);
+                $query->whereYear('created_at', $date->year)
+                    ->whereMonth('created_at', $date->month);
+                $fileSuffix = $date->format('Y-m');
+            } catch (\Exception $e) {
+                $fileSuffix = $monthVal;
+            }
+        } else {
+            $fileSuffix = 'Semua-Waktu';
+        }
+
+        // Terapkan filter status jika dipilih
+        if ($request->filled('status') && $request->status !== 'all') {
+            $status = $request->status;
+            if ($status === 'lunas' || $status === 'paid') {
+                $query->where('status', PaymentStatus::Paid);
+                $fileSuffix .= '-Lunas';
+            } elseif ($status === 'menunggu' || $status === 'pending') {
+                $query->where('status', PaymentStatus::Pending);
+                $fileSuffix .= '-Menunggu';
+            } else {
+                $query->where('status', $status);
+                $fileSuffix .= '-'.ucfirst($status);
+            }
         }
 
         $payments = $query->get();
-        $filename = "Laporan-Transaksi-{$month}.csv";
+        $filename = "Laporan-Transaksi-{$fileSuffix}.csv";
 
         $headers = [
             'Content-type' => 'text/csv',
@@ -299,6 +397,10 @@ class TransactionController extends Controller
     public function downloadExcel(Request $request)
     {
         $month = $request->input('month', now()->format('Y-m'));
+        $period = $request->input('period');
+        if ($period && str_starts_with($period, 'month:')) {
+            $month = substr($period, 6);
+        }
         $filename = "Laporan-Transaksi-{$month}.xlsx";
 
         return Excel::download(new TransactionReportExport($month), $filename);

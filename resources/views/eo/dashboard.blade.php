@@ -49,7 +49,7 @@
         <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">
             Selamat Datang, {{ auth()->user()->name }} 👋
         </h1>
-        <p class="mt-1 text-gray-500">Kelola rekrutmen relawan, seleksi kru, dan kelancaran publikasi event Anda.</p>
+        <p class="mt-1 text-gray-500">Kelola rekrutmen Crew, seleksi Crew, dan kelancaran publikasi event Anda.</p>
     </div>
 
     {{-- No Organizer Profile Warning --}}
@@ -187,8 +187,10 @@
                             {{-- Poster --}}
                             <div class="w-28 sm:w-36 shrink-0 bg-gray-100 rounded-l-xl overflow-hidden">
                                 @if ($event->poster_path)
-                                    <img src="{{ Storage::url($event->poster_path) }}"
+                                    <img src="{{ $event->poster_url }}"
                                          alt="Poster {{ $event->title }}"
+                                         loading="lazy"
+                                         onerror="this.onerror=null;this.src='{{ asset('images/event-placeholder.svg') }}'"
                                          class="w-full h-full object-cover">
                                 @else
                                     <div class="w-full h-full flex items-center justify-center min-h-[80px]">
@@ -241,7 +243,7 @@
                                            class="text-xs px-3 py-1.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors">
                                             Kelola Event
                                         </a>
-                                    @elseif ($event->status->value === 'awaiting_payment')
+                                    @elseif ($event->status->value === 'awaiting_payment' && Route::has('eo.billing.index'))
                                         <a href="{{ route('eo.billing.index', ['event_id' => $event->id]) }}"
                                            class="text-xs px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
                                             Bayar Sekarang

@@ -8,10 +8,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Payment;
 use App\Support\PublicationPackage;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -63,7 +65,9 @@ class BillingController extends Controller
         $search = $request->query('search', '');
 
         if ($organizerProfile) {
+            // Only id/title are rendered (dropdown + counter)
             $events = Event::where('organizer_id', $organizerProfile->id)
+                ->select(['id', 'title'])
                 ->orderByDesc('created_at')
                 ->get();
 
@@ -78,15 +82,8 @@ class BillingController extends Controller
                 $statusFilter = 'all';
             }
 
-            // Auto-expire: mark overdue pending payments as expired before querying
-            $eoEventIds = $events->pluck('id');
-            Payment::whereIn('event_id', $eoEventIds)
-                ->where('status', PaymentStatus::Pending)
-                ->whereNotNull('expired_at')
-                ->where('expired_at', '<', now())
-                ->update(['status' => PaymentStatus::Expired]);
-
             // Build query scoped to this EO's events only
+            $eoEventIds = $events->pluck('id');
             $operator = DB::connection()->getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
 
             $query = Payment::with(['event'])
@@ -112,19 +109,19 @@ class BillingController extends Controller
 
             $payments = $query->paginate(10)->withQueryString();
 
-            // Financial summary scoped to this EO
-            $totalPaid = Payment::whereIn('event_id', $eoEventIds)
-                ->where('status', PaymentStatus::Paid)
-                ->sum('amount');
-            $paidCount = Payment::whereIn('event_id', $eoEventIds)
-                ->where('status', PaymentStatus::Paid)
-                ->count();
-            $pendingAmount = Payment::whereIn('event_id', $eoEventIds)
-                ->where('status', PaymentStatus::Pending)
-                ->sum('amount');
-            $pendingCount = Payment::whereIn('event_id', $eoEventIds)
-                ->where('status', PaymentStatus::Pending)
-                ->count();
+            // Financial summary scoped to this EO (single grouped query)
+            $summaryRows = DB::table('payments')
+                ->whereIn('event_id', $eoEventIds)
+                ->whereIn('status', [PaymentStatus::Paid->value, PaymentStatus::Pending->value])
+                ->selectRaw('status, COUNT(*) as cnt, COALESCE(SUM(amount), 0) as total')
+                ->groupBy('status')
+                ->get()
+                ->keyBy('status');
+
+            $totalPaid = (int) ($summaryRows->get(PaymentStatus::Paid->value)?->total ?? 0);
+            $paidCount = (int) ($summaryRows->get(PaymentStatus::Paid->value)?->cnt ?? 0);
+            $pendingAmount = (int) ($summaryRows->get(PaymentStatus::Pending->value)?->total ?? 0);
+            $pendingCount = (int) ($summaryRows->get(PaymentStatus::Pending->value)?->cnt ?? 0);
         }
 
         return view('eo.billing.index', compact(
@@ -173,48 +170,75 @@ class BillingController extends Controller
 
         $package = PublicationPackage::find($validated['package_slug']);
 
-        // Idempotency check: if there is already a pending payment for this exact
-        // event + package combination, return the existing snap token (or renew it).
-        $existing = Payment::where('event_id', $event->id)
-            ->where('package_name', $validated['package_slug'])
+        // 1. Guard: If event is already PAID, do not allow creating a new invoice.
+        $paidPayment = Payment::where('event_id', $event->id)
+            ->where('status', PaymentStatus::Paid)
+            ->first();
+
+        if ($paidPayment) {
+            return response()->json([
+                'error' => 'Event ini sudah memiliki invoice lunas.',
+                'invoice_number' => $paidPayment->invoice_number,
+                'payment_id' => $paidPayment->id,
+            ], 422);
+        }
+
+        // 2. 1 Event = 1 Active Invoice Rule:
+        // Check if an existing PENDING invoice already exists for this event.
+        $existingPending = Payment::where('event_id', $event->id)
             ->where('status', PaymentStatus::Pending)
-            ->where('expired_at', '>', now())
             ->latest()
             ->first();
 
-        if ($existing && $existing->snap_token) {
-            return response()->json([
-                'snap_token' => $existing->snap_token,
-                'payment_id' => $existing->id,
-                'invoice_number' => $existing->invoice_number,
-                'client_key' => config('services.midtrans.client_key'),
-            ]);
+        // Auto-expire if pending invoice has passed 24h
+        if ($existingPending && ($existingPending->expired_at?->isPast() || $existingPending->created_at->lt(now()->subHours(24)))) {
+            $existingPending->update(['status' => PaymentStatus::Expired]);
+            $existingPending = null;
         }
 
-        // Generate a unique invoice number
-        $invoiceNumber = 'INV-'.now()->format('Y').'-'.strtoupper(Str::random(8));
-
-        // Canonical amount comes from backend catalogue — never from the request
         $amount = PublicationPackage::price($validated['package_slug']);
 
-        // Build Midtrans Snap transaction payload
-        $orderId = 'VOLA-'.now()->format('YmdHis').'-'.Str::random(6);
+        if ($existingPending) {
+            // REUSE existing invoice! Keep the same invoice_number.
+            $payment = $existingPending;
 
-        // Create the payment record FIRST so we can embed its ID in the Snap finish URL.
-        // The finish URL is a server-side verify-and-redirect route — this guarantees the
-        // payment status is synced from Midtrans even when the JS onSuccess callback is
-        // interrupted by the browser redirect triggered by the Snap finish callback.
-        $payment = Payment::create([
-            'event_id' => $event->id,
-            'package_name' => $validated['package_slug'],
-            'package_duration_days' => $package['duration_days'],
-            'invoice_number' => $invoiceNumber,
-            'midtrans_order_id' => $orderId,
-            'snap_token' => null,
-            'amount' => $amount,
-            'status' => PaymentStatus::Pending,
-            'expired_at' => now()->addHours(24),
-        ]);
+            // If same package and has existing valid snap_token, return it directly
+            if ($payment->package_name === $validated['package_slug'] && $payment->snap_token && $payment->amount == $amount) {
+                return response()->json([
+                    'snap_token' => $payment->snap_token,
+                    'payment_id' => $payment->id,
+                    'invoice_number' => $payment->invoice_number,
+                    'client_key' => config('services.midtrans.client_key'),
+                ]);
+            }
+
+            // If package changed or snap token is missing, renew order ID & package details on the SAME invoice
+            $orderId = 'VOLA-'.now()->format('YmdHis').'-'.Str::random(6);
+            $payment->update([
+                'package_name' => $validated['package_slug'],
+                'package_duration_days' => $package['duration_days'],
+                'amount' => $amount,
+                'midtrans_order_id' => $orderId,
+                'snap_token' => null,
+                'expired_at' => now()->addHours(24),
+            ]);
+        } else {
+            // Only create a NEW invoice if no pending or paid invoice exists (all previous are expired/cancelled)
+            $invoiceNumber = 'INV-'.now()->format('Y').'-'.strtoupper(Str::random(8));
+            $orderId = 'VOLA-'.now()->format('YmdHis').'-'.Str::random(6);
+
+            $payment = Payment::create([
+                'event_id' => $event->id,
+                'package_name' => $validated['package_slug'],
+                'package_duration_days' => $package['duration_days'],
+                'invoice_number' => $invoiceNumber,
+                'midtrans_order_id' => $orderId,
+                'snap_token' => null,
+                'amount' => $amount,
+                'status' => PaymentStatus::Pending,
+                'expired_at' => now()->addHours(24),
+            ]);
+        }
 
         $snapParams = [
             'transaction_details' => [
@@ -245,8 +269,10 @@ class BillingController extends Controller
         try {
             $snapToken = Snap::getSnapToken($snapParams);
         } catch (\Exception $e) {
-            // Roll back the orphaned payment record if Snap token retrieval fails
-            $payment->delete();
+            // Roll back the orphaned payment record ONLY if it was newly created
+            if ($payment->wasRecentlyCreated) {
+                $payment->delete();
+            }
             report($e);
 
             return response()->json(['error' => 'Gagal menghubungi Midtrans. Silakan coba lagi.'], 500);
@@ -277,8 +303,7 @@ class BillingController extends Controller
     }
 
     /**
-     * Download / print-ready HTML invoice for a single payment.
-     * Uses the same printable template approach as the Admin TransactionController.
+     * Download the invoice as a real PDF file for a single payment.
      */
     public function downloadInvoice(Request $request, Payment $payment): Response
     {
@@ -287,9 +312,8 @@ class BillingController extends Controller
 
         $package = PublicationPackage::find($payment->package_name ?? '');
 
-        return response()->view('eo.billing.invoice-pdf', compact('payment', 'package'))
-            ->header('Content-Type', 'text/html')
-            ->header('Content-Disposition', 'inline; filename="Invoice-'.$payment->invoice_number.'.html"');
+        return Pdf::loadView('eo.billing.invoice-pdf', compact('payment', 'package'))
+            ->download('Invoice-'.$payment->invoice_number.'.pdf');
     }
 
     /**
@@ -341,35 +365,7 @@ class BillingController extends Controller
             try {
                 $result = Transaction::status($payment->midtrans_order_id);
 
-                $transactionStatus = $result->transaction_status ?? $redirectStatus;
-                $fraudStatus = $result->fraud_status ?? null;
-
-                $newStatus = match (true) {
-                    $transactionStatus === 'capture' && $fraudStatus === 'accept' => PaymentStatus::Paid,
-                    $transactionStatus === 'settlement' => PaymentStatus::Paid,
-                    // If the API still says "pending" but Midtrans redirect params say success,
-                    // trust the redirect params (Sandbox race condition / GoPay settlement lag).
-                    $transactionStatus === 'pending' && in_array($redirectStatus, ['capture', 'settlement'], true) => PaymentStatus::Paid,
-                    $transactionStatus === 'pending' && $redirectStatusCode === '200' => PaymentStatus::Paid,
-                    $transactionStatus === 'deny' => PaymentStatus::Failed,
-                    $transactionStatus === 'expire' => PaymentStatus::Expired,
-                    $transactionStatus === 'cancel' => PaymentStatus::Cancelled,
-                    default => PaymentStatus::Pending,
-                };
-
-                $updateData = ['status' => $newStatus];
-
-                if ($newStatus === PaymentStatus::Paid && ! $payment->paid_at) {
-                    $updateData['paid_at'] = now();
-                    $updateData['payment_type'] = $result->payment_type ?? null;
-                    $updateData['transaction_id'] = $result->transaction_id ?? null;
-                }
-
-                $payment->update($updateData);
-
-                if ($newStatus === PaymentStatus::Paid) {
-                    $this->activateEventPublication($payment);
-                }
+                $this->applyMidtransResult($payment, $result, $redirectStatus, $redirectStatusCode);
             } catch (\Exception $e) {
                 report($e);
 
@@ -407,32 +403,7 @@ class BillingController extends Controller
         try {
             $result = Transaction::status($payment->midtrans_order_id);
 
-            $transactionStatus = $result->transaction_status ?? null;
-            $fraudStatus = $result->fraud_status ?? null;
-
-            $newStatus = match (true) {
-                $transactionStatus === 'capture' && $fraudStatus === 'accept' => PaymentStatus::Paid,
-                $transactionStatus === 'settlement' => PaymentStatus::Paid,
-                $transactionStatus === 'pending' => PaymentStatus::Pending,
-                $transactionStatus === 'deny' => PaymentStatus::Failed,
-                $transactionStatus === 'expire' => PaymentStatus::Expired,
-                $transactionStatus === 'cancel' => PaymentStatus::Cancelled,
-                default => PaymentStatus::Pending,
-            };
-
-            $updateData = ['status' => $newStatus];
-
-            if ($newStatus === PaymentStatus::Paid && ! $payment->paid_at) {
-                $updateData['paid_at'] = now();
-                $updateData['payment_type'] = $result->payment_type ?? null;
-                $updateData['transaction_id'] = $result->transaction_id ?? null;
-            }
-
-            $payment->update($updateData);
-
-            if ($newStatus === PaymentStatus::Paid) {
-                $this->activateEventPublication($payment);
-            }
+            $newStatus = $this->applyMidtransResult($payment, $result);
 
             return response()->json(['status' => $newStatus->value]);
         } catch (\Exception $e) {
@@ -440,6 +411,45 @@ class BillingController extends Controller
 
             return response()->json(['status' => $payment->status->value]);
         }
+    }
+
+    /**
+     * Map a Midtrans API result (plus optional finish-redirect params) to a PaymentStatus,
+     * persist it on the payment, and activate publication when the payment is settled.
+     */
+    private function applyMidtransResult(Payment $payment, object $result, ?string $redirectStatus = null, ?string $redirectStatusCode = null): PaymentStatus
+    {
+        $transactionStatus = $result->transaction_status ?? $redirectStatus;
+        $fraudStatus = $result->fraud_status ?? null;
+
+        $newStatus = match (true) {
+            $transactionStatus === 'capture' && $fraudStatus === 'accept' => PaymentStatus::Paid,
+            $transactionStatus === 'settlement' => PaymentStatus::Paid,
+            // If the API still says "pending" but Midtrans redirect params say success,
+            // trust the redirect params (Sandbox race condition / GoPay settlement lag).
+            $transactionStatus === 'pending' && in_array($redirectStatus, ['capture', 'settlement'], true) => PaymentStatus::Paid,
+            $transactionStatus === 'pending' && $redirectStatusCode === '200' => PaymentStatus::Paid,
+            $transactionStatus === 'deny' => PaymentStatus::Failed,
+            $transactionStatus === 'expire' => PaymentStatus::Expired,
+            $transactionStatus === 'cancel' => PaymentStatus::Cancelled,
+            default => PaymentStatus::Pending,
+        };
+
+        $updateData = ['status' => $newStatus];
+
+        if ($newStatus === PaymentStatus::Paid && ! $payment->paid_at) {
+            $updateData['paid_at'] = now();
+            $updateData['payment_type'] = $result->payment_type ?? null;
+            $updateData['transaction_id'] = $result->transaction_id ?? null;
+        }
+
+        $payment->update($updateData);
+
+        if ($newStatus === PaymentStatus::Paid) {
+            $this->activateEventPublication($payment);
+        }
+
+        return $newStatus;
     }
 
     /**
@@ -452,6 +462,12 @@ class BillingController extends Controller
         if (! $event) {
             return;
         }
+
+        // Cancel any lingering pending payments for this same event to maintain 1 Event = 1 Invoice
+        Payment::where('event_id', $payment->event_id)
+            ->where('id', '!=', $payment->id)
+            ->where('status', PaymentStatus::Pending)
+            ->update(['status' => PaymentStatus::Cancelled]);
 
         $activatableStatuses = [
             EventStatus::AwaitingPayment->value,
@@ -470,6 +486,9 @@ class BillingController extends Controller
             'status' => EventStatus::Active,
             'published_at' => $event->published_at ?? now(),
         ]);
+
+        Cache::forget('eo_dashboard_'.$event->organizer_id);
+        Cache::forget('crew_recommended_events');
     }
 
     /**

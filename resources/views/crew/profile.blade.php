@@ -1,9 +1,9 @@
 <x-layouts.crew title="Profil Saya - VOLA">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6" 
          x-data="{ 
-            cvUrl: '{{ $profile?->cv_path ? asset("storage/" . $profile->cv_path) : "" }}',
+            cvUrl: '{{ $profile?->cv_url ?? "" }}',
             cvName: '{{ $profile?->cv_path ? basename($profile->cv_path) : "" }}',
-            portfolioUrl: '{{ $profile?->portfolio_path ? asset("storage/" . $profile->portfolio_path) : "" }}',
+            portfolioUrl: '{{ $profile?->portfolio_url ?? "" }}',
             portfolioName: '{{ $profile?->portfolio_path ? basename($profile->portfolio_path) : "" }}',
             
             uploading: false,
@@ -41,7 +41,7 @@
                 formData.append('_token', '{{ csrf_token() }}');
 
                 try {
-                    const res = await fetch('{{ route("profile.documents.upload") }}', {
+                    const res = await fetch('{{ route("crew.profile.documents.upload") }}', {
                         method: 'POST',
                         body: formData
                     });
@@ -116,8 +116,8 @@
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
               
                 <div class="relative shrink-0">
-                    @if($profile?->photo_path)
-                        <img src="{{ asset('storage/' . $profile->photo_path) }}" 
+                    @if($profile?->photo_url)
+                        <img src="{{ $profile->photo_url }}" 
                              alt="{{ $user->name }}" 
                              class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md">
                     @else
@@ -258,7 +258,7 @@
                                 <span class="px-3 py-1.5 text-xs font-bold text-gray-400 cursor-not-allowed">Hapus File</span>
                             </template>
                          
-                            <form id="delete-form-cv_path" action="{{ route('profile.documents.delete', 'cv_path') }}" method="POST" class="hidden">
+                            <form id="delete-form-cv_path" action="{{ route('crew.profile.documents.delete', 'cv_path') }}" method="POST" class="hidden">
                                 @csrf @method('DELETE')
                             </form>
                         </div>
@@ -306,7 +306,7 @@
                                 <span class="px-3 py-1.5 text-xs font-bold text-gray-400 cursor-not-allowed">Hapus File</span>
                             </template>
 
-                            <form id="delete-form-portfolio_path" action="{{ route('profile.documents.delete', 'portfolio_path') }}" method="POST" class="hidden">
+                            <form id="delete-form-portfolio_path" action="{{ route('crew.profile.documents.delete', 'portfolio_path') }}" method="POST" class="hidden">
                                 @csrf @method('DELETE')
                             </form>
                         </div>
@@ -381,7 +381,7 @@
                     </button>
                 </div>
                 
-                <form action="{{ route('profile.update.skills') }}" method="POST">
+                <form action="{{ route('crew.profile.update.skills') }}" method="POST">
                     @csrf
                     @method('PUT')
                     

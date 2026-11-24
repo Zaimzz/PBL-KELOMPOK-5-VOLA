@@ -38,10 +38,28 @@ return [
             'report' => false,
         ],
 
-        'public' => [
+        'public' => (env('SUPABASE_STORAGE_BUCKET') && env('SUPABASE_STORAGE_KEY')) ? [
+            'driver' => 's3',
+            'key' => env('SUPABASE_STORAGE_KEY'),
+            'secret' => env('SUPABASE_STORAGE_SECRET'),
+            'region' => env('SUPABASE_STORAGE_REGION', 'ap-southeast-1'),
+            'bucket' => env('SUPABASE_STORAGE_BUCKET'),
+            'url' => rtrim((string) env('SUPABASE_STORAGE_PUBLIC_URL', 'https://wumumuzcpelkqazhdkcx.supabase.co/storage/v1/object/public/posters'), '/'),
+            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT', 'https://wumumuzcpelkqazhdkcx.supabase.co/storage/v1/s3'),
+            'use_path_style_endpoint' => true,
+            'throw' => false,
+            'report' => false,
+            // Nonaktifkan SSL verify di local dev (Windows cURL tidak punya CA bundle lengkap).
+            // Di production (APP_ENV=production) SSL tetap diverifikasi.
+            'http' => [
+                'verify' => env('APP_ENV') !== 'local',
+            ],
+        ] : [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'url' => env('SUPABASE_STORAGE_PUBLIC_URL')
+                ? rtrim((string) env('SUPABASE_STORAGE_PUBLIC_URL'), '/')
+                : rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -58,6 +76,22 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
             'report' => false,
+        ],
+
+        'supabase' => [
+            'driver' => 's3',
+            'key' => env('SUPABASE_STORAGE_KEY'),
+            'secret' => env('SUPABASE_STORAGE_SECRET'),
+            'region' => env('SUPABASE_STORAGE_REGION', 'ap-southeast-1'),
+            'bucket' => env('SUPABASE_STORAGE_BUCKET', 'posters'),
+            'url' => rtrim((string) env('SUPABASE_STORAGE_PUBLIC_URL', 'https://wumumuzcpelkqazhdkcx.supabase.co/storage/v1/object/public/posters'), '/'),
+            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT', 'https://wumumuzcpelkqazhdkcx.storage.supabase.co/storage/v1/s3'),
+            'use_path_style_endpoint' => true,
+            'throw' => false,
+            'report' => false,
+            'http' => [
+                'verify' => env('APP_ENV') !== 'local',
+            ],
         ],
 
     ],
