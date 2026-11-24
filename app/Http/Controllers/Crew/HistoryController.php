@@ -37,28 +37,38 @@ class HistoryController extends Controller
 
         if ($activeCategory !== 'all') {
             $query->whereHas('position.event.category', function ($q) use ($activeCategory) {
-
-                $q->where('name', $activeCategory);
+                $q->whereRaw('LOWER(name) = ?', [strtolower($activeCategory)]);
             });
         }
 
         [$counts, $totalCertificates] = Cache::remember('crew_history_counts_'.$profile->id, 60, function () use ($profile): array {
-            $totalCertificates = Application::where('volunteer_profile_id', $profile->id)
-                ->where('status', 'accepted')
-                ->count();
+            $appsSummary = Application::query()
+                ->join('event_positions', 'applications.position_id', '=', 'event_positions.id')
+                ->join('events', 'event_positions.event_id', '=', 'events.id')
+                ->leftJoin('event_categories', 'events.category_id', '=', 'event_categories.id')
+                ->where('applications.volunteer_profile_id', $profile->id)
+                ->whereIn('applications.status', ['accepted', 'rejected'])
+                ->selectRaw("
+                    LOWER(event_categories.name) as cat_name,
+                    count(*) as total,
+                    count(case when applications.status = 'accepted' then 1 end) as accepted_total
+                ")
+                ->groupBy('event_categories.name')
+                ->get();
 
-            $baseQueryAll = Application::where('volunteer_profile_id', $profile->id)
-                ->whereIn('status', ['accepted', 'rejected']);
+            $totalCertificates = (int) $appsSummary->sum('accepted_total');
+            $allCount = (int) $appsSummary->sum('total');
+            $catMap = $appsSummary->pluck('total', 'cat_name')->toArray();
 
             $counts = [
-                'all' => (clone $baseQueryAll)->count(),
-                'festival' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Festival'))->count(),
-                'seminar' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Seminar'))->count(),
-                'sosial' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Sosial'))->count(),
-                'kampus' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Kampus'))->count(),
-                'komunitas' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Komunitas'))->count(),
-                'olahraga' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Olahraga'))->count(),
-                'musik' => (clone $baseQueryAll)->whereHas('position.event.category', fn ($q) => $q->where('name', 'Musik'))->count(),
+                'all' => $allCount,
+                'festival' => (int) ($catMap['festival'] ?? 0),
+                'seminar' => (int) ($catMap['seminar'] ?? 0),
+                'sosial' => (int) ($catMap['sosial'] ?? 0),
+                'kampus' => (int) ($catMap['kampus'] ?? 0),
+                'komunitas' => (int) ($catMap['komunitas'] ?? 0),
+                'olahraga' => (int) ($catMap['olahraga'] ?? 0),
+                'musik' => (int) ($catMap['musik'] ?? 0),
             ];
 
             return [$counts, $totalCertificates];

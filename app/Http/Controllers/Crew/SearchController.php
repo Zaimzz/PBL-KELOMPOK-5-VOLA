@@ -50,6 +50,7 @@ class SearchController extends Controller
             $dbQuery->whereDate('registration_deadline', '>=', now()->toDateString())
                 ->whereDate('registration_deadline', '<=', now()->addDays(30)->toDateString());
         }
+
         if ($query !== '') {
             $dbQuery->where(function ($q) use ($query, $operator) {
                 $q->where('title', $operator, '%'.$query.'%')
@@ -128,10 +129,7 @@ class SearchController extends Controller
                 $endDate = $event->end_date?->translatedFormat('d M Y');
                 $dateFormatted = $endDate && $endDate !== $startDate ? $startDate.' – '.$endDate : ($startDate ?? '-');
 
-                $categoryName = $event->category?->name ?? 'Umum';
-
                 $imageUrl = $event->poster_url;
-
                 $isVerified = $event->organizer?->verification_status === VerificationStatus::Verified;
 
                 return [
@@ -156,6 +154,6 @@ class SearchController extends Controller
         $categories = ['Semua', 'Festival', 'Seminar', 'Musik', 'Olahraga', 'Sosial', 'Kampus', 'Komunitas'];
         $locations = ['Semua Lokasi', 'Jakarta', 'Bandung', 'Yogyakarta', 'Surabaya', 'Bali'];
 
-        return view('crew.search', compact('paginatedEvents', 'totalEvents', 'totalPages', 'page', 'perPage', 'query', 'category', 'location', 'position', 'sort', 'categories', 'locations'));
+        return view('crew.search', compact('paginatedEvents', 'totalEvents', 'totalPages', 'page', 'perPage', 'query', 'category', 'location', 'position', 'sort', 'status', 'time', 'categories', 'locations'));
     }
 }

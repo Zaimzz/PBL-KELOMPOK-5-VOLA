@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Crew;
 
-use App\Enums\EventStatus;
 use App\Enums\UserRole;
 use App\Models\Event;
 use App\Models\EventCategory;

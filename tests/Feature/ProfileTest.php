@@ -26,11 +26,11 @@ class ProfileTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this
-        ->actingAs($user)
-        ->patch('/account/profile', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+            ->actingAs($user)
+            ->patch('/account/profile', [
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+            ]);
 
         $response
             ->assertSessionHasNoErrors()
@@ -48,11 +48,11 @@ class ProfileTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this
-        ->actingAs($user)
-        ->patch('/account/profile', [
-            'name' => $user->name,
-            'email' => $user->email,
-        ]);
+            ->actingAs($user)
+            ->patch('/account/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+            ]);
 
         $response
             ->assertSessionHasNoErrors()

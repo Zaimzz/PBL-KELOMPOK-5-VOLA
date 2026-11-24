@@ -35,8 +35,7 @@ class NotificationController extends Controller
         $user = Auth::user();
         $notification = $user->notifications()->findOrFail($id);
         $notification->markAsRead();
-
-        Cache::forget('crew_unread_notifs_'.$user->id);
+        Cache::forget("crew_unread_notifs_{$user->id}");
 
         return response()->json(['success' => true]);
     }
@@ -46,8 +45,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
         $user->unreadNotifications()->update(['read_at' => now()]);
-
-        Cache::forget('crew_unread_notifs_'.$user->id);
+        Cache::forget("crew_unread_notifs_{$user->id}");
 
         return response()->json(['success' => true]);
     }

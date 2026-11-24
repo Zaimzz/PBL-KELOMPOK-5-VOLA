@@ -14,27 +14,25 @@
     $displayName = $authUser?->name ?? 'Crew';
     
     $displayCity = $profile?->city ?? 'Indonesia';
-    
+
+    $appCounts = $profile ? \Illuminate\Support\Facades\Cache::remember("crew_nav_counts_{$profile->id}", 60, function () use ($profile) {
+        $counts = \App\Models\Application::where('volunteer_profile_id', $profile->id)
+            ->selectRaw("count(*) as total, count(case when status = 'accepted' then 1 end) as accepted")
+            ->first();
+        return [
+            'total' => (int) ($counts->total ?? 0),
+            'accepted' => (int) ($counts->accepted ?? 0),
+        ];
+    }) : ['total' => 0, 'accepted' => 0];
+
+    $totalApplications = $appCounts['total'];
+    $acceptedCount = $appCounts['accepted'];
+
     $unreadNotifs = \Illuminate\Support\Facades\Cache::remember(
         'crew_unread_notifs_'.($authUser?->id ?? 0),
-        30,
-        fn () => $authUser ? $authUser->unreadNotifications()->count() : 0
+        60,
+        fn () => $authUser ? (int) $authUser->unreadNotifications()->count() : 0
     );
-
-    $totalApplications = 0;
-    $acceptedCount = 0;
-    
-    if ($profile) {
-        [$totalApplications, $acceptedCount] = \Illuminate\Support\Facades\Cache::remember(
-            'crew_application_counts_'.$profile->id,
-            30,
-            fn () => [
-                \App\Models\Application::where('volunteer_profile_id', $profile->id)->count(),
-                \App\Models\Application::where('volunteer_profile_id', $profile->id)
-                    ->where('status', 'accepted')->count(),
-            ]
-        );
-    }
 
     $displayAvatar = $authUser?->avatar_url;
 
@@ -99,7 +97,7 @@
             </a>
 
             <p class="px-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-8">Akun</p>
-            <a href="{{ route('crew.profile.show') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl {{ request()->routeIs('crew.profile.*') ? 'bg-indigo-50 text-[#4F46E5]' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition">
+            <a href="{{ route('crew.profile.show') }}" class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl {{ request()->routeIs('crew.profile.*') || request()->routeIs('profile.*') ? 'bg-indigo-50 text-[#4F46E5]' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 Profil Saya
             </a>           
@@ -137,17 +135,24 @@
                         loaded: false,
                         initialUnread: {{ $unreadNotifs }},
 
+                        async toggleDropdown() {
+                            this.open = !this.open;
+                            if (this.open && !this.loaded) {
+                                await this.fetchNotifications();
+                            }
+                        },
+
                         async fetchNotifications() {
                             this.isLoading = true; 
                             try {
                                 const res = await fetch('{{ route("api.notifications.index") }}');
                                 if (res.ok) {
                                     this.notifications = await res.json();
+                                    this.loaded = true;
                                 }
                             } catch (err) {
                                 console.error('Gagal memuat notifikasi:', err);
                             } finally {
-                                this.loaded = true;
                                 this.isLoading = false; 
                             }
                         },
@@ -179,6 +184,7 @@
                         async markAsRead(id) {
                             const notif = this.notifications.find(n => n.id === id);
                             if (notif) notif.read = true;
+                            if (this.initialUnread > 0) this.initialUnread--;
 
                             try {
                                 await fetch(`/api/notifications/${id}/read`, {
@@ -196,6 +202,7 @@
                         async markAllAsRead() {
                             // Optimistic update
                             this.notifications.forEach(n => n.read = true);
+                            this.initialUnread = 0;
 
                             try {
                                 await fetch('/api/notifications/read-all', {
@@ -212,7 +219,7 @@
                      }" 
                      class="relative" @click.outside="open = false">
                    
-                    <button @click="if (! open) { fetchNotifications(); } open = ! open" class="relative p-2 text-gray-500 hover:text-[#4F46E5] hover:bg-indigo-50 rounded-full transition">
+                    <button @click="toggleDropdown()" class="relative p-2 text-gray-500 hover:text-[#4F46E5] hover:bg-indigo-50 rounded-full transition">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                         </svg>
@@ -299,7 +306,8 @@
                             <p class="text-xs font-bold text-gray-900 tracking-wide">Masuk sebagai</p>
                             <p class="text-xs text-gray-500 truncate mt-0.5">{{ $authUser->email }}</p>
                         </div>
-                        <a href="{{ route('crew.profile.show') }}" class="flex items-center gap-3 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition group">                            <svg class="w-5 h-5 text-gray-400 group-hover:text-[#4F46E5] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        <a href="{{ route('crew.profile.show') }}" class="flex items-center gap-3 px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition group">
+                            <svg class="w-5 h-5 text-gray-400 group-hover:text-[#4F46E5] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                             <span>Lihat Profil</span>
                         </a>
                         <a href="{{ route('settings.index') }}" class="flex items-center gap-3 px-5 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-[#4F46E5] transition group">
